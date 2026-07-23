@@ -18,8 +18,8 @@ container, CRC-32, XML, and the LaTeX→OMML math engine are all hand-written.
 Requires a stable Rust toolchain (**1.82+**, the declared MSRV).
 
 ```bash
-git clone https://github.com/yfyang86/tex2word
-cd tex2word          # (or the rust/ subtree if building from the combined repo)
+git clone https://github.com/yfyang86/rstex2word
+cd rstex2word          
 cargo build --release
 ```
 
