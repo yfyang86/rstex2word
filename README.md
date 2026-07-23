@@ -13,13 +13,30 @@ container, CRC-32, XML, and the LaTeX→OMML math engine are all hand-written.
 > **Version 1.0.6.** This is the Rust line of tex2word; it mirrors the behaviour
 > of the reference implementation at the same version number.
 
-## Install & build
+## Install
+
+Install the command-line tool from [crates.io](https://crates.io/crates/tex2word-cli)
+(the `tex2word` binary lives in the `tex2word-cli` crate):
+
+```bash
+cargo install tex2word-cli
+```
+
+This puts a `tex2word` binary on your `PATH`.
+
+### Use as a library
+
+```bash
+cargo add tex2word
+```
+
+### Build from source
 
 Requires a stable Rust toolchain (**1.82+**, the declared MSRV).
 
 ```bash
 git clone https://github.com/yfyang86/rstex2word
-cd rstex2word          
+cd rstex2word
 cargo build --release
 ```
 
