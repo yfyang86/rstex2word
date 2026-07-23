@@ -32,7 +32,10 @@ pub fn read(bytes: &[u8]) -> Result<Vec<Entry>, String> {
 
     let mut entries = Vec::with_capacity(count);
     for _ in 0..count {
-        if !bytes[off..].starts_with(&[0x50, 0x4b, 0x01, 0x02]) {
+        if !bytes
+            .get(off..)
+            .is_some_and(|b| b.starts_with(&[0x50, 0x4b, 0x01, 0x02]))
+        {
             return Err("bad central-directory signature".into());
         }
         let method = u16le(bytes, off + 10).ok_or("truncated CD record")?;
@@ -60,14 +63,22 @@ pub fn read(bytes: &[u8]) -> Result<Vec<Entry>, String> {
 }
 
 fn read_stored(bytes: &[u8], local_off: usize, size: usize) -> Result<Option<Vec<u8>>, String> {
-    if !bytes[local_off..].starts_with(&[0x50, 0x4b, 0x03, 0x04]) {
+    if !bytes
+        .get(local_off..)
+        .is_some_and(|b| b.starts_with(&[0x50, 0x4b, 0x03, 0x04]))
+    {
         return Err("bad local-file-header signature".into());
     }
     let name_len = u16le(bytes, local_off + 26).ok_or("truncated local header")?;
     let extra_len = u16le(bytes, local_off + 28).ok_or("truncated local header")?;
-    let data_start = local_off + 30 + name_len + extra_len;
+    let data_start = local_off
+        .checked_add(30)
+        .and_then(|v| v.checked_add(name_len))
+        .and_then(|v| v.checked_add(extra_len))
+        .ok_or("local header offset overflow")?;
+    let data_end = data_start.checked_add(size).ok_or("entry size overflow")?;
     let data = bytes
-        .get(data_start..data_start + size)
+        .get(data_start..data_end)
         .ok_or("truncated entry data")?;
     Ok(Some(data.to_vec()))
 }

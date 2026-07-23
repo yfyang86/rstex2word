@@ -1,7 +1,6 @@
 //! tex2word math engine — LaTeX math -> OMML (OfficeMath).
 //!
-//! Mirrors the Python `tex2word.mathml` package: a LaTeX-math parser
-//! ([`parser`]) building a small AST, and an [`omml`] renderer producing the
+//! A LaTeX-math parser builds a small AST, and an OMML renderer produces the
 //! `m:` elements Word edits as native equations. The public entry point wraps
 //! the rendered content in an `<m:oMath>` element (the `m` namespace is declared
 //! on the document root by the back-end).

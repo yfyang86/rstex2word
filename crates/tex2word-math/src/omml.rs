@@ -3,7 +3,16 @@
 
 use crate::parser::Node;
 
-/// Escape XML text content.
+/// Is `c` a character that is legal in XML 1.0 text? Control characters other
+/// than tab/newline/carriage-return are forbidden and would make the document
+/// part unparseable, so they are dropped by [`escape`].
+fn is_xml_char(c: char) -> bool {
+    matches!(c, '\t' | '\n' | '\r' | ' '..='\u{d7ff}' | '\u{e000}'..)
+}
+
+/// Escape XML text/attribute content. `"` is escaped so the result is safe in
+/// attribute position (e.g. `m:begChr`), and XML-illegal control characters are
+/// dropped rather than emitted verbatim.
 fn escape(s: &str) -> String {
     let mut out = String::with_capacity(s.len());
     for c in s.chars() {
@@ -11,7 +20,9 @@ fn escape(s: &str) -> String {
             '&' => out.push_str("&amp;"),
             '<' => out.push_str("&lt;"),
             '>' => out.push_str("&gt;"),
-            _ => out.push(c),
+            '"' => out.push_str("&quot;"),
+            c if is_xml_char(c) => out.push(c),
+            _ => {}
         }
     }
     out
@@ -297,5 +308,21 @@ mod tests {
         assert!(render(&parse(r"A \trianglelefteq B")).contains("⊴"));
         assert!(render(&parse(r"a \nmid b")).contains("∤"));
         assert!(render(&parse(r"T{\restriction} U")).contains("↾"));
+    }
+
+    #[test]
+    fn delimiter_attribute_escapes_quote() {
+        // A `"` delimiter must be escaped in the m:begChr/m:endChr attribute,
+        // never emitted as a bare `m:val="""`.
+        let out = render(&parse(r#"\left" x \right""#));
+        assert!(!out.contains(r#"m:val="""#), "{out}");
+        assert!(out.contains("&quot;"), "{out}");
+    }
+
+    #[test]
+    fn control_chars_are_dropped_from_output() {
+        // XML-illegal control characters must not reach the output verbatim.
+        let out = render(&parse("a\u{0C}b\u{08}"));
+        assert!(!out.contains('\u{0C}') && !out.contains('\u{08}'), "{out}");
     }
 }

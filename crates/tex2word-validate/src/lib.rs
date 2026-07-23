@@ -81,21 +81,29 @@ fn wellformed(xml: &str) -> Option<String> {
     while let Some(lt) = rest.find('<') {
         rest = &rest[lt..];
         if let Some(r) = rest.strip_prefix("<?") {
-            let end = r.find("?>")?;
+            let Some(end) = r.find("?>") else {
+                return Some("unterminated processing instruction".into());
+            };
             rest = &r[end + 2..];
             continue;
         }
         if let Some(r) = rest.strip_prefix("<!--") {
-            let end = r.find("-->")?;
+            let Some(end) = r.find("-->") else {
+                return Some("unterminated comment".into());
+            };
             rest = &r[end + 3..];
             continue;
         }
         if rest.starts_with("<!") {
-            let end = rest.find('>')?;
+            let Some(end) = rest.find('>') else {
+                return Some("unterminated declaration".into());
+            };
             rest = &rest[end + 1..];
             continue;
         }
-        let end = rest.find('>')?;
+        let Some(end) = rest.find('>') else {
+            return Some("unterminated tag".into());
+        };
         let inner = &rest[1..end];
         let self_closing = inner.ends_with('/');
         let inner = inner.trim_end_matches('/').trim();
@@ -345,7 +353,7 @@ fn direct_children_of(xml: &str, parent: &str) -> Vec<Vec<String>> {
             }
             let tail = &rest[i..];
             if tail.starts_with(&close) {
-                depth -= 1;
+                depth = depth.saturating_sub(1);
                 if depth == 0 {
                     break;
                 }
@@ -358,7 +366,12 @@ fn direct_children_of(xml: &str, parent: &str) -> Vec<Vec<String>> {
             };
             let inner = &tail[1..end];
             if inner.starts_with('/') {
-                depth -= 1; // a nested close tag of some other element
+                // a nested close tag of some other element; more closes than
+                // opens means malformed input — stop scanning this parent.
+                depth = depth.saturating_sub(1);
+                if depth == 0 {
+                    break;
+                }
             } else {
                 let self_closing = inner.ends_with('/');
                 let name = local_name(inner.trim_end_matches('/').trim());
@@ -390,9 +403,15 @@ fn local_name(tag_inner: &str) -> String {
     name.rsplit(':').next().unwrap_or(name).to_string()
 }
 
-/// Join `target` onto the rels `base` directory and normalize `.`/`..`.
+/// Join `target` onto the rels `base` directory and normalize `.`/`..`. A
+/// leading `/` on `target` is a package-root-absolute OPC part name, so the base
+/// is ignored in that case.
 fn normalize_join(base: &str, target: &str) -> String {
-    let combined = format!("{base}{target}");
+    let combined = if let Some(abs) = target.strip_prefix('/') {
+        abs.to_string()
+    } else {
+        format!("{base}{target}")
+    };
     let mut parts: Vec<&str> = Vec::new();
     for seg in combined.split('/') {
         match seg {
@@ -416,6 +435,44 @@ mod tests {
         assert!(wellformed("<a><b></a>").is_some()); // unclosed b
         assert!(wellformed("<a></b>").is_some()); // mismatched
         assert!(wellformed("<?xml?><a><!-- c --><b/></a>").is_none());
+    }
+
+    #[test]
+    fn wellformed_flags_truncated_constructs() {
+        // A truncated PI/comment/tag must be reported, not silently accepted.
+        assert!(wellformed("<w:document><?trunc").is_some());
+        assert!(wellformed("<a><!-- unterminated").is_some());
+        assert!(wellformed("<a><b").is_some());
+    }
+
+    #[test]
+    fn malformed_zip_bytes_do_not_panic() {
+        // Fuzzed/truncated archives must return violations, never panic.
+        let mut eocd = vec![0u8; 22];
+        eocd[0..4].copy_from_slice(&[0x50, 0x4b, 0x05, 0x06]);
+        eocd[10..12].copy_from_slice(&1u16.to_le_bytes());
+        eocd[16..20].copy_from_slice(&0x00FF_FFFFu32.to_le_bytes()); // bogus CD offset
+        let mut buf = b"PK\x03\x04".to_vec();
+        buf.extend_from_slice(&eocd);
+        let _ = validate_docx(&buf);
+        for n in [0usize, 1, 4, 21, 22, 23, 50] {
+            let _ = validate_docx(&vec![0x50u8; n]);
+        }
+    }
+
+    #[test]
+    fn child_scan_does_not_underflow_on_extra_closes() {
+        // More close-tags than opens inside a tracked block must not underflow.
+        let _ = direct_children_of("<w:pPr></a></b></c>", "w:pPr");
+    }
+
+    #[test]
+    fn normalize_join_handles_absolute_target() {
+        // A leading `/` is a package-root-absolute OPC part name.
+        assert_eq!(
+            normalize_join("word/", "/word/styles.xml"),
+            "word/styles.xml"
+        );
     }
 
     #[test]

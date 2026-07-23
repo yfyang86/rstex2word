@@ -2,8 +2,14 @@
 name = "tex2word-ir"
 version.workspace = true
 edition.workspace = true
+rust-version.workspace = true
 license.workspace = true
 authors.workspace = true
-description = "tex2word intermediate representation (Rust port)"
+repository.workspace = true
+homepage.workspace = true
+keywords.workspace = true
+categories.workspace = true
+readme = "../../README.md"
+description = "tex2word intermediate representation: the front-end/back-end contract"
 
 [dependencies]

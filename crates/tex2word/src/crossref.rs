@@ -275,6 +275,16 @@ fn rewrite_blocks(
                 }
                 rewrite_blocks(&mut t.blocks, labels, warns);
             }
+            Block::List { items } => {
+                for item in items {
+                    rewrite_inlines(&mut item.inlines, labels, warns);
+                }
+            }
+            Block::Bibliography { entries } => {
+                for entry in entries {
+                    rewrite_inlines(&mut entry.inlines, labels, warns);
+                }
+            }
             _ => {}
         }
     }

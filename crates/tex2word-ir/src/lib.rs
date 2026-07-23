@@ -73,7 +73,7 @@ pub enum CiteMode {
     /// `\citep`/`\cite` — parenthesized numeric `[n]`.
     #[default]
     Paren,
-    /// `\citet` — textual "Author [n]".
+    /// `\citet` — textual "Author \[n\]".
     Text,
     /// `\citeauthor` — author name only.
     Author,

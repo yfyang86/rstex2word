@@ -17,6 +17,10 @@ use tex2word_ir::{
     RefStyle, Table, TableAlign, TableCell, TableRow, Theorem, TocKind,
 };
 
+/// Re-export of the IR crate, so callers can name the types returned by
+/// [`parse_document`] without depending on `tex2word-ir` separately.
+pub use tex2word_ir as ir;
+
 mod macros;
 mod preprocess;
 
@@ -290,10 +294,30 @@ fn detect_columns(src: &str) -> usize {
             }
         }
     }
-    if src.contains("\\twocolumn") {
+    if contains_command(src, "twocolumn") {
         return 2;
     }
     1
+}
+
+/// True if the control word `\name` appears in `src` as a complete command —
+/// i.e. not merely as a prefix of a longer name (`\twocolumn` must not match
+/// `\twocolumngrid`).
+fn contains_command(src: &str, name: &str) -> bool {
+    let needle = format!("\\{name}");
+    let mut from = 0;
+    while let Some(rel) = src[from..].find(&needle) {
+        let end = from + rel + needle.len();
+        if !src[end..]
+            .chars()
+            .next()
+            .is_some_and(|c| c.is_ascii_alphabetic())
+        {
+            return true;
+        }
+        from = end;
+    }
+    false
 }
 
 fn is_blank_inlines(v: &[Inline]) -> bool {
@@ -393,13 +417,47 @@ fn read_included(base_dir: &Path, name: &str) -> Option<String> {
     None
 }
 
-/// Remove TeX line comments (`%` to end of line), preserving escaped `\%`.
+/// True if `word`'s characters appear in `chars` starting at index `pos`.
+fn starts_with_at(chars: &[char], pos: usize, word: &str) -> bool {
+    word.chars()
+        .enumerate()
+        .all(|(k, wc)| chars.get(pos + k) == Some(&wc))
+}
+
+/// Remove TeX line comments (`%` to end of line), preserving escaped `\%` and
+/// the literal content of `\verb<d>…<d>` (where `%` is not a comment).
 fn strip_comments(src: &str) -> String {
     let mut out = String::with_capacity(src.len());
     let chars: Vec<char> = src.chars().collect();
     let mut i = 0;
     while i < chars.len() {
         let c = chars[i];
+        // `\verb<d>…<d>` (and `\verb*<d>…<d>`): copy verbatim, `%` is literal.
+        // `\verb` is a control word, so the char after it must not be a letter
+        // (guards against matching `\verbatim`).
+        if c == '\\'
+            && starts_with_at(&chars, i + 1, "verb")
+            && !chars.get(i + 5).is_some_and(|c| c.is_ascii_alphabetic())
+        {
+            let mut j = i + 1 + 4; // past "verb"
+            if chars.get(j) == Some(&'*') {
+                j += 1;
+            }
+            if let Some(&delim) = chars.get(j) {
+                out.extend(&chars[i..=j]); // "\verb" (+ "*") + opening delim
+                j += 1;
+                while j < chars.len() {
+                    out.push(chars[j]);
+                    if chars[j] == delim {
+                        j += 1;
+                        break;
+                    }
+                    j += 1;
+                }
+                i = j;
+                continue;
+            }
+        }
         if c == '\\' && i + 1 < chars.len() {
             out.push(c);
             out.push(chars[i + 1]);
@@ -503,7 +561,25 @@ fn toc_kind(name: &str) -> Option<TocKind> {
 }
 
 /// Split a document body into block-level units (headings + paragraphs).
+/// Maximum environment-nesting depth `parse_blocks` will descend. Deeply nested
+/// or unbalanced `\begin{…}` input (e.g. thousands of unclosed environments)
+/// would otherwise recurse until the stack overflows; past this depth the
+/// remaining content is kept as a flat paragraph rather than descended into.
+const MAX_BLOCK_DEPTH: usize = 128;
+
 fn parse_blocks(body: &str) -> Vec<Block> {
+    parse_blocks_depth(body, 0)
+}
+
+fn parse_blocks_depth(body: &str, depth: usize) -> Vec<Block> {
+    if depth >= MAX_BLOCK_DEPTH {
+        let inlines = parse_inlines(body);
+        return if inlines.is_empty() {
+            Vec::new()
+        } else {
+            vec![Block::Paragraph { inlines }]
+        };
+    }
     let s: Vec<char> = body.chars().collect();
     let n = s.len();
     let mut blocks: Vec<Block> = Vec::new();
@@ -541,7 +617,7 @@ fn parse_blocks(body: &str) -> Vec<Block> {
                         blocks.push(parse_list(&body, env == "enumerate"));
                     }
                     "quote" | "quotation" => {
-                        blocks.push(Block::Quote(parse_blocks(&body)));
+                        blocks.push(Block::Quote(parse_blocks_depth(&body, depth + 1)));
                     }
                     "tabular" | "tabular*" | "array" | "longtable" => {
                         blocks.push(parse_tabular(&body));
@@ -562,7 +638,7 @@ fn parse_blocks(body: &str) -> Vec<Block> {
                         let (rest, label) = extract_label(&rest);
                         blocks.push(Block::Theorem(Theorem {
                             kind: kind.to_string(),
-                            blocks: parse_blocks(&rest),
+                            blocks: parse_blocks_depth(&rest, depth + 1),
                             title,
                             label,
                             counter: numbered.then(|| "Theorem".to_string()),
@@ -582,7 +658,7 @@ fn parse_blocks(body: &str) -> Vec<Block> {
                     }
                     // center/flushleft/flushright: descend, keep the content
                     // unknown environment: descend transparently (keep content)
-                    _ => blocks.extend(parse_blocks(&body)),
+                    _ => blocks.extend(parse_blocks_depth(&body, depth + 1)),
                 }
                 i = after_body;
                 continue;
@@ -735,6 +811,11 @@ pub(crate) fn read_env_body(s: &[char], i: usize, env: &str) -> (String, usize) 
     (s[start..].iter().collect(), s.len())
 }
 
+/// Maximum list-nesting depth. `level` is a `u8` and also tracks recursion
+/// depth, so this bounds both arithmetic and the stack; Word renders only a
+/// handful of levels, so deeper nesting is flattened at the cap.
+const MAX_LIST_DEPTH: u8 = 32;
+
 /// Parse an `itemize`/`enumerate` body into flat, depth-tagged [`ListItem`]s
 /// (nested lists become higher-`level` items in sequence).
 fn parse_list(body: &str, ordered: bool) -> Block {
@@ -832,6 +913,21 @@ fn emit_list_item(chunk: &str, ordered: bool, level: u8, out: &mut Vec<ListItem>
         ordered,
         inlines: parse_inlines(text.trim()),
     });
+    // Cap nesting depth: `level` is a `u8` (so `level + 1` must not overflow),
+    // and since `level` also tracks recursion depth, unbounded nesting would
+    // overflow the stack. Word only renders a few list levels anyway; at the cap
+    // each remaining sub-list's content is flattened to a single item rather
+    // than descended into.
+    if level >= MAX_LIST_DEPTH {
+        for (sub_ordered, sub_body) in sublists {
+            out.push(ListItem {
+                level,
+                ordered: sub_ordered,
+                inlines: parse_inlines(sub_body.trim()),
+            });
+        }
+        return;
+    }
     for (sub_ordered, sub_body) in sublists {
         parse_list_into(&sub_body, sub_ordered, level + 1, out);
     }
@@ -883,11 +979,19 @@ fn parse_tabular(body: &str) -> Block {
 
 /// Map a LaTeX column spec (e.g. `{|l c r|}`, `p{3cm}`, `*{3}{c}`) to per-column
 /// alignments, ignoring rules/spacers (`|`, `@{…}`, `<{…}`, `>{…}`, `!{…}`).
+/// Upper bound on the number of columns a single column spec can expand to.
+/// `*{n}{…}` repetition (and its nesting) is otherwise unbounded — a spec like
+/// `*{2000000000}{c}` would exhaust memory. No real table approaches this.
+const MAX_COLUMNS: usize = 1024;
+
 fn parse_colspec(spec: &str) -> Vec<TableAlign> {
     let cs: Vec<char> = spec.chars().collect();
     let mut out: Vec<TableAlign> = Vec::new();
     let mut i = 0;
     while i < cs.len() {
+        if out.len() >= MAX_COLUMNS {
+            break;
+        }
         match cs[i] {
             'l' => {
                 out.push(TableAlign::Left);
@@ -919,6 +1023,9 @@ fn parse_colspec(spec: &str) -> Vec<TableAlign> {
                 if let Ok(n) = count.trim().parse::<usize>() {
                     let sub = parse_colspec(&inner);
                     for _ in 0..n {
+                        if out.len() >= MAX_COLUMNS {
+                            break;
+                        }
                         out.extend(sub.iter().copied());
                     }
                 }
@@ -2611,5 +2718,55 @@ Math is exempt: $\alpha$ \[ \gamma \] \begin{equation}\delta\end{equation}.
                 inlines: vec![Inline::Text("after".into())]
             })
         );
+    }
+
+    #[test]
+    fn unclosed_environments_do_not_overflow() {
+        // Thousands of unbalanced `\begin{…}` are bounded by MAX_BLOCK_DEPTH.
+        let _ = conv(&r"\begin{a}".repeat(20_000));
+    }
+
+    #[test]
+    fn recursive_macro_expansion_is_bounded() {
+        // A "billion-laughs" doubling macro chain must not blow up.
+        let mut doc = String::from(r"\newcommand{\aA}{x}");
+        for k in 1..30u8 {
+            let (p, c) = ((b'A' + k - 1) as char, (b'A' + k) as char);
+            doc.push_str(&format!("\\newcommand{{\\a{c}}}{{\\a{p}\\a{p}}}"));
+        }
+        doc.push_str(r"\aZ");
+        let _ = conv(&format!(r"\begin{{document}}{doc}\end{{document}}"));
+    }
+
+    #[test]
+    fn colspec_repeat_is_bounded() {
+        let _ =
+            conv(r"\begin{document}\begin{tabular}{*{2000000000}{c}}a\end{tabular}\end{document}");
+    }
+
+    #[test]
+    fn deeply_nested_lists_do_not_overflow() {
+        let mut src = String::from(r"\begin{document}");
+        for _ in 0..400 {
+            src.push_str(r"\begin{itemize}\item ");
+        }
+        for _ in 0..400 {
+            src.push_str(r"\end{itemize}");
+        }
+        src.push_str(r"\end{document}");
+        let _ = conv(&src);
+    }
+
+    #[test]
+    fn verb_content_with_percent_survives_comment_stripping() {
+        let txt = conv(r"\begin{document}\verb|a%b| tail\end{document}").plain_text();
+        assert!(txt.contains("a%b"), "verb content lost: {txt:?}");
+        assert!(txt.contains("tail"), "tail after verb lost: {txt:?}");
+    }
+
+    #[test]
+    fn twocolumngrid_does_not_trigger_two_columns() {
+        let doc = conv(r"\documentclass{article}\begin{document}\twocolumngrid text\end{document}");
+        assert_eq!(doc.columns, 1);
     }
 }

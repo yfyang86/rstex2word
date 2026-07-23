@@ -66,11 +66,24 @@ pub enum Node {
     Binom(Box<Node>, Box<Node>),
 }
 
+/// Maximum nesting depth the parser will descend before bailing out. Deeply
+/// nested input (e.g. thousands of nested `\frac`/`{`/`\left`) would otherwise
+/// overflow the stack; past this depth the remaining content is dropped.
+const MAX_DEPTH: usize = 256;
+
 /// Parse a LaTeX math string into a [`Node::Row`].
 pub fn parse(latex: &str) -> Node {
+    parse_with_depth(latex, 0)
+}
+
+/// Parse a sub-string seeded with the caller's current nesting depth, so that
+/// recursion crossing a fresh sub-parser (`\left…\right`, matrix cells) still
+/// counts toward [`MAX_DEPTH`] and cannot overflow the stack.
+fn parse_with_depth(latex: &str, depth: usize) -> Node {
     let mut p = Parser {
         s: latex.chars().collect(),
         i: 0,
+        depth,
     };
     p.parse_row()
 }
@@ -78,6 +91,7 @@ pub fn parse(latex: &str) -> Node {
 struct Parser {
     s: Vec<char>,
     i: usize,
+    depth: usize,
 }
 
 impl Parser {
@@ -108,7 +122,22 @@ impl Parser {
 
     /// A single atom: a `{…}` group, a command, or one character.
     fn parse_atom(&mut self) -> Node {
-        match self.peek() {
+        // Guard against stack overflow on pathologically nested input. Once the
+        // limit is hit, consume the rest of the current group as a plain run so
+        // the scan still terminates.
+        if self.depth >= MAX_DEPTH {
+            let mut text = String::new();
+            while let Some(c) = self.peek() {
+                if c == '}' {
+                    break;
+                }
+                text.push(c);
+                self.i += 1;
+            }
+            return Node::Run(text);
+        }
+        self.depth += 1;
+        let node = match self.peek() {
             Some('{') => {
                 self.i += 1;
                 let r = self.parse_row();
@@ -123,7 +152,9 @@ impl Parser {
                 Node::Run(c.to_string())
             }
             None => Node::Run(String::new()),
-        }
+        };
+        self.depth -= 1;
+        node
     }
 
     /// After an atom, attach any `^`/`_` scripts (in either order).
@@ -333,7 +364,7 @@ impl Parser {
                     return Node::Delim {
                         open,
                         close,
-                        body: Box::new(parse(&inner)),
+                        body: Box::new(parse_with_depth(&inner, self.depth)),
                     };
                 }
                 self.i += 6;
@@ -347,7 +378,7 @@ impl Parser {
         Node::Delim {
             open,
             close: String::new(),
-            body: Box::new(parse(&inner)),
+            body: Box::new(parse_with_depth(&inner, self.depth)),
         }
     }
 
@@ -363,7 +394,9 @@ impl Parser {
         while self.i < self.s.len() {
             match self.s[self.i] {
                 '\\' => {
-                    self.i += 2;
+                    // Skip the escaped char, but never advance past the end (a
+                    // trailing `\` must not push the cursor beyond `len`).
+                    self.i = (self.i + 2).min(self.s.len());
                     continue;
                 }
                 '{' => depth += 1,
@@ -399,7 +432,7 @@ impl Parser {
         }
         let body = self.read_env_body(&env);
         Node::Matrix {
-            rows: split_matrix(&body),
+            rows: split_matrix(&body, self.depth),
             delim: matrix_delim(&env),
         }
     }
@@ -464,7 +497,7 @@ impl Parser {
         if self.peek() == Some(']') {
             self.i += 1;
         }
-        parse(&inner)
+        parse_with_depth(&inner, self.depth)
     }
 }
 
@@ -493,7 +526,7 @@ fn flatten_text(node: &Node) -> String {
 
 /// Split a matrix/aligned body into rows (top-level `\\`) of cells (top-level
 /// `&`), parsing each cell as math. Trailing empty rows (from a final `\\`) drop.
-fn split_matrix(body: &str) -> Vec<Vec<Node>> {
+fn split_matrix(body: &str, seed_depth: usize) -> Vec<Vec<Node>> {
     let s: Vec<char> = body.chars().collect();
     let n = s.len();
     let mut rows: Vec<Vec<String>> = vec![vec![String::new()]];
@@ -561,7 +594,11 @@ fn split_matrix(body: &str) -> Vec<Vec<Node>> {
     }
     rows.into_iter()
         .filter(|row| row.iter().any(|cell| !cell.trim().is_empty()))
-        .map(|row| row.iter().map(|cell| parse(cell.trim())).collect())
+        .map(|row| {
+            row.iter()
+                .map(|cell| parse_with_depth(cell.trim(), seed_depth))
+                .collect()
+        })
         .collect()
 }
 
@@ -657,5 +694,21 @@ mod tests {
     #[test]
     fn adjacent_runs_merge() {
         assert_eq!(parse("abc"), Node::Row(vec![Node::Run("abc".into())]));
+    }
+
+    #[test]
+    fn truncated_environment_does_not_panic() {
+        // A trailing backslash inside `\begin{…}` must not slice out of bounds.
+        let _ = parse(r"\begin{x\");
+        let _ = parse(r"\begin{ab\");
+    }
+
+    #[test]
+    fn deep_nesting_does_not_overflow() {
+        // Pathologically nested input is bounded by MAX_DEPTH instead of
+        // overflowing the stack.
+        let _ = parse(&r"\frac{1}{".repeat(50_000));
+        let _ = parse(&"{".repeat(100_000));
+        let _ = parse(&r"\left(".repeat(50_000));
     }
 }

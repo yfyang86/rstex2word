@@ -10,6 +10,10 @@ use std::path::Path;
 use tex2word_ir::Document;
 use zip::Entry;
 
+/// Re-export of the IR crate, so callers can build the [`Document`] passed to
+/// [`to_docx`] without depending on `tex2word-ir` separately.
+pub use tex2word_ir as ir;
+
 pub use ooxml::PageGeometry;
 
 /// Convert an IR document into a `.docx` (default US-Letter geometry).

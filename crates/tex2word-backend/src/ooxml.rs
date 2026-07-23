@@ -170,6 +170,11 @@ struct Ctx<'a> {
     /// Collected `\footnote`s: `(id, content)` lifted into `footnotes.xml`.
     footnote_id: u32,
     footnotes: Vec<(u32, Vec<Inline>)>,
+    /// True while rendering footnote content. `footnotes.xml` declares only the
+    /// `w:`/`m:` namespaces (not the drawing prefixes) and carries no image
+    /// relationship part, so an image inside a footnote degrades to a text
+    /// placeholder rather than emitting a drawing that would corrupt the part.
+    in_footnote: bool,
     /// In-document-order caption counters, used to cache each `SEQ` field's real
     /// number (so it shows correctly before "Update Fields"). These mirror the
     /// numbering pass, which caches the same numbers into `REF` fields.
@@ -187,7 +192,15 @@ impl Ctx<'_> {
     }
 }
 
-/// Escape XML text content / attribute values.
+/// Is `c` legal in XML 1.0? Control characters other than tab/newline/carriage
+/// return are forbidden and would make the document part unparseable, so the
+/// escape functions drop them.
+fn is_xml_char(c: char) -> bool {
+    matches!(c, '\t' | '\n' | '\r' | ' '..='\u{d7ff}' | '\u{e000}'..)
+}
+
+/// Escape XML text content / attribute values. XML-illegal control characters
+/// are dropped rather than emitted verbatim (which would corrupt the part).
 pub(crate) fn escape(s: &str) -> String {
     let mut out = String::with_capacity(s.len());
     for c in s.chars() {
@@ -196,7 +209,8 @@ pub(crate) fn escape(s: &str) -> String {
             '<' => out.push_str("&lt;"),
             '>' => out.push_str("&gt;"),
             '"' => out.push_str("&quot;"),
-            _ => out.push(c),
+            c if is_xml_char(c) => out.push(c),
+            _ => {}
         }
     }
     out
@@ -211,7 +225,8 @@ pub(crate) fn escape_text(s: &str) -> String {
             '&' => out.push_str("&amp;"),
             '<' => out.push_str("&lt;"),
             '>' => out.push_str("&gt;"),
-            _ => out.push(c),
+            c if is_xml_char(c) => out.push(c),
+            _ => {}
         }
     }
     out
@@ -332,7 +347,14 @@ fn render_inlines(inlines: &[Inline], rp: RunProps, ctx: &mut Ctx, out: &mut Str
 /// Render an `\includegraphics` as an embedded `w:drawing`, or a `[image: …]`
 /// text placeholder if the file is missing or an unsupported format.
 fn render_image(path: &str, options: &str, ctx: &mut Ctx, out: &mut String) {
-    if let Some(idx) = ctx.media.resolve(path) {
+    // Inside a footnote a drawing would reference namespaces/relationships that
+    // footnotes.xml does not carry, corrupting the part — degrade to text there.
+    let resolved = if ctx.in_footnote {
+        None
+    } else {
+        ctx.media.resolve(path)
+    };
+    if let Some(idx) = resolved {
         let (rid, w, h) = {
             let m = &ctx.media.items[idx];
             (m.rid.clone(), m.width, m.height)
@@ -933,6 +955,7 @@ pub fn build_package(doc: &Document, base_dir: &Path, page: &PageGeometry) -> Pa
         labels: &doc.labels,
         footnote_id: 0,
         footnotes: Vec::new(),
+        in_footnote: false,
         figure: 0,
         table: 0,
         equation: 0,
@@ -1038,6 +1061,7 @@ fn render_footnotes_xml(ctx: &mut Ctx) -> String {
         "<w:r><w:continuationSeparator/></w:r></w:p></w:footnote>",
     ));
     let mut pending = std::mem::take(&mut ctx.footnotes);
+    ctx.in_footnote = true;
     while !pending.is_empty() {
         for (id, inlines) in &pending {
             s.push_str(&format!("<w:footnote w:id=\"{id}\">"));
@@ -1051,6 +1075,7 @@ fn render_footnotes_xml(ctx: &mut Ctx) -> String {
         }
         pending = std::mem::take(&mut ctx.footnotes); // notes nested inside notes
     }
+    ctx.in_footnote = false;
     s.push_str("</w:footnotes>");
     s
 }
@@ -1221,6 +1246,41 @@ mod tests {
     #[test]
     fn escapes_xml_special_chars() {
         assert_eq!(escape("a<b&c>\"d\""), "a&lt;b&amp;c&gt;&quot;d&quot;");
+    }
+
+    #[test]
+    fn escape_drops_xml_illegal_control_chars() {
+        // Control chars invalid in XML 1.0 must not survive into the output.
+        assert_eq!(escape("a\u{0C}b\u{08}c\u{1F}d"), "abcd");
+        // Tab/newline/carriage-return stay.
+        assert_eq!(escape("a\tb\nc\rd"), "a\tb\nc\rd");
+        assert_eq!(escape_text("x\u{0B}y"), "xy");
+    }
+
+    #[test]
+    fn footnote_image_degrades_to_placeholder_not_drawing() {
+        // An image inside a footnote must not emit a drawing (which would use
+        // namespaces/relationships footnotes.xml lacks); it degrades to text.
+        let doc = Document {
+            blocks: vec![Block::Paragraph {
+                inlines: vec![Inline::Footnote {
+                    inlines: vec![Inline::Image {
+                        path: "pic.png".into(),
+                        options: String::new(),
+                    }],
+                }],
+            }],
+            ..Default::default()
+        };
+        let pkg = build_package(&doc, std::path::Path::new("."), &PageGeometry::default());
+        let footnotes = pkg
+            .media
+            .iter()
+            .find(|p| p.part_name == "word/footnotes.xml")
+            .expect("footnotes part");
+        let xml = String::from_utf8(footnotes.data.clone()).unwrap();
+        assert!(xml.contains("[image: pic.png]"), "{xml}");
+        assert!(!xml.contains("<w:drawing>"), "{xml}");
     }
 
     #[test]
