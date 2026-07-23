@@ -1,3 +1,7 @@
+# Code-review notes: a dev-branch artifact, must not land on main (the release
+# branch). Kept on the dev PR only; drop before/at promotion to main.
+CoderReview/
+
 # Local config with real secrets (commit config.sample.toml instead)
 config.toml
 

@@ -1,10 +1,11 @@
-//! tex2word (Rust) — LaTeX → Microsoft Word (`.docx`).
+//! tex2word — LaTeX → Microsoft Word (`.docx`) with native OMML math.
 //!
 //! This crate ties the front-end (LaTeX → IR) and back-end (IR → OOXML) into a
-//! one-call pipeline, mirroring the Python `tex2word.pipeline` API. It is an
-//! early **vertical slice**: it proves the architecture end-to-end (a real,
-//! valid `.docx` from real LaTeX) while the feature surface is ported module by
-//! module — see `rust/ROADMAP.md`.
+//! one-call pipeline: [`convert_source`] / [`convert_file`] take LaTeX and
+//! return a real, valid `.docx` (headings, lists, tables, floats, citations,
+//! footnotes, cross-references, and math Word edits natively). The ZIP
+//! container, XML, and LaTeX→OMML engine are all hand-written, with no external
+//! crates. See the `ROADMAP.md` at the repository root for the feature surface.
 
 pub use tex2word_backend::PageGeometry;
 pub use tex2word_ir as ir;

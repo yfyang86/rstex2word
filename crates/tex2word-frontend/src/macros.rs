@@ -16,6 +16,12 @@ struct Macro {
 
 const MAX_DEPTH: usize = 32;
 
+/// Ceiling on the expanded output size (in chars). With `MAX_DEPTH` passes a
+/// self-referential "billion-laughs" macro chain could otherwise grow the text
+/// by up to 2^32; once expansion crosses this size it stops. No real document
+/// approaches it.
+const MAX_EXPANDED_LEN: usize = 8 * 1024 * 1024;
+
 /// Collect user macros and expand every call in `source`.
 pub fn expand_macros(source: &str) -> String {
     let (macros, stripped) = collect(source);
@@ -271,6 +277,12 @@ fn expand(source: &str, macros: &HashMap<String, Macro>, depth: usize) -> String
     let mut i = 0;
     let mut changed = false;
     while i < n {
+        // Bail out if expansion is running away (billion-laughs guard): copy the
+        // rest verbatim and stop, rather than keep doubling.
+        if out.len() > MAX_EXPANDED_LEN {
+            out.extend(&s[i..]);
+            return out;
+        }
         if s[i] == '\\' {
             let (name, after) = read_cs(&s, i);
             if let Some(m) = macros.get(&name) {

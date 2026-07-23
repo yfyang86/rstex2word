@@ -2,10 +2,15 @@
 name = "tex2word-latex"
 version.workspace = true
 edition.workspace = true
+rust-version.workspace = true
 license.workspace = true
 authors.workspace = true
 repository.workspace = true
-description = "IR -> LaTeX writer (round-trip) for tex2word"
+homepage.workspace = true
+keywords.workspace = true
+categories.workspace = true
+readme = "../../README.md"
+description = "tex2word IR -> LaTeX writer (round-trip)"
 
 [dependencies]
-tex2word-ir = { path = "../tex2word-ir" }
+tex2word-ir.workspace = true

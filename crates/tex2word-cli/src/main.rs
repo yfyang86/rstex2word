@@ -1,9 +1,11 @@
-//! `tex2word` CLI (Rust port, vertical slice).
+//! `tex2word` CLI — LaTeX → Word (`.docx`).
 //!
 //! Usage:
-//!   tex2word convert <input.tex> [-o <output.docx>] [--strict] [--page <p>]
-//!   tex2word latex <input.tex> [-o <output.tex>]
-//!   tex2word validate <file.docx>
+//! ```text
+//! tex2word convert <input.tex> [-o <output.docx>] [--strict] [--report] [--page letter|a4|legal]
+//! tex2word latex <input.tex> [-o <output.tex>]
+//! tex2word validate <file.docx>
+//! ```
 
 use std::path::PathBuf;
 use std::process::ExitCode;
