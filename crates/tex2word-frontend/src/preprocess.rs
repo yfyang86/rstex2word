@@ -230,7 +230,8 @@ pub fn strip_iffalse(source: &str) -> String {
 // \begin*{figure} (a common typo) -> \begin{figure*}
 lazy_re!(BEGINEND_STAR_RE, r"\\(begin|end)\*\s*\{([^}]*)\}");
 
-fn normalize_begin_star(source: &str) -> String {
+#[doc(hidden)]
+pub fn normalize_begin_star(source: &str) -> String {
     BEGINEND_STAR_RE.sub_fn(source, |m| {
         format!(
             "\\{}{{{}*}}",
@@ -321,7 +322,8 @@ fn extract_tikz_nodes(body: &str) -> Vec<(String, String)> {
 /// Recover content from the "cheatsheet" TikZ idiom: a `tikzpicture` of
 /// `\node{…minipage…}` content boxes plus a `\node[fancytitle]{Title}`, with
 /// no drawing. A `title`-styled node becomes a `\subsection*`.
-fn recover_tikz_boxes(source: &str) -> String {
+#[doc(hidden)]
+pub fn recover_tikz_boxes(source: &str) -> String {
     let title_re = re::compile("title", Flags::I);
     re::compile(r"\\begin\{tikzpicture\}(.*?)\\end\{tikzpicture\}", Flags::S).sub_fn(source, |m| {
         let body = m.group_str(1);
@@ -351,7 +353,8 @@ fn recover_tikz_boxes(source: &str) -> String {
 }
 
 /// Convert a plain-TeX `\halign` system inside `\[ … \]` into an `array`.
-fn rewrite_halign(source: &str) -> String {
+#[doc(hidden)]
+pub fn rewrite_halign(source: &str) -> String {
     fn to_array(inner: &str) -> String {
         let Some(h) = inner.find(r"\halign") else {
             return inner.to_string();
@@ -404,7 +407,8 @@ fn rewrite_halign(source: &str) -> String {
 
 /// Recover an Oxford-style problem-sheet title block from
 /// `\course`/`\sheetnumber`/`\oxfordterm`/`\sheettitle`.
-fn inject_exam_title(source: &str) -> String {
+#[doc(hidden)]
+pub fn inject_exam_title(source: &str) -> String {
     let val = |cmd: &str| -> String {
         re::search(&format!(r"\\{cmd}\s*\{{([^}}]*)\}}"), source)
             .map(|m| pystr::strip(m.group_str(1)).to_string())

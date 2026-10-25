@@ -95,6 +95,75 @@ pub fn parse_int(s: &str) -> Option<i64> {
     Some(if neg { -v } else { v })
 }
 
+/// `float(s)` for a string: surrounding whitespace, an optional sign,
+/// `inf`/`infinity`/`nan` (any case), or a decimal literal whose digits may be
+/// any Unicode decimal digits with single `_` separators between them.
+pub fn parse_float(s: &str) -> Option<f64> {
+    let t = strip(s);
+    let (sign, body) = match t.strip_prefix('-') {
+        Some(rest) => ("-", rest),
+        None => ("", t.strip_prefix('+').unwrap_or(t)),
+    };
+    let lower = body.to_ascii_lowercase();
+    if matches!(lower.as_str(), "inf" | "infinity" | "nan") {
+        return format!("{sign}{lower}").parse().ok();
+    }
+    // normalise digits (Unicode Nd -> ASCII), validating `_` placement
+    let chars: Vec<char> = body.chars().collect();
+    let mut norm = String::with_capacity(chars.len());
+    for (k, &c) in chars.iter().enumerate() {
+        if c == '_' {
+            let digit = |o: Option<&char>| o.is_some_and(|&c| decimal_value(c).is_some());
+            if !(k > 0 && digit(chars.get(k - 1)) && digit(chars.get(k + 1))) {
+                return None;
+            }
+            continue;
+        }
+        match decimal_value(c) {
+            Some(d) => norm.push(char::from_digit(d, 10).unwrap()),
+            None if matches!(c, '.' | 'e' | 'E' | '+' | '-') => norm.push(c),
+            None => return None,
+        }
+    }
+    // grammar: (digits [. [digits]] | . digits) [(e|E) [sign] digits]
+    let b = norm.as_bytes();
+    let mut i = 0;
+    let digits = |i: &mut usize| {
+        let s = *i;
+        while *i < b.len() && b[*i].is_ascii_digit() {
+            *i += 1;
+        }
+        *i - s
+    };
+    let int_len = digits(&mut i);
+    let mut frac_len = 0;
+    if i < b.len() && b[i] == b'.' {
+        i += 1;
+        frac_len = digits(&mut i);
+    }
+    if int_len + frac_len == 0 {
+        return None;
+    }
+    if i < b.len() && (b[i] == b'e' || b[i] == b'E') {
+        i += 1;
+        if i < b.len() && (b[i] == b'+' || b[i] == b'-') {
+            i += 1;
+        }
+        if digits(&mut i) == 0 {
+            return None;
+        }
+    }
+    if i != b.len() {
+        return None;
+    }
+    format!("{sign}{norm}").parse().ok()
+}
+
+/// Python's `round(x)` for a float: round half to even.
+pub fn round_half_even(x: f64) -> f64 {
+    x.round_ties_even()
+}
+
 /// `s.strip()`.
 pub fn strip(s: &str) -> &str {
     s.trim_matches(is_space)
@@ -215,5 +284,19 @@ mod tests {
         assert!(is_alnum('²') && is_alnum('\u{2167}') && is_word('_'));
         assert!(is_decimal('٣') && !is_decimal('²'), "Nd only");
         assert!(!is_word('-'));
+    }
+
+    #[test]
+    fn float_parsing_matches_python() {
+        assert_eq!(parse_float(" 1_000.5e-1 "), Some(100.05));
+        assert_eq!(parse_float("5."), Some(5.0));
+        assert_eq!(parse_float(".5"), Some(0.5));
+        assert_eq!(parse_float("-Infinity"), Some(f64::NEG_INFINITY));
+        assert_eq!(parse_float("٣"), Some(3.0));
+        for bad in ["", ".", "1__0", "_1", "1e", "0x10", "1.2.3", "e5", "in f"] {
+            assert_eq!(parse_float(bad), None, "{bad:?}");
+        }
+        assert_eq!(round_half_even(2.5), 2.0);
+        assert_eq!(round_half_even(3.5), 4.0);
     }
 }

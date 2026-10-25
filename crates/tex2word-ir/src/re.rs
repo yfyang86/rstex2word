@@ -903,8 +903,12 @@ impl<'s> Match<'s> {
     }
 
     /// `m.expand(template)`.
+    ///
+    /// Panics on an invalid template.
     pub fn expand(&self, template: &str) -> String {
-        expand_template(template, self)
+        let pieces = parse_template(template, self.len(), &self.names)
+            .unwrap_or_else(|e| panic!("template {template:?}: {e}"));
+        render_template(&pieces, self)
     }
 
     /// The subject string.
@@ -1092,8 +1096,24 @@ impl Regex {
     }
 
     /// `pattern.subn(repl, s, count)`.
+    ///
+    /// Panics on an invalid template (use [`Regex::try_subn`] for templates
+    /// built at runtime).
     pub fn subn(&self, repl: &str, s: &str, count: usize) -> (String, usize) {
-        self.subn_fn(s, count, |m| expand_template(repl, m))
+        self.try_subn(repl, s, count)
+            .unwrap_or_else(|e| panic!("re.sub template {repl:?}: {e}"))
+    }
+
+    /// `pattern.sub(repl, s)`, returning Python's `re.error` for an invalid
+    /// template instead of panicking.
+    pub fn try_sub(&self, repl: &str, s: &str) -> Result<String, Error> {
+        self.try_subn(repl, s, 0).map(|r| r.0)
+    }
+
+    /// `pattern.subn(repl, s, count)`, fallibly.
+    pub fn try_subn(&self, repl: &str, s: &str, count: usize) -> Result<(String, usize), Error> {
+        let pieces = parse_template(repl, self.ngroups, &self.names)?;
+        Ok(self.subn_fn(s, count, |m| render_template(&pieces, m)))
     }
 
     /// `pattern.sub(func, s)`.
@@ -1405,57 +1425,123 @@ impl Vm<'_, '_> {
 // --------------------------------------------------------------------------- //
 
 /// Expand a `re.sub` replacement template against a match.
-fn expand_template(t: &str, m: &Match) -> String {
+/// One piece of a parsed `re.sub` template.
+enum Piece {
+    Lit(String),
+    Group(usize),
+}
+
+/// Parse a replacement template exactly as Python's `re._parser.parse_template`
+/// does, including its errors (`bad escape \q`, `invalid group reference`).
+fn parse_template(t: &str, ngroups: usize, names: &[(String, usize)]) -> Result<Vec<Piece>, Error> {
     let chars: Vec<char> = t.chars().collect();
-    let mut out = String::new();
+    let mut out: Vec<Piece> = Vec::new();
+    let mut lit = String::new();
     let mut i = 0;
+    let is_oct = |c: char| ('0'..='7').contains(&c);
+    let group_ref = |n: usize, lit: &mut String, out: &mut Vec<Piece>| -> Result<(), Error> {
+        if n > ngroups {
+            return Err(Error(format!("invalid group reference {n}")));
+        }
+        if !lit.is_empty() {
+            out.push(Piece::Lit(std::mem::take(lit)));
+        }
+        out.push(Piece::Group(n));
+        Ok(())
+    };
     while i < chars.len() {
         let c = chars[i];
-        if c != '\\' || i + 1 >= chars.len() {
-            out.push(c);
-            i += 1;
+        i += 1;
+        if c != '\\' {
+            lit.push(c);
             continue;
         }
-        let e = chars[i + 1];
-        i += 2;
+        let Some(&e) = chars.get(i) else {
+            return Err(Error("bad escape (end of pattern)".into()));
+        };
+        i += 1;
         match e {
-            'n' => out.push('\n'),
-            't' => out.push('\t'),
-            'r' => out.push('\r'),
-            'f' => out.push('\x0c'),
-            'v' => out.push('\x0b'),
-            'a' => out.push('\x07'),
-            'b' => out.push('\x08'),
-            '\\' => out.push('\\'),
-            'g' if chars.get(i) == Some(&'<') => {
-                let end = chars[i..].iter().position(|&c| c == '>').map(|p| i + p);
-                match end {
-                    Some(end) => {
-                        let name: String = chars[i + 1..end].iter().collect();
-                        let text = match name.parse::<usize>() {
-                            Ok(n) => m.group(n),
-                            Err(_) => m.name(&name),
-                        };
-                        out.push_str(text.unwrap_or(""));
-                        i = end + 1;
+            'g' => {
+                if chars.get(i) != Some(&'<') {
+                    return Err(Error("missing <".into()));
+                }
+                let Some(end) = chars[i + 1..].iter().position(|&c| c == '>').map(|p| i + 1 + p) else {
+                    return Err(Error("missing group name".into()));
+                };
+                let name: String = chars[i + 1..end].iter().collect();
+                i = end + 1;
+                if name.is_empty() {
+                    return Err(Error("missing group name".into()));
+                }
+                let n = if name.chars().all(|c| c.is_ascii_digit()) {
+                    name.parse::<usize>().map_err(|_| Error(format!("invalid group reference {name}")))?
+                } else {
+                    match names.iter().find(|(k, _)| *k == name) {
+                        Some(&(_, n)) => n,
+                        None => return Err(Error(format!("unknown group name '{name}'"))),
                     }
-                    None => out.push_str("\\g"),
+                };
+                group_ref(n, &mut lit, &mut out)?;
+            }
+            '0' => {
+                let mut v = 0u32;
+                let mut k = 0;
+                while k < 2 && chars.get(i).is_some_and(|&c| is_oct(c)) {
+                    v = v * 8 + chars[i].to_digit(8).unwrap();
+                    i += 1;
+                    k += 1;
+                }
+                lit.push(char::from_u32(v).unwrap());
+            }
+            '1'..='9' => {
+                let d = e.to_digit(10).unwrap();
+                match chars.get(i).copied() {
+                    Some(d2) if d2.is_ascii_digit() => {
+                        if is_oct(e) && is_oct(d2) && chars.get(i + 1).is_some_and(|&c| is_oct(c)) {
+                            let v = d * 64 + d2.to_digit(8).unwrap() * 8 + chars[i + 1].to_digit(8).unwrap();
+                            i += 2;
+                            if v > 0o377 {
+                                return Err(Error(format!("octal escape value \\{e}{d2}{} outside of range 0-0o377", chars[i - 1])));
+                            }
+                            lit.push(char::from_u32(v).unwrap());
+                        } else {
+                            i += 1;
+                            group_ref((d * 10 + d2.to_digit(10).unwrap()) as usize, &mut lit, &mut out)?;
+                        }
+                    }
+                    _ => group_ref(d as usize, &mut lit, &mut out)?,
                 }
             }
-            '0' => out.push('\0'),
-            d if d.is_ascii_digit() => {
-                let mut n = d.to_digit(10).unwrap() as usize;
-                if let Some(d2) = chars.get(i).and_then(|c| c.to_digit(10)) {
-                    n = n * 10 + d2 as usize;
-                    i += 1;
-                }
-                out.push_str(m.group(n).unwrap_or(""));
+            'n' => lit.push('\n'),
+            't' => lit.push('\t'),
+            'r' => lit.push('\r'),
+            'f' => lit.push('\x0c'),
+            'v' => lit.push('\x0b'),
+            'a' => lit.push('\x07'),
+            'b' => lit.push('\x08'),
+            '\\' => lit.push('\\'),
+            other if other.is_ascii_alphabetic() => {
+                return Err(Error(format!("bad escape \\{other}")));
             }
             // other escapes (e.g. "\&") keep the backslash
             other => {
-                out.push('\\');
-                out.push(other);
+                lit.push('\\');
+                lit.push(other);
             }
+        }
+    }
+    if !lit.is_empty() {
+        out.push(Piece::Lit(lit));
+    }
+    Ok(out)
+}
+
+fn render_template(pieces: &[Piece], m: &Match) -> String {
+    let mut out = String::new();
+    for p in pieces {
+        match p {
+            Piece::Lit(s) => out.push_str(s),
+            Piece::Group(n) => out.push_str(m.group(*n).unwrap_or("")),
         }
     }
     out
@@ -1585,6 +1671,11 @@ mod tests {
         assert_eq!(Regex::new("a").sub(r"\&", "a"), "\\&");
         // r"\\verb" -> backslash + verb
         assert_eq!(Regex::new(r"\\verb\*").sub(r"\\verb", "\\verb*|x|"), "\\verb|x|");
+        // Python raises on unknown letter escapes and bad group references
+        assert!(Regex::new("a").try_sub(r"{\mathcal}", "a").is_err());
+        assert_eq!(Regex::new("a").try_sub(r"{\alpha}", "a").unwrap(), "{\x07lpha}");
+        assert!(Regex::new("a").try_sub(r"\1", "a").is_err());
+        assert_eq!(Regex::new("a").try_sub(r"\101\0x", "a").unwrap(), "A\0x");
     }
 
     #[test]

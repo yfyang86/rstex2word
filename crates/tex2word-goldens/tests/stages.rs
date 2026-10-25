@@ -52,6 +52,30 @@ fn frontend_stages_match_python() {
         let pre_want = want("pre").unwrap();
         if pre != pre_want {
             failures.push(format!("{id} [preprocess] {}", first_diff(&pre_want, &pre)));
+            continue;
+        }
+        // a null stage means "unchanged from the previous stage"
+        let stage = |k: &str, prev: &str| want(k).unwrap_or_else(|| prev.to_string());
+
+        let exp = tex2word_frontend::macros::expand_macros(&pre, &m.base_dir);
+        let exp_want = stage("exp", &pre_want);
+        if exp != exp_want {
+            failures.push(format!("{id} [expand_macros] {}", first_diff(&exp_want, &exp)));
+            continue;
+        }
+
+        let tikz = tex2word_frontend::preprocess::replace_inline_tikz(&exp);
+        let tikz_want = stage("tikz", &exp_want);
+        if tikz != tikz_want {
+            failures.push(format!("{id} [replace_inline_tikz] {}", first_diff(&tikz_want, &tikz)));
+            continue;
+        }
+
+        let norm = tex2word_frontend::preprocess::normalize_spacing_and_icons(&tikz);
+        let norm_want = stage("norm", &tikz_want);
+        if norm != norm_want {
+            failures.push(format!("{id} [normalize_spacing_and_icons] {}", first_diff(&norm_want, &norm)));
+            continue;
         }
     }
     assert!(n > 600, "only {n} stage goldens");
