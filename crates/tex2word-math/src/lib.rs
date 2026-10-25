@@ -3,6 +3,7 @@
 //! and the per-node fallback cascade.
 
 pub mod cascade;
+pub mod imagemath;
 pub mod latex_math;
 pub mod omml;
 pub mod symbols;

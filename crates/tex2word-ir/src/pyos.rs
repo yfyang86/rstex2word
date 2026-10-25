@@ -207,6 +207,47 @@ pub fn today_text() -> String {
     format!("{} {}, {}", MONTHS[(m - 1) as usize], d, y)
 }
 
+/// `datetime.fromtimestamp(secs, UTC).isoformat()` for whole seconds:
+/// `YYYY-MM-DDTHH:MM:SS+00:00`.
+pub fn utc_isoformat(secs: i64) -> String {
+    let (y, m, d) = civil_from_days(secs.div_euclid(86400));
+    let t = secs.rem_euclid(86400);
+    format!("{y:04}-{m:02}-{d:02}T{:02}:{:02}:{:02}+00:00", t / 3600, t / 60 % 60, t % 60)
+}
+
+/// The current Unix time in whole seconds.
+pub fn now_secs() -> i64 {
+    std::time::SystemTime::now()
+        .duration_since(std::time::UNIX_EPOCH)
+        .map_or(0, |d| d.as_secs() as i64)
+}
+
+/// Python's `str(OSError)` for an I/O error on `path`:
+/// `[Errno 2] No such file or directory: 'path'`.
+pub fn os_error_str(e: &std::io::Error, path: &str) -> String {
+    let repr = crate::json::py_str_repr(path);
+    match e.raw_os_error() {
+        Some(n) => {
+            let msg = match n {
+                1 => "Operation not permitted",
+                2 => "No such file or directory",
+                5 => "Input/output error",
+                13 => "Permission denied",
+                17 => "File exists",
+                20 => "Not a directory",
+                21 => "Is a directory",
+                24 => "Too many open files",
+                28 => "No space left on device",
+                30 => "Read-only file system",
+                36 => "File name too long",
+                _ => return format!("[Errno {n}] {e}: {repr}"),
+            };
+            format!("[Errno {n}] {msg}: {repr}")
+        }
+        None => e.to_string(),
+    }
+}
+
 /// Days since 1970-01-01 -> (year, month, day) in the proleptic Gregorian
 /// calendar (Howard Hinnant's algorithm).
 fn civil_from_days(z: i64) -> (i64, i64, i64) {
@@ -231,6 +272,8 @@ mod tests {
         assert_eq!(civil_from_days(20455), (2026, 1, 2));
         assert_eq!(civil_from_days(0), (1970, 1, 1));
         assert_eq!(civil_from_days(-1), (1969, 12, 31));
+        assert_eq!(utc_isoformat(1767312000), "2026-01-02T00:00:00+00:00");
+        assert_eq!(utc_isoformat(1767312000 + 3723), "2026-01-02T01:02:03+00:00");
     }
 
     #[test]

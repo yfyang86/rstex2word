@@ -7,18 +7,21 @@ name = "tex2word"
 version = "2.0.0"
 dependencies = [
  "tex2word-backend",
+ "tex2word-bib",
  "tex2word-frontend",
  "tex2word-ir",
- "tex2word-latex",
- "tex2word-validate",
+ "tex2word-math",
+ "tex2word-ooxml",
 ]
 
 [[package]]
 name = "tex2word-backend"
 version = "2.0.0"
 dependencies = [
+ "tex2word-bib",
  "tex2word-ir",
  "tex2word-math",
+ "tex2word-ooxml",
 ]
 
 [[package]]
@@ -45,16 +48,19 @@ dependencies = [
  "tex2word-ir",
  "tex2word-latexwalker",
  "tex2word-math",
+ "tex2word-ooxml",
 ]
 
 [[package]]
 name = "tex2word-goldens"
 version = "2.0.0"
 dependencies = [
+ "tex2word",
  "tex2word-bib",
  "tex2word-frontend",
  "tex2word-ir",
  "tex2word-latexwalker",
+ "tex2word-math",
  "tex2word-ooxml",
 ]
 
@@ -81,6 +87,7 @@ name = "tex2word-math"
 version = "2.0.0"
 dependencies = [
  "tex2word-ir",
+ "tex2word-ooxml",
 ]
 
 [[package]]
