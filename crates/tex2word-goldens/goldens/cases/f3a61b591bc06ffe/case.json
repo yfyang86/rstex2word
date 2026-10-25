@@ -1,0 +1,13 @@
+{
+"api": "convert_source",
+"args": {
+"embed_manifest": true,
+"source": "\\begin{document}\\tableofcontents\\listoffigures\\listoftables\\section{Intro}\\label{s:i} Hi.\\end{document}"
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_toc.py::test_toc_manifest_round_trip_exact",
+"tests/test_toc.py::test_toc_to_latex"
+]
+}

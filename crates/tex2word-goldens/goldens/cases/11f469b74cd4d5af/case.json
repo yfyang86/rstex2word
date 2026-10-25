@@ -1,0 +1,13 @@
+{
+"api": "convert_source",
+"args": {
+"embed_manifest": false,
+"source": "\\begin{document}x\\end{document}"
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_color.py::test_highlight_none_not_read_as_highlight",
+"tests/test_latex_writer.py::test_to_latex_prefers_manifest_then_reader"
+]
+}

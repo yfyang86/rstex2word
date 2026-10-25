@@ -1,0 +1,11 @@
+{
+"api": "convert_source",
+"args": {
+"source": "\\begin{document}\\section{S}Text.\\end{document}"
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_running_head.py::test_no_running_head_no_header_part"
+]
+}

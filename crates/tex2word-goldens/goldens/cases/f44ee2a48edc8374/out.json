@@ -1,0 +1,1 @@
+{"value":"\\documentclass{article}\n\\usepackage[utf8]{inputenc}\n\\usepackage{xeCJK}\n\\setmainfont{Times New Roman}\n\\setCJKmainfont{SimSun}\n\\setCJKsansfont{SimHei}\n\\usepackage{amsmath}\n\\usepackage{amssymb}\n\\begin{document}\n测试中文字体。Formula $\\sum E=m c^2$.\n\n\\section{中文标题 Heading}\n\n更多中文内容。\n\\end{document}"}

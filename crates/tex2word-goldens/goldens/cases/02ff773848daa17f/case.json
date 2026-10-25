@@ -1,0 +1,11 @@
+{
+"api": "parse_document",
+"args": {
+"source": "H\\textsubscript{2}O"
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_inline_extras.py::test_subscript_parses_with_argument"
+]
+}

@@ -1,0 +1,23 @@
+{
+"api": "convert_source",
+"args": {
+"citation_mode": "static",
+"columns": 1,
+"csl": null,
+"embed_manifest": false,
+"frontend": "pure",
+"language": null,
+"math_image_fallback": false,
+"number_by_section": false,
+"reference_doc": null,
+"source": "\\begin{document}$\\frac{a}{b}$\\end{document}"
+},
+"base_dir": "base",
+"files": {
+"base/one.tex": "41f1a3e7d68b6f19b15b594a0aab2c0a34f5db49f0cd50735927f132ba19dab8",
+"base/two.tex": "f8335530787fb677c8de5f8397f5bbb2e56b82c322dad1f6430a2e06437c3b4f"
+},
+"tests": [
+"tests/test_coverage_cli.py::test_coverage_cli_writes_dashboard"
+]
+}

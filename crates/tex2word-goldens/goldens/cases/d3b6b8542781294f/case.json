@@ -1,0 +1,11 @@
+{
+"api": "parse_document",
+"args": {
+"source": "\n\\documentclass{article}\n\\newenvironment{ul}{\\begin{itemize}}{\\end{itemize}}\n\\AtBeginDocument{\\providecommand\\X{{x}}}\n\\begin{document}\n\\section{Intro}\nReal body text here.\n\\end{document}\n"
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_robustness.py::test_preamble_with_newenvironment_does_not_break_body"
+]
+}

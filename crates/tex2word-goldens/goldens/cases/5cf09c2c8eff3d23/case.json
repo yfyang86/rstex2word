@@ -1,0 +1,14 @@
+{
+"api": "validate_docx",
+"args": {
+"docx_bytes": {
+"@blob": "4b55ab242b8ac08bb6754b655544a2f288c4316a3003b7e0f15a20c7fbc15eed"
+}
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_benchmark.py::test_benchmark_over_corpus",
+"tests/test_benchmark.py::test_benchmark_report_is_json_serialisable_and_formats"
+]
+}

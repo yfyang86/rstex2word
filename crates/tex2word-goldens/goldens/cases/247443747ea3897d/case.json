@@ -1,0 +1,11 @@
+{
+"api": "convert_source",
+"args": {
+"source": "\\begin{document}\\begin{lstlisting}[language=R, caption={\\textbf{Code}}]\nq <- 1\n\\end{lstlisting}\ntail prose.\n\\end{document}"
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_listing_dollar.py::test_listing_options_with_doubly_braced_value_not_leaked"
+]
+}

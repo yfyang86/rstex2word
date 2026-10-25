@@ -1,0 +1,12 @@
+{
+"api": "convert_source",
+"args": {
+"language": "zh-CN",
+"source": "\\documentclass{article}\\begin{document}中文测试。\\end{document}"
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_language.py::test_cjk_lang_sets_eastasia"
+]
+}

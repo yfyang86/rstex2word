@@ -1,0 +1,11 @@
+{
+"api": "convert_source",
+"args": {
+"source": "\\begin{document}\\section{S}\\textbf{\\large \\sout{x}} \\textcolor{red}{y} \\hl{z}\\begin{tabular}{ll}\\cellcolor{blue}a & b \\\\\\end{tabular}\\end{document}"
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_validate.py::test_real_output_passes_content_model"
+]
+}

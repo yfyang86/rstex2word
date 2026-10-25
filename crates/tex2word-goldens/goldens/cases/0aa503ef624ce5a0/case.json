@@ -1,0 +1,13 @@
+{
+"api": "read_docx",
+"args": {
+"docx_bytes": {
+"@blob": "7b90c60fc918cfd3db81c1d875677e6b7babdbbb656f8e4175c5d11b787fb940"
+}
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_sdt.py::test_reader_recovers_bibliography_block"
+]
+}

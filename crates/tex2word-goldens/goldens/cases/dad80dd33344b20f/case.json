@@ -1,0 +1,11 @@
+{
+"api": "convert_source",
+"args": {
+"source": "\\documentclass{article}\\begin{document}\\begin{figure}\\begin{minipage}[t]{0.48\\textwidth}Left panel\\end{minipage}\\hfill\\begin{minipage}[t]{0.48\\textwidth}Right panel\\end{minipage}\\caption{Two panels}\\end{figure}\\end{document}"
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_images.py::test_side_by_side_minipages_become_a_layout_row"
+]
+}

@@ -1,0 +1,11 @@
+{
+"api": "convert_source",
+"args": {
+"source": "\\begin{document}\\begin{tabular}{ll}\\multicolumn{2}{c}{Head}\\\\ a & b\\\\\\end{tabular}\\end{document}"
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_backend.py::test_table_gridspan_for_multicolumn"
+]
+}

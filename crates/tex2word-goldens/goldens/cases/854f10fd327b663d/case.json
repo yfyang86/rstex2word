@@ -1,0 +1,11 @@
+{
+"api": "expand_macros",
+"args": {
+"source": "\\def\\x{42}value is \\x."
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_frontend.py::test_def_expansion"
+]
+}

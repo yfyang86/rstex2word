@@ -1,0 +1,23 @@
+{
+"api": "convert_source",
+"args": {
+"citation_mode": "static",
+"columns": 1,
+"csl": null,
+"embed_manifest": true,
+"frontend": "pure",
+"language": null,
+"math_image_fallback": false,
+"number_by_section": false,
+"reference_doc": null,
+"source": "\\begin{document}\\citet{e1905} showed.\\bibliographystyle{plainnat}\\bibliography{refs}\\end{document}"
+},
+"base_dir": "base",
+"files": {
+"base/c.tex": "3903db55d9bbaceb34a24a7698d602864cebe4961998ffd11b61daaebc6d49c5",
+"base/refs.bib": "e90eee6530e4172c3102f9253ed49f1f0c1b64b5873459b98253c89a986e8e4d"
+},
+"tests": [
+"tests/test_bib.py::test_citet_author_year"
+]
+}

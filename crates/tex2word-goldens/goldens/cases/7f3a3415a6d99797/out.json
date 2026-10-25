@@ -1,0 +1,1 @@
+{"value":"\\documentclass{article}\n\\usepackage[utf8]{inputenc}\n\\begin{document}\nbefore \n% comment: [Bob] a note\nafter\n\\end{document}"}

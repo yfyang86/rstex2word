@@ -1,0 +1,11 @@
+{
+"api": "parse_document",
+"args": {
+"source": "\\begin{document}\\begin{tabular}{cc}\\begin{tabular}[c]{@{}c@{}}Line1\\\\ Line2\\end{tabular} & B \\\\\\end{tabular}\\end{document}"
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_tables.py::test_single_column_nested_tabular_flattens_to_linebreaks"
+]
+}

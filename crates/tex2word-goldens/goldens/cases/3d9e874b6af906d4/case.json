@@ -1,0 +1,11 @@
+{
+"api": "convert_source",
+"args": {
+"source": "\\documentclass{article}\\newtheorem{THM}{\\textbf{Theorem}}\\begin{document}\\begin{THM}Body.\\end{THM}\\end{document}"
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_newtheorem.py::test_newtheorem_wrapped_display_title"
+]
+}

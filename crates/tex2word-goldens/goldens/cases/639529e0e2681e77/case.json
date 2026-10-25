@@ -1,0 +1,11 @@
+{
+"api": "convert_source",
+"args": {
+"source": "\\begin{document}\\section{S}x\\end{document}"
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_reference_doc.py::test_no_reference_uses_builtin_letter"
+]
+}

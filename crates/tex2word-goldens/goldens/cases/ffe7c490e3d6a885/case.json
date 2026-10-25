@@ -1,0 +1,13 @@
+{
+"api": "to_latex",
+"args": {
+"docx_bytes": {
+"@blob": "f86189758078a32892400505d0bf1881ee540241ba1477f90f090bc47f649520"
+}
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_docx_reader.py::test_theorem_round_trips_through_foreign_read"
+]
+}

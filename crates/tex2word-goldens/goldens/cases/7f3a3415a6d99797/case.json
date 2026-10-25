@@ -1,0 +1,54 @@
+{
+"api": "write_latex",
+"args": {
+"doc": {
+"@ir": {
+"@type": "Document",
+"blocks": [
+{
+"@type": "Paragraph",
+"align": null,
+"inlines": [
+{
+"@type": "Text",
+"value": "before "
+},
+{
+"@type": "Comment",
+"author": "Bob",
+"text": "a note"
+},
+{
+"@type": "Text",
+"value": "after"
+}
+]
+}
+],
+"book": false,
+"labels": {},
+"meta": {
+"@type": "DocumentMeta",
+"abstract": null,
+"affiliations": [],
+"authors": [],
+"cjk_main_font": null,
+"cjk_mono_font": null,
+"cjk_sans_font": null,
+"columns": 1,
+"date": null,
+"keywords": null,
+"language": null,
+"main_font": null,
+"running_head": null,
+"title": null
+}
+}
+}
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_comments.py::test_comment_does_not_comment_out_following_text"
+]
+}

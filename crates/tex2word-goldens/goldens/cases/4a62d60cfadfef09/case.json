@@ -1,0 +1,18 @@
+{
+"api": "parse_document",
+"args": {
+"source": "\\documentclass{article}\n\\begin{document}\n\\section{Tables and lists}\n\n\\begin{enumerate}\n\\item First point with math $a^2 + b^2 = c^2$.\n\\item Second point.\n  \\begin{itemize}\n  \\item nested bullet\n  \\item another\n  \\end{itemize}\n\\end{enumerate}\n\n\\begin{table}\n\\begin{tabular}{lcc}\n\\toprule\nMethod & Speed & Quality \\\\\n\\midrule\n\\multicolumn{3}{c}{Baselines} \\\\\nPandoc & Fast & Medium \\\\\nGrindEQ & Slow & High \\\\\n\\bottomrule\n\\end{tabular}\n\\caption{Comparison.}\\label{tab:cmp}\n\\end{table}\n\nAs Table~\\ref{tab:cmp} shows, results vary.\n\n\\begin{quote}\nA quoted remark about conversion fidelity.\n\\end{quote}\n\\end{document}\n"
+},
+"base_dir": "base",
+"files": {
+"base/article.tex": "87624905f9cf28a555c592a7da4a62217e21c24302073c29651cc5c86fbdeac2",
+"base/features.tex": "d5dbc6cc5d5380d6a5559a55e0a44e844e9e16414ee66a837b9025a136fcfc2b",
+"base/longtable.tex": "cf5f7571135886dcd4623ab1a9ac79144f2a9b3d742f04b7c935a66cc20cdd5e",
+"base/macros.tex": "e8dc1859d18e565ab7f382cab75c0d7c2f3be4a958f6148cbe55c8d0bc14ffb0",
+"base/refs.bib": "8512b28a11946c1e708c6e3c1f29cdc25a6fb1e4a713f87d40366a8a78975e44",
+"base/tables.tex": "07b80cd35ce9917f1787c680911acd3a7afee17c204264a9534d2bb374ff73d4"
+},
+"tests": [
+"tests/test_corpus_harness.py::test_corpus_latex_roundtrip_preserves_structure[tables.tex]"
+]
+}

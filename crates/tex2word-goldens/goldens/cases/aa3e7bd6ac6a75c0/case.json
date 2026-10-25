@@ -1,0 +1,12 @@
+{
+"api": "convert_source",
+"args": {
+"embed_manifest": false,
+"source": "\\begin{document}\\begin{itemize}\\item a\\begin{itemize}\\item b\\end{itemize}\\end{itemize}\\end{document}"
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_docx_reader.py::test_reads_nested_list"
+]
+}

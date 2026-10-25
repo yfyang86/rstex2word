@@ -1,0 +1,13 @@
+{
+"api": "to_latex",
+"args": {
+"docx_bytes": {
+"@blob": "0f0817ab5dae9d25cc787a7d004edfeb113bd9d17053e4fbde94b16e3ff3e407"
+}
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_cjk.py::test_fonts_round_trip_to_latex"
+]
+}

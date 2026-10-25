@@ -1,0 +1,11 @@
+{
+"api": "convert_source",
+"args": {
+"source": "\\begin{document}Code \\mintinline{c}{int x;} done.\\end{document}"
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_lstinline.py::test_mintinline_brace_form"
+]
+}

@@ -1,0 +1,15 @@
+{
+"api": "parse_document",
+"args": {
+"source": "\n\\title{Sample}\n\\author{Ada Lovelace}\n\\begin{document}\n\\maketitle\n\\section{Introduction}\\label{sec:intro}\nHello \\textbf{world}, math $x^2$ and \\ref{eq:e}.\n\n\\begin{equation}\\label{eq:e}\nE = mc^2\n\\end{equation}\n\n\\begin{itemize}\n\\item First\n\\item Second\n\\end{itemize}\n\\end{document}\n"
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_frontend.py::test_block_structure",
+"tests/test_frontend.py::test_equation_label_and_numbered",
+"tests/test_frontend.py::test_inline_emphasis_and_math",
+"tests/test_frontend.py::test_parses_title_and_authors",
+"tests/test_frontend.py::test_section_label_attached"
+]
+}

@@ -1,0 +1,11 @@
+{
+"api": "parse_document",
+"args": {
+"source": "E=mc\\textsuperscript{2}"
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_inline_extras.py::test_superscript_parses_with_argument"
+]
+}

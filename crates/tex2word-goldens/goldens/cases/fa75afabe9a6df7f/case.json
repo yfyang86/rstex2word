@@ -1,0 +1,11 @@
+{
+"api": "convert_source",
+"args": {
+"source": "\\documentclass{article}\\usepackage{xeCJK}\\setCJKmainfont{SimSun}\\begin{document}中文。\\end{document}"
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_language.py::test_cjk_font_without_lang_defaults_eastasia"
+]
+}

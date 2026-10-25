@@ -1,0 +1,13 @@
+{
+"api": "convert_source",
+"args": {
+"source": "\\begin{document}\\verbatiminput{notes.txt}\\end{document}"
+},
+"base_dir": "base",
+"files": {
+"base/notes.txt": "e9024f1a07d29d52ad3aa5e1a18e94db1f3a9fd32b89e39d47c472cd99071e13"
+},
+"tests": [
+"tests/test_lstinputlisting.py::test_verbatiminput_embeds_file"
+]
+}

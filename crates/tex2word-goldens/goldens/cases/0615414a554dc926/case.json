@@ -1,0 +1,11 @@
+{
+"api": "convert_source",
+"args": {
+"source": "\\begin{document}\\begin{enumerate}\\item\\begin{enumerate}\\item a\\item b\\end{enumerate}\\item\\begin{enumerate}\\item c\\end{enumerate}\\end{enumerate}\\end{document}"
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_lists.py::test_item_leading_with_sublist_still_numbered"
+]
+}

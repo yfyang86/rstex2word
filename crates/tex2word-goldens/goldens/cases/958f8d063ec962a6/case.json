@@ -1,0 +1,13 @@
+{
+"api": "convert_source",
+"args": {
+"source": "\\documentclass{article}\\usepackage{graphicx}\\begin{document}\\begin{figure}\\includegraphics{x.png}\\caption{Only}\\end{figure}\\end{document}"
+},
+"base_dir": "base",
+"files": {
+"base/x.png": "30692217bc8d4c812a60d2f0c6da22a88160e1e00e715f18d6f9626d09f3ee08"
+},
+"tests": [
+"tests/test_images.py::test_single_image_figure_unchanged"
+]
+}

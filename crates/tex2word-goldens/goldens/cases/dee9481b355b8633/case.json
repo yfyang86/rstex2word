@@ -1,0 +1,13 @@
+{
+"api": "read_docx",
+"args": {
+"docx_bytes": {
+"@blob": "130211941a23ba761b196869b1a78466dec57ac530c5029eb6e98a727af87696"
+}
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_docx_reader.py::test_reads_hyperlink_field"
+]
+}

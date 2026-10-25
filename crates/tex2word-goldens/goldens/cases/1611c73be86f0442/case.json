@@ -1,0 +1,11 @@
+{
+"api": "convert_source",
+"args": {
+"source": "\\definecolor{NavyDark}{HTML}{1F3864}\\definecolor{NavyLight}{HTML}{DCE4F2}\\newmdenv[backgroundcolor=NavyLight,linecolor=NavyDark]{positionbox}\\begin{document}\\begin{positionbox}Reserve the word.\\end{positionbox}\\end{document}"
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_box_environments.py::test_newmdenv_callout_renders_as_shaded_box"
+]
+}

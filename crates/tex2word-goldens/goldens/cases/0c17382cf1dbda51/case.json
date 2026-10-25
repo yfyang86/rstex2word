@@ -1,0 +1,11 @@
+{
+"api": "parse_document",
+"args": {
+"source": "\\begin{document}\\begin{algorithm}\\begin{algorithmic}\\STATE $x \\gets 0$ \\COMMENT{init}\\end{algorithmic}\\end{algorithm}\\end{document}"
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_algorithms.py::test_comment_attaches_to_line_not_separate"
+]
+}

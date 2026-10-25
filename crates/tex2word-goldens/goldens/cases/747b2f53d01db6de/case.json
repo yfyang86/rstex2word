@@ -1,0 +1,14 @@
+{
+"api": "expand_macros",
+"args": {
+"source": "\\usepackage{style} $\\EE[X]$ and $\\cM$"
+},
+"base_dir": "base",
+"files": {
+"base/main.tex": "e2df32183b9ef98853b92d97d0cfd5cd326c9870202717d6a8579eb94e09b7fd",
+"base/style.sty": "d0eb9945622880b1a39140782a712661de664233dc4ff4803ba571f0dc5a755a"
+},
+"tests": [
+"tests/test_uat_arxiv.py::test_recursive_stylesheet_does_not_hang"
+]
+}

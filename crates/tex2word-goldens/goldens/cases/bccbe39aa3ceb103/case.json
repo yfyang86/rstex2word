@@ -1,0 +1,11 @@
+{
+"api": "convert_source",
+"args": {
+"source": "\n\\documentclass{article}\n\\newacronym{cpu}{CPU}{Central Processing Unit}\n\\newacronym{gpu}{GPU}{Graphics Processing Unit}\n\\begin{document}\n\\gls{cpu} and \\gls{gpu}.\n\\printglossaries\n\\end{document}\n"
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_printglossary.py::test_printglossaries_emits_description_list"
+]
+}

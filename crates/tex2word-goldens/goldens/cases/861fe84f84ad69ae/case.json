@@ -1,0 +1,12 @@
+{
+"api": "convert_source",
+"args": {
+"source": "\\begin{document}The proof is short.\\todo{expand this}\\end{document}"
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_comments.py::test_todo_becomes_a_word_comment",
+"tests/test_comments.py::test_todo_round_trips_to_a_comment_line_without_duplication"
+]
+}

@@ -1,0 +1,11 @@
+{
+"api": "convert_source",
+"args": {
+"source": "\\definecolor{bg}{HTML}{EEEFF9}\\newtcolorbox{inp}{colback=bg,colframe=black,boxrule=0pt}\\begin{document}\\begin{inp}x\\end{inp}\\end{document}"
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_box_environments.py::test_boxrule_zero_hides_the_frame"
+]
+}

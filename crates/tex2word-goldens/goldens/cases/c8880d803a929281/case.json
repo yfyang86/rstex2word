@@ -1,0 +1,11 @@
+{
+"api": "convert_source",
+"args": {
+"source": "\\begin{document}X\\marginpar[L]{R text}.\\end{document}"
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_marginpar.py::test_marginpar_optional_left_arg_uses_default_text"
+]
+}

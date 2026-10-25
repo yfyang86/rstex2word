@@ -1,0 +1,14 @@
+{
+"api": "convert_source",
+"args": {
+"source": "\n\\documentclass{article}\n\\newtheorem{thm}{Theorem}\n\\newtheorem{mylem}[thm]{My Lemma}\n\\newtheorem*{rmk}{Remark}\n\\begin{document}\n\\begin{thm}\\label{t1}A statement.\\end{thm}\n\\begin{mylem}[Euclid]A titled lemma.\\end{mylem}\n\\begin{rmk}An unnumbered remark.\\end{rmk}\n\\end{document}\n"
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_newtheorem.py::test_custom_theorem_body_and_valid",
+"tests/test_newtheorem.py::test_custom_theorem_display_names",
+"tests/test_newtheorem.py::test_custom_theorem_numbering",
+"tests/test_newtheorem.py::test_custom_theorem_optional_title"
+]
+}

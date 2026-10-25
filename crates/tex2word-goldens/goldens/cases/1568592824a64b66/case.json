@@ -1,0 +1,16 @@
+{
+"api": "convert_source",
+"args": {
+"reference_doc": {
+"@file": "@arg/bad.docx"
+},
+"source": "\\begin{document}\\section{S}x\\end{document}"
+},
+"base_dir": ".",
+"files": {
+"@arg/bad.docx": "8da00e37aced09866a4898b611e147adc39aeed327a3f7f6f5af4f06386f81a8"
+},
+"tests": [
+"tests/test_reference_doc.py::test_invalid_reference_warns_and_falls_back"
+]
+}

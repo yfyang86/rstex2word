@@ -1,0 +1,11 @@
+{
+"api": "parse_document",
+"args": {
+"source": "\\begin{document}30\\textdegree{} \\textbullet{} \\texttrademark\\end{document}"
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_enquote_symbols.py::test_extra_text_symbols"
+]
+}

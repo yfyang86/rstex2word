@@ -47,3 +47,6 @@ dist/
 Thumbs.db
 ehthumbs.db
 Desktop.ini
+
+# Python bytecode from the golden-capture tooling
+tools/**/__pycache__/

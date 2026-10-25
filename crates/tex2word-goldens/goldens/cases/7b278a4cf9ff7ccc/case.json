@@ -1,0 +1,12 @@
+{
+"api": "convert_source",
+"args": {
+"source": "\\begin{document}\\begin{figure}\\centering\\begin{tikzpicture}\\draw[->] (0,0) -- (2,0) node[right] {$x$};\\end{tikzpicture}\\caption{示意图 caption text}\\label{fig:demo}\\end{figure}\\end{document}"
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_tikz_render.py::test_figure_never_shows_placeholder_text",
+"tests/test_tikz_render.py::test_tikz_figure_keeps_caption"
+]
+}

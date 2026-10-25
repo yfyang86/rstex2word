@@ -1,0 +1,22 @@
+{
+"api": "convert_source",
+"args": {
+"citation_mode": "static",
+"columns": 1,
+"csl": null,
+"embed_manifest": true,
+"frontend": "pure",
+"language": null,
+"math_image_fallback": false,
+"number_by_section": false,
+"reference_doc": null,
+"source": "\\begin{document}\\includegraphics{nope.png}\\end{document}"
+},
+"base_dir": "base",
+"files": {
+"base/main.tex": "23b5eec839359312f795922bcac51737de6c2968df3c833c665f9bd0da26ad76"
+},
+"tests": [
+"tests/test_images.py::test_missing_image_degrades_gracefully"
+]
+}

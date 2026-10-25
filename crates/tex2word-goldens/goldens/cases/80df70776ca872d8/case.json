@@ -1,0 +1,11 @@
+{
+"api": "convert_source",
+"args": {
+"source": "\\begin{document}\\textbf{B}\\end{document}"
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_font_reset.py::test_textbf_textit_still_work"
+]
+}

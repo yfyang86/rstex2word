@@ -1,0 +1,12 @@
+{
+"api": "convert_source",
+"args": {
+"embed_manifest": false,
+"source": "\\begin{document}\\begin{theorem}[Pythagoras]For a right triangle $a^2+b^2=c^2$.\\end{theorem}\\end{document}"
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_docx_reader.py::test_reader_recovers_theorem_with_title_and_math"
+]
+}

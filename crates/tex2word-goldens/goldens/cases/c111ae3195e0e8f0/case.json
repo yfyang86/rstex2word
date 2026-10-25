@@ -1,0 +1,12 @@
+{
+"api": "convert_source",
+"args": {
+"embed_manifest": true,
+"source": "\\newacronym{ml}{ML}{machine learning}\\newacronym{ai}{AI}{artificial intelligence}\\begin{document}\\acrfull{ml}\\end{document}"
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_glossaries.py::test_acronym_round_trips_as_text"
+]
+}

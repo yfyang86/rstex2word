@@ -1,0 +1,13 @@
+{
+"api": "convert_source",
+"args": {
+"source": "\\documentclass{book}\\begin{document}\\input{inc.tex}\\end{document}"
+},
+"base_dir": "base",
+"files": {
+"base/inc.tex": "8ba0d98ba6a7c2e34448cd5ec08e57084e007bc4f8bf464d9b6df8cfcc1520e9"
+},
+"tests": [
+"tests/test_listing_dollar.py::test_listing_via_input_is_normalized"
+]
+}

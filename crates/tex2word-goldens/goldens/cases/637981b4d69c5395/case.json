@@ -1,0 +1,18 @@
+{
+"api": "parse_document",
+"args": {
+"source": "\\documentclass{article}\n\\title{On the Conversion of \\LaTeX{} to Word}\n\\author{A. Researcher}\n\\date{2026}\n\n\\newcommand{\\R}{\\mathbb{R}}\n\\newcommand{\\norm}[1]{\\left\\| #1 \\right\\|}\n\n\\begin{document}\n\\maketitle\n\n\\begin{abstract}\nWe present a converter producing native OMML and live fields.\n\\end{abstract}\n\n\\section{Introduction}\\label{sec:intro}\nConsider a function $f : \\R^n \\to \\R$ with gradient $\\nabla f$.\\footnote{The\ngradient is the vector of partial derivatives.}\nAs shown in \\eqref{eq:energy}, mass and energy are equivalent.\n\n\\begin{equation}\\label{eq:energy}\nE = mc^2\n\\end{equation}\n\n\\begin{theorem}[Triangle inequality]\\label{thm:tri}\nFor all $x, y$, $\\norm{x + y} \\leq \\norm{x} + \\norm{y}$.\n\\end{theorem}\n\n\\begin{proof}\nExpand the inner product and apply Cauchy--Schwarz.\n\\end{proof}\n\nThe norm $\\norm{x}$ satisfies Theorem \\ref{thm:tri}.\n\n\\subsection{A multi-line derivation}\n\\begin{align}\n(a+b)^2 &= a^2 + 2ab + b^2 \\\\\n        &= a^2 + b^2 + 2ab\n\\end{align}\n\n\\section{Results}\\label{sec:results}\nSee Section \\ref{sec:intro} for context, building on \\cite{einstein1905}\nand the typesetting of \\cite{knuth1984}. A summation:\n\\[\n\\sum_{i=1}^{n} i = \\frac{n(n+1)}{2}.\n\\]\n\n\\begin{itemize}\n\\item Editable equations.\n\\item Native styles.\n\\item \\textbf{Live} cross-references.\n\\end{itemize}\n\n\\begin{table}\n\\begin{tabular}{lc}\n\\toprule\nFeature & Status \\\\\n\\midrule\n\\multicolumn{2}{c}{Core} \\\\\nMath & OMML \\\\\n\\bottomrule\n\\end{tabular}\n\\caption{Feature matrix.}\\label{tab:features}\n\\end{table}\n\n\\bibliographystyle{plain}\n\\bibliography{refs}\n\n\\end{document}\n"
+},
+"base_dir": "base",
+"files": {
+"base/article.tex": "87624905f9cf28a555c592a7da4a62217e21c24302073c29651cc5c86fbdeac2",
+"base/features.tex": "d5dbc6cc5d5380d6a5559a55e0a44e844e9e16414ee66a837b9025a136fcfc2b",
+"base/longtable.tex": "cf5f7571135886dcd4623ab1a9ac79144f2a9b3d742f04b7c935a66cc20cdd5e",
+"base/macros.tex": "e8dc1859d18e565ab7f382cab75c0d7c2f3be4a958f6148cbe55c8d0bc14ffb0",
+"base/refs.bib": "8512b28a11946c1e708c6e3c1f29cdc25a6fb1e4a713f87d40366a8a78975e44",
+"base/tables.tex": "07b80cd35ce9917f1787c680911acd3a7afee17c204264a9534d2bb374ff73d4"
+},
+"tests": [
+"tests/test_corpus_harness.py::test_corpus_latex_roundtrip_preserves_structure[article.tex]"
+]
+}

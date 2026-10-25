@@ -1,0 +1,11 @@
+{
+"api": "convert_source",
+"args": {
+"source": "\\begin{document}\\epigraph{Q}{Source Name}\\end{document}"
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_epigraph.py::test_epigraph_source_is_italic"
+]
+}

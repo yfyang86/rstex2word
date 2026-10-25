@@ -1,0 +1,11 @@
+{
+"api": "convert_source",
+"args": {
+"source": "\\begin{document}\\begin{tabularx}{\\textwidth}{lc} a & b \\\\ \\end{tabularx}\\end{document}"
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_tabular_variants.py::test_variants_valid"
+]
+}

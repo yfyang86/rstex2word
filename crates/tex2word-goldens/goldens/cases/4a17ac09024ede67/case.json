@@ -1,0 +1,11 @@
+{
+"api": "convert_source",
+"args": {
+"source": "\\begin{document}Before \\lstinputlisting{nope.py} after.\\end{document}"
+},
+"base_dir": "base",
+"files": {},
+"tests": [
+"tests/test_lstinputlisting.py::test_missing_listing_file_is_dropped"
+]
+}

@@ -1,0 +1,13 @@
+{
+"api": "read_docx",
+"args": {
+"docx_bytes": {
+"@blob": "0f47ff477c33367bef74deb910ed812ddeb921c274b0dfa8bd0585ab0bec58f1"
+}
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_docx_reader.py::test_reader_recovers_quote"
+]
+}

@@ -1,0 +1,11 @@
+{
+"api": "convert_source",
+"args": {
+"source": "\\begin{document}\\(\\overrightarrow{AB}\\)\\end{document}"
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_math_arrows_mod.py::test_overrightarrow_is_an_accent_over_base"
+]
+}

@@ -1,0 +1,14 @@
+{
+"api": "convert_source",
+"args": {
+"source": "\\begin{document}\\includegraphics{a.png}\\includegraphics{b.png}\\includegraphics{a.png}\\end{document}"
+},
+"base_dir": "base",
+"files": {
+"base/a.png": "b8ed59af7376306b7ec77b2b07606fe3851f920d69b41baa910e5bc2aad765c4",
+"base/b.png": "eebcecfac73261f6460d79b3619a6fe02663602ec46dd7facff7f790a2b3a451"
+},
+"tests": [
+"tests/test_caching.py::test_distinct_images_get_distinct_parts"
+]
+}

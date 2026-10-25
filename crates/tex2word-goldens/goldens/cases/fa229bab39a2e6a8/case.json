@@ -1,0 +1,13 @@
+{
+"api": "validate_docx",
+"args": {
+"docx_bytes": {
+"@blob": "a0c8285b4def68b1f78dbaebc9f93640dec55dba5c4b7b25d3b8f153cd7da202"
+}
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_validate.py::test_real_output_passes_content_model"
+]
+}

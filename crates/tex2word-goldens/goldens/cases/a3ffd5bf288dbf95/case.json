@@ -1,0 +1,11 @@
+{
+"api": "convert_source",
+"args": {
+"source": "\\begin{document}\\section*{A}\\end{document}"
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_sections.py::test_backend_omits_numbering_for_starred"
+]
+}

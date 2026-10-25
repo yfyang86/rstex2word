@@ -1,0 +1,11 @@
+{
+"api": "expand_macros",
+"args": {
+"source": "\\NewDocumentCommand{\\note}{s o m}{\\IfBooleanTF{#1}{!}{}\\IfValueTF{#2}{(#2) }{}#3}\\note*[p.5]{body}"
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_xparse.py::test_combined_star_optional_mandatory"
+]
+}

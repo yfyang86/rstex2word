@@ -1,0 +1,13 @@
+{
+"api": "validate_docx",
+"args": {
+"docx_bytes": {
+"@blob": "3914e0dbc347e7fa008a606e49f4d62d2bcf543070c2236bda762ae59271f7d0"
+}
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_hyperref.py::test_unresolved_hyperref_warns_but_is_valid"
+]
+}

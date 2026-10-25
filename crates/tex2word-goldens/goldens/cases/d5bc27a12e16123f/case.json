@@ -1,0 +1,11 @@
+{
+"api": "parse_document",
+"args": {
+"source": "\\begin{document}\\begin{tabular}{cl}\\multirow{3}*{Beauty} & Recall \\\\ & NDCG \\\\ & MRR \\\\\\end{tabular}\\end{document}"
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_tables.py::test_multirow_unbraced_star_width"
+]
+}

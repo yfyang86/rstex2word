@@ -1,0 +1,11 @@
+{
+"api": "convert_source",
+"args": {
+"source": "\\begin{document}\\AddToShipoutPicture*{\\put(0,0){\\includegraphics[width=\\paperwidth]{cover.png}}}正文内容。\\end{document}"
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_structural_drops.py::test_addtoshipoutpicture_cover_dropped"
+]
+}

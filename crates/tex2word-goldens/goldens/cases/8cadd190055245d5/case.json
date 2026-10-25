@@ -1,0 +1,11 @@
+{
+"api": "parse_document",
+"args": {
+"source": "\\begin{document}\\begin{tabular}{lll}A & B & C \\\\ \\cline{1-2} 1 & 2 & 3 \\\\\\end{tabular}\\end{document}"
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_tables.py::test_cline_partial_border"
+]
+}

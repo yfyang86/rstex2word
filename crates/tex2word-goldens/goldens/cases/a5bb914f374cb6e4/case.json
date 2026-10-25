@@ -1,0 +1,12 @@
+{
+"api": "convert_source",
+"args": {
+"embed_manifest": true,
+"source": "\\begin{document}\\SI{9.81}{\\meter\\per\\second\\squared}\\end{document}"
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_siunitx.py::test_siunitx_round_trips_as_text"
+]
+}

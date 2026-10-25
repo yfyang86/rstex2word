@@ -1,0 +1,13 @@
+{
+"api": "read_docx",
+"args": {
+"docx_bytes": {
+"@blob": "eaa14a7ef854ba9064b0bb312aabc282dcb679aa7b50487644dd98ed1fb5e195"
+}
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_word_native.py::test_foreign_inline_equation_recovers_as_math"
+]
+}

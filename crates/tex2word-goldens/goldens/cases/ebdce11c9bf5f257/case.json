@@ -1,0 +1,13 @@
+{
+"api": "to_latex",
+"args": {
+"docx_bytes": {
+"@blob": "b6c97a6edba089f540bbdd24fa09e84e13458b309d3530109144c26e8fb46099"
+}
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_alignment.py::test_alignment_roundtrips"
+]
+}

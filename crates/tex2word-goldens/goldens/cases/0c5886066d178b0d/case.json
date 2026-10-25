@@ -1,0 +1,25 @@
+{
+"api": "convert_source",
+"args": {
+"citation_mode": "static",
+"columns": 1,
+"csl": null,
+"embed_manifest": false,
+"frontend": "pure",
+"language": null,
+"math_image_fallback": false,
+"number_by_section": false,
+"reference_doc": null,
+"source": "\\begin{document}Body \\cite{e1905}.\\bibliographystyle{plain}\\bibliography{refs}\\end{document}"
+},
+"base_dir": "base",
+"files": {
+"base/c.tex": "24ad2f312d6e715ad7fe0ae409da4cf20b4b13d9ebfb27375f09fef82ffc99bc",
+"base/refs.bib": "59747822199b3324054ac8f48f8efa6da0fd408c17b92aa2a1b5ae2a164cfd75"
+},
+"tests": [
+"tests/test_sdt.py::test_bibliography_is_wrapped_in_a_tagged_sdt",
+"tests/test_sdt.py::test_foreign_bibliography_text_survives_roundtrip",
+"tests/test_sdt.py::test_reader_recovers_bibliography_block"
+]
+}

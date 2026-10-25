@@ -1,0 +1,1 @@
+{"value":"\\documentclass{article}\n\\usepackage[utf8]{inputenc}\n\\begin{document}\nBody [1].\n\n\\begin{thebibliography}{1}\n\\bibitem{e1905} Einstein, A. (1905). On X.\n\\end{thebibliography}\n\\end{document}"}

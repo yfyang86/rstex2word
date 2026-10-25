@@ -1,0 +1,607 @@
+{
+  "generated": "2026-01-02T00:00:00+00:00",
+  "ir": {
+    "@type": "Document",
+    "blocks": [
+      {
+        "@type": "Paragraph",
+        "align": null,
+        "inlines": [
+          {
+            "@type": "Text",
+            "value": "Education"
+          }
+        ]
+      },
+      {
+        "@type": "Paragraph",
+        "align": null,
+        "inlines": [
+          {
+            "@type": "Emphasis",
+            "inlines": [
+              {
+                "@type": "Text",
+                "value": "University of Otherplace"
+              }
+            ],
+            "kind_": "bold"
+          },
+          {
+            "@type": "Text",
+            "value": " "
+          },
+          {
+            "@type": "Emphasis",
+            "inlines": [
+              {
+                "@type": "Text",
+                "value": "August 2017 - May 2019"
+              }
+            ],
+            "kind_": "italic"
+          },
+          {
+            "@type": "Text",
+            "value": " "
+          },
+          {
+            "@type": "LineBreak"
+          },
+          {
+            "@type": "Text",
+            "value": " Master of Science in Physics Overall GPA: 4.0/4.0"
+          }
+        ]
+      },
+      {
+        "@type": "Paragraph",
+        "align": null,
+        "inlines": [
+          {
+            "@type": "Emphasis",
+            "inlines": [
+              {
+                "@type": "Text",
+                "value": "University of Someplace"
+              }
+            ],
+            "kind_": "bold"
+          },
+          {
+            "@type": "Text",
+            "value": " "
+          },
+          {
+            "@type": "Emphasis",
+            "inlines": [
+              {
+                "@type": "Text",
+                "value": "August 2013 - May 2017"
+              }
+            ],
+            "kind_": "italic"
+          },
+          {
+            "@type": "Text",
+            "value": " "
+          },
+          {
+            "@type": "LineBreak"
+          },
+          {
+            "@type": "Text",
+            "value": " Bachelor of Arts in Physics, "
+          },
+          {
+            "@type": "Emphasis",
+            "inlines": [
+              {
+                "@type": "Text",
+                "value": "summa cum laude"
+              }
+            ],
+            "kind_": "italic"
+          },
+          {
+            "@type": "Text",
+            "value": " Overall GPA: 4.0/4.0"
+          }
+        ]
+      },
+      {
+        "@type": "Paragraph",
+        "align": null,
+        "inlines": [
+          {
+            "@type": "Text",
+            "value": "Research Experience"
+          }
+        ]
+      },
+      {
+        "@type": "ItemList",
+        "description": false,
+        "items": [
+          {
+            "@type": "ListItem",
+            "blocks": [
+              {
+                "@type": "Paragraph",
+                "align": null,
+                "inlines": [
+                  {
+                    "@type": "Text",
+                    "value": "Principal Investigator: Some Person, PhD."
+                  }
+                ]
+              }
+            ],
+            "label": null,
+            "term": null
+          },
+          {
+            "@type": "ListItem",
+            "blocks": [
+              {
+                "@type": "Paragraph",
+                "align": null,
+                "inlines": [
+                  {
+                    "@type": "Text",
+                    "value": "Solved big problems and published a lot of papers."
+                  }
+                ]
+              }
+            ],
+            "label": null,
+            "term": null
+          }
+        ],
+        "ordered": false
+      },
+      {
+        "@type": "ItemList",
+        "description": false,
+        "items": [
+          {
+            "@type": "ListItem",
+            "blocks": [
+              {
+                "@type": "Paragraph",
+                "align": null,
+                "inlines": [
+                  {
+                    "@type": "Text",
+                    "value": "Principal Investigator: Some Person, PhD."
+                  }
+                ]
+              }
+            ],
+            "label": null,
+            "term": null
+          },
+          {
+            "@type": "ListItem",
+            "blocks": [
+              {
+                "@type": "Paragraph",
+                "align": null,
+                "inlines": [
+                  {
+                    "@type": "Text",
+                    "value": "Solved big problems and published a lot of papers."
+                  }
+                ]
+              }
+            ],
+            "label": null,
+            "term": null
+          }
+        ],
+        "ordered": false
+      },
+      {
+        "@type": "Paragraph",
+        "align": null,
+        "inlines": [
+          {
+            "@type": "Text",
+            "value": "Work Experience"
+          }
+        ]
+      },
+      {
+        "@type": "ItemList",
+        "description": false,
+        "items": [
+          {
+            "@type": "ListItem",
+            "blocks": [
+              {
+                "@type": "Paragraph",
+                "align": null,
+                "inlines": [
+                  {
+                    "@type": "Text",
+                    "value": "Recitation TA for Physics 101 - General Physics: Electromagnetism, Optics, and Modern Physics (Spring 2017 - Professor Nice)."
+                  }
+                ]
+              }
+            ],
+            "label": null,
+            "term": null
+          }
+        ],
+        "ordered": false
+      },
+      {
+        "@type": "ItemList",
+        "description": false,
+        "items": [
+          {
+            "@type": "ListItem",
+            "blocks": [
+              {
+                "@type": "Paragraph",
+                "align": null,
+                "inlines": [
+                  {
+                    "@type": "Text",
+                    "value": "Recitation TA for Physics 101 - General Physics: Electromagnetism, Optics, and Modern Physics (Spring 2017 - Professor Nice)."
+                  }
+                ]
+              }
+            ],
+            "label": null,
+            "term": null
+          }
+        ],
+        "ordered": false
+      },
+      {
+        "@type": "Paragraph",
+        "align": null,
+        "inlines": [
+          {
+            "@type": "Text",
+            "value": "Technical Strengths"
+          }
+        ]
+      },
+      {
+        "@type": "Table",
+        "booktabs": false,
+        "caption": null,
+        "caption_numbered": true,
+        "colspec": [
+          "left",
+          "center",
+          "left"
+        ],
+        "colwidths": [
+          null,
+          null,
+          null
+        ],
+        "label": null,
+        "layout": false,
+        "rows": [
+          {
+            "@type": "TableRow",
+            "cells": [
+              {
+                "@type": "TableCell",
+                "align": "left",
+                "blocks": [
+                  {
+                    "@type": "Paragraph",
+                    "align": null,
+                    "inlines": [
+                      {
+                        "@type": "Text",
+                        "value": "Computer Languages"
+                      }
+                    ]
+                  }
+                ],
+                "border_bottom": false,
+                "colspan": 1,
+                "rowspan": 1,
+                "shade": null
+              },
+              {
+                "@type": "TableCell",
+                "align": "center",
+                "blocks": [
+                  {
+                    "@type": "Paragraph",
+                    "align": null,
+                    "inlines": [
+                      {
+                        "@type": "Text",
+                        "value": "Java, C, Python (NumPy, SciPy, CVXPY), MATLAB, Julia"
+                      }
+                    ]
+                  }
+                ],
+                "border_bottom": false,
+                "colspan": 1,
+                "rowspan": 1,
+                "shade": null
+              }
+            ],
+            "is_header": false,
+            "rule_above": false,
+            "rule_below": false
+          },
+          {
+            "@type": "TableRow",
+            "cells": [
+              {
+                "@type": "TableCell",
+                "align": "left",
+                "blocks": [
+                  {
+                    "@type": "Paragraph",
+                    "align": null,
+                    "inlines": [
+                      {
+                        "@type": "Text",
+                        "value": "Software & Tools"
+                      }
+                    ]
+                  }
+                ],
+                "border_bottom": false,
+                "colspan": 1,
+                "rowspan": 1,
+                "shade": null
+              },
+              {
+                "@type": "TableCell",
+                "align": "center",
+                "blocks": [
+                  {
+                    "@type": "Paragraph",
+                    "align": null,
+                    "inlines": [
+                      {
+                        "@type": "Text",
+                        "value": "AutoCAD, Adobe Illustrator"
+                      }
+                    ]
+                  }
+                ],
+                "border_bottom": false,
+                "colspan": 1,
+                "rowspan": 1,
+                "shade": null
+              }
+            ],
+            "is_header": false,
+            "rule_above": false,
+            "rule_below": false
+          }
+        ],
+        "spanning": false
+      },
+      {
+        "@type": "ItemList",
+        "description": false,
+        "items": [
+          {
+            "@type": "ListItem",
+            "blocks": [
+              {
+                "@type": "Paragraph",
+                "align": null,
+                "inlines": [
+                  {
+                    "@type": "Text",
+                    "value": "Achievement 1"
+                  }
+                ]
+              }
+            ],
+            "label": null,
+            "term": null
+          },
+          {
+            "@type": "ListItem",
+            "blocks": [
+              {
+                "@type": "Paragraph",
+                "align": null,
+                "inlines": [
+                  {
+                    "@type": "Text",
+                    "value": "Achievement 2"
+                  }
+                ]
+              }
+            ],
+            "label": null,
+            "term": null
+          },
+          {
+            "@type": "ListItem",
+            "blocks": [
+              {
+                "@type": "Paragraph",
+                "align": null,
+                "inlines": [
+                  {
+                    "@type": "Text",
+                    "value": "Achievement 3"
+                  }
+                ]
+              }
+            ],
+            "label": null,
+            "term": null
+          }
+        ],
+        "ordered": false
+      },
+      {
+        "@type": "ItemList",
+        "description": false,
+        "items": [
+          {
+            "@type": "ListItem",
+            "blocks": [
+              {
+                "@type": "Paragraph",
+                "align": null,
+                "inlines": [
+                  {
+                    "@type": "Emphasis",
+                    "inlines": [
+                      {
+                        "@type": "Text",
+                        "value": "John Smith"
+                      }
+                    ],
+                    "kind_": "bold"
+                  },
+                  {
+                    "@type": "Text",
+                    "value": " (Professor of Physics)"
+                  }
+                ]
+              }
+            ],
+            "label": null,
+            "term": null
+          },
+          {
+            "@type": "ListItem",
+            "blocks": [
+              {
+                "@type": "Paragraph",
+                "align": null,
+                "inlines": [
+                  {
+                    "@type": "Text",
+                    "value": "Department of Physics and Astronomy"
+                  },
+                  {
+                    "@type": "LineBreak"
+                  },
+                  {
+                    "@type": "Text",
+                    "value": " University of Brilliant"
+                  },
+                  {
+                    "@type": "LineBreak"
+                  },
+                  {
+                    "@type": "Text",
+                    "value": " Philadelphia, PA 12345"
+                  },
+                  {
+                    "@type": "LineBreak"
+                  },
+                  {
+                    "@type": "Text",
+                    "value": " person1@physics.university.edu (123-456-7891)"
+                  }
+                ]
+              }
+            ],
+            "label": null,
+            "term": null
+          },
+          {
+            "@type": "ListItem",
+            "blocks": [
+              {
+                "@type": "Paragraph",
+                "align": null,
+                "inlines": [
+                  {
+                    "@type": "Emphasis",
+                    "inlines": [
+                      {
+                        "@type": "Text",
+                        "value": "James Smith"
+                      }
+                    ],
+                    "kind_": "bold"
+                  },
+                  {
+                    "@type": "Text",
+                    "value": " (Senior Lecturer)"
+                  }
+                ]
+              }
+            ],
+            "label": null,
+            "term": null
+          },
+          {
+            "@type": "ListItem",
+            "blocks": [
+              {
+                "@type": "Paragraph",
+                "align": null,
+                "inlines": [
+                  {
+                    "@type": "Text",
+                    "value": "Department of Physics and Astronomy"
+                  },
+                  {
+                    "@type": "LineBreak"
+                  },
+                  {
+                    "@type": "Text",
+                    "value": " University of Genius"
+                  },
+                  {
+                    "@type": "LineBreak"
+                  },
+                  {
+                    "@type": "Text",
+                    "value": " Philadelphia, PA 12345"
+                  },
+                  {
+                    "@type": "LineBreak"
+                  },
+                  {
+                    "@type": "Text",
+                    "value": " person22@physics.university.edu (123-456-7892)"
+                  }
+                ]
+              }
+            ],
+            "label": null,
+            "term": null
+          }
+        ],
+        "ordered": false
+      }
+    ],
+    "book": false,
+    "labels": {},
+    "meta": {
+      "@type": "DocumentMeta",
+      "abstract": null,
+      "affiliations": [],
+      "authors": [],
+      "cjk_main_font": null,
+      "cjk_mono_font": null,
+      "cjk_sans_font": null,
+      "columns": 1,
+      "date": null,
+      "keywords": null,
+      "language": null,
+      "main_font": null,
+      "running_head": null,
+      "title": null
+    }
+  },
+  "labels": {},
+  "manifest_version": 1,
+  "tool": "tex2word"
+}

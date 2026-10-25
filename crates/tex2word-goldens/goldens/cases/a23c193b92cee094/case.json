@@ -1,0 +1,12 @@
+{
+"api": "convert_source",
+"args": {
+"source": "\n\\newglossaryentry{maths}{name={mathematics},description={the study of numbers}}\n\\newglossaryentry{set}{name=set,description={a collection}}\n\\begin{document}\nWe study \\gls{maths}. A \\gls{set} and several \\glspl{set}. \\Gls{maths} is fun.\n\\end{document}\n"
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_glossary_entry.py::test_glossary_plural_and_capitalisation",
+"tests/test_glossary_entry.py::test_glossary_term_expands_to_name"
+]
+}

@@ -1,0 +1,13 @@
+{
+"api": "read_docx",
+"args": {
+"docx_bytes": {
+"@blob": "ea9fa632f70bd641e4cd069955b3d7fd8084e9b5463289a862bdddbe69e236bb"
+}
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_docx_reader.py::test_reader_recovers_description_list"
+]
+}

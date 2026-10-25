@@ -1,0 +1,11 @@
+{
+"api": "parse_document",
+"args": {
+"source": "\\newtheorem{theorem}{Theorem}\\begin{document}\\begin{theorem}[T]$a=b$\\end{theorem}\\begin{tabular}{ll}\\toprule a & b\\\\\\midrule c & d\\\\\\bottomrule\\end{tabular}\\end{document}"
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_latex_writer.py::test_roundtrip_table_and_theorem"
+]
+}

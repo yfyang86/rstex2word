@@ -1,0 +1,11 @@
+{
+"api": "convert_source",
+"args": {
+"source": "\\begin{document}No notes here.\\end{document}"
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_footnotes.py::test_no_footnotes_part_when_absent"
+]
+}

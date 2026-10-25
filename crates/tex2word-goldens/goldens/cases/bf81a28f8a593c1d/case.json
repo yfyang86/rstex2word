@@ -1,0 +1,12 @@
+{
+"api": "convert_source",
+"args": {
+"embed_manifest": false,
+"source": "\\begin{document}\\textcolor{red}{x}\\end{document}"
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_color.py::test_color_survives_foreign_docx_read"
+]
+}

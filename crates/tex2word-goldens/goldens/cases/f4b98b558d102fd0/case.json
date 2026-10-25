@@ -1,0 +1,12 @@
+{
+"api": "convert_source",
+"args": {
+"source": "\\begin{document}\\section{A}\\subsection{B}\\end{document}"
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_backend.py::test_headings_get_styles",
+"tests/test_sections.py::test_backend_applies_heading_numbering"
+]
+}

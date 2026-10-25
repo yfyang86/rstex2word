@@ -1,0 +1,23 @@
+{
+"api": "convert_source",
+"args": {
+"citation_mode": "static",
+"columns": 1,
+"csl": null,
+"embed_manifest": true,
+"frontend": "pure",
+"language": null,
+"math_image_fallback": false,
+"number_by_section": false,
+"reference_doc": null,
+"source": "\\begin{document}\\includegraphics{pic.png}\\end{document}"
+},
+"base_dir": "base",
+"files": {
+"base/main.tex": "29ac8e536e0e744ea969eddebebfa7bee5ca92094ea625748e12a0ce4547c54d",
+"base/pic.png": "f2bd9e9c0b02324a558424863b28d6d088a08d4ea04a2d9f57d08f660468e128"
+},
+"tests": [
+"tests/test_images.py::test_alt_text_on_docpr"
+]
+}

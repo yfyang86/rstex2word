@@ -1,0 +1,12 @@
+{
+"api": "convert_source",
+"args": {
+"source": "\n\\begin{document}\n\\section{Alpha}\n\\begin{equation}\\label{eq:1}E=mc^2\\end{equation}\n\\section{Beta}\n\\begin{equation}\\label{eq:2}a=b\\end{equation}\nSee \\eqref{eq:1} and \\eqref{eq:2}.\n\\end{document}\n"
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_section_numbering.py::test_flat_numbering_is_default",
+"tests/test_section_numbering.py::test_output_valid_in_both_modes"
+]
+}

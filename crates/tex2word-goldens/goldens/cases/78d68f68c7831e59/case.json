@@ -1,0 +1,11 @@
+{
+"api": "convert_source",
+"args": {
+"source": "\\begin{document}\\cite{ghost}\\bibliography{none}\\end{document}"
+},
+"base_dir": "/tmp",
+"files": {},
+"tests": [
+"tests/test_bib.py::test_unknown_cite_key_warns"
+]
+}

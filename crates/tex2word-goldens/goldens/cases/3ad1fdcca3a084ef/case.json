@@ -1,0 +1,11 @@
+{
+"api": "convert_source",
+"args": {
+"source": "\\begin{document}\\section{Intro}\\label{s:i}Text \\textbf{bold} and $x^2$ and \\eqref{eq:e}.\\begin{equation}\\label{eq:e}E=mc^2\\end{equation}\\begin{itemize}\\item one\\item two\\end{itemize}\\end{document}"
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_latex_writer.py::test_roundtrip_block_structure"
+]
+}

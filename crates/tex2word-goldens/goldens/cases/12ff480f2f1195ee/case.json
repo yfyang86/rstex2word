@@ -1,0 +1,11 @@
+{
+"api": "convert_source",
+"args": {
+"source": "\\begin{document}\\begin{reallymadeup}content\\end{reallymadeup}\\end{document}"
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_transparent_envs.py::test_truly_unknown_env_still_warns"
+]
+}

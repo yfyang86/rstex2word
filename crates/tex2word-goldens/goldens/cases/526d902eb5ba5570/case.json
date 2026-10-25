@@ -1,0 +1,11 @@
+{
+"api": "parse_document",
+"args": {
+"source": "\\newacronym{ml}{ML}{machine learning}\\newacronym{ai}{AI}{artificial intelligence}\\begin{document}\\gls{ml} and \\gls{ml}\\end{document}"
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_glossaries.py::test_gls_first_use_is_full_then_short"
+]
+}

@@ -1,0 +1,11 @@
+{
+"api": "convert_source",
+"args": {
+"source": "\\begin{document}\\begin{tabular}{ll}outer & \\begin{tabular}{cc} a & b \\\\ c & d \\end{tabular} \\\\\\end{tabular}\\end{document}"
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_tables.py::test_nested_table_renders_and_is_valid"
+]
+}

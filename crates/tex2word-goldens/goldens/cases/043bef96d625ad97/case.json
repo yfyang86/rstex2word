@@ -1,0 +1,11 @@
+{
+"api": "convert_source",
+"args": {
+"source": "\\documentclass{article}\\usepackage{amssymb}\\DeclareMathOperator*{\\Exp}{\\mathbb{E}}\\newcommand\\AL[1]{\\begin{align}#1\\end{align}}\\begin{document}\\AL{Q &= \\Exp_{x}[f(x)]}\\end{document}"
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_declaremathoperator.py::test_operator_body_contains_braced_group"
+]
+}

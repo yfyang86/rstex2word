@@ -1,0 +1,13 @@
+{
+"api": "read_docx",
+"args": {
+"docx_bytes": {
+"@blob": "41de7f682bb61a6fa1a4a9e96d812c4226ea2791e1e4edc2a5e63d889fa31770"
+}
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_docx_reader.py::test_reads_zotero_citation"
+]
+}

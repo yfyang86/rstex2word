@@ -1,0 +1,12 @@
+{
+"api": "convert_source",
+"args": {
+"language": "en-US",
+"source": "\\documentclass{article}\\begin{document}Hello.\\end{document}"
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_language.py::test_latin_lang_has_no_eastasia"
+]
+}

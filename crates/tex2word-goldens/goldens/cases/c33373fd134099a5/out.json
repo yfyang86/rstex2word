@@ -1,0 +1,1 @@
+{"value":"\\documentclass{article}\n\\usepackage[utf8]{inputenc}\n\\begin{document}\n\\begin{table}\n\\centering\n\\begin{tabular}{ll}\na & b \\\\\n\\end{tabular}\n\\caption*{Unnumbered}\n\\end{table}\n\nUnnumbered\n\\end{document}"}

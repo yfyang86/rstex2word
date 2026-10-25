@@ -1,0 +1,11 @@
+{
+"api": "convert_source",
+"args": {
+"source": "\\documentclass{article}\\usepackage{xeCJK}\\setCJKmainfont{WenQuanYi Zen Hei}\\setCJKsansfont{WenQuanYi Zen Hei}\\begin{document}\\section{中文标题}正文内容。\\end{document}"
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_cjk_context.py::test_chinese_section_heading"
+]
+}

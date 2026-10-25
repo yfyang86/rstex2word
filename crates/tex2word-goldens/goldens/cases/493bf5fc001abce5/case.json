@@ -1,0 +1,11 @@
+{
+"api": "convert_source",
+"args": {
+"source": "\\begin{document}\\title{T}\\author{A}\\maketitle\\begin{abstract}Summary.\\end{abstract}\\keywords{graphs, trees}\\end{document}"
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_authors_keywords.py::test_keywords_render_and_round_trip"
+]
+}

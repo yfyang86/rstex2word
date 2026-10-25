@@ -1,0 +1,11 @@
+{
+"api": "expand_macros",
+"args": {
+"source": "\\NewDocumentCommand{\\f}{m m}{#1+#2}\\f{a}{b}"
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_xparse.py::test_two_mandatory"
+]
+}

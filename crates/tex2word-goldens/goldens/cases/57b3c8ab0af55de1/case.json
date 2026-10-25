@@ -1,0 +1,13 @@
+{
+"api": "convert_source",
+"args": {
+"source": "\\documentclass{article}\\usepackage{mypre}\\begin{document}\\begin{THM}\\label{THM:a}T.\\end{THM}\\begin{LEM}\\label{LEM:b}L.\\end{LEM}See \\ref{THM:a}, \\ref{LEM:b}.\\end{document}"
+},
+"base_dir": "base",
+"files": {
+"base/mypre.sty": "6aed6d94450bfb91c472dcce714e473b886b301742dbaa11f5801d412a2c3b4f"
+},
+"tests": [
+"tests/test_newtheorem.py::test_newtheorem_defined_in_local_package"
+]
+}

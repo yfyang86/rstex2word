@@ -1,0 +1,59 @@
+{
+  "generated": "2026-01-02T00:00:00+00:00",
+  "ir": {
+    "@type": "Document",
+    "blocks": [],
+    "book": false,
+    "labels": {},
+    "meta": {
+      "@type": "DocumentMeta",
+      "abstract": null,
+      "affiliations": [
+        [
+          {
+            "@type": "Link",
+            "anchor": null,
+            "inlines": [
+              {
+                "@type": "Text",
+                "value": "ORCID: 0000-0002-1825-0097"
+              }
+            ],
+            "url": "https://orcid.org/0000-0002-1825-0097"
+          }
+        ]
+      ],
+      "authors": [
+        [
+          {
+            "@type": "Text",
+            "value": "A"
+          }
+        ]
+      ],
+      "cjk_main_font": null,
+      "cjk_mono_font": null,
+      "cjk_sans_font": null,
+      "columns": 1,
+      "date": [
+        {
+          "@type": "Text",
+          "value": "January 2, 2026"
+        }
+      ],
+      "keywords": null,
+      "language": null,
+      "main_font": null,
+      "running_head": null,
+      "title": [
+        {
+          "@type": "Text",
+          "value": "T"
+        }
+      ]
+    }
+  },
+  "labels": {},
+  "manifest_version": 1,
+  "tool": "tex2word"
+}

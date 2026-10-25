@@ -1,0 +1,11 @@
+{
+"api": "convert_source",
+"args": {
+"source": "\\begin{document}\\begin{tabular}{cc}\\ding{182} & \\shortstack{Top \\\\ Bottom} \\\\\\end{tabular}\\end{document}"
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_tables.py::test_ding_and_shortstack_in_table_cells"
+]
+}

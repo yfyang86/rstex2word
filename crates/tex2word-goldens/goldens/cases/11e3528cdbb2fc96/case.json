@@ -1,0 +1,13 @@
+{
+"api": "convert_source",
+"args": {
+"source": "\\documentclass{report}\n\\begin{document}\n\\chapter{Intro}\\label{c:i}\n\\section{Background}\n\\subsection{Detail}\n\\appendix\n\\chapter{Extra}\\label{a:x}\n\\section{More}\n\\end{document}"
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_book.py::test_appendix_uses_letter_numbering_list",
+"tests/test_book.py::test_book_headings_use_nested_numbering",
+"tests/test_book.py::test_book_output_is_valid"
+]
+}

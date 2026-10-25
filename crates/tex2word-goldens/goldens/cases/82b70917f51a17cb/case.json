@@ -1,0 +1,11 @@
+{
+"api": "convert_source",
+"args": {
+"source": "\\begin{document}\\textquote*{hi}\\end{document}"
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_csquotes_inline.py::test_textquote_star_inner_quotes"
+]
+}

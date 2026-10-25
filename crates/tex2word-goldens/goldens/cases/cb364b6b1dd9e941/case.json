@@ -1,0 +1,13 @@
+{
+"api": "to_latex",
+"args": {
+"docx_bytes": {
+"@blob": "1063698fa01896073ce230bf48a9917a4066316d3011331ae054be063d437b96"
+}
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_book.py::test_book_round_trips"
+]
+}

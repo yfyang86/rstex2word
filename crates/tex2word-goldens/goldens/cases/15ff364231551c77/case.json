@@ -1,0 +1,11 @@
+{
+"api": "parse_document",
+"args": {
+"source": "\n\\documentclass{article}\n\\title{A Preamble Title}\n\\begin{document}\n\\maketitle\nBody.\n\\end{document}\n"
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_robustness.py::test_title_recovered_from_preamble"
+]
+}

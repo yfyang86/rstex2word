@@ -1,0 +1,11 @@
+{
+"api": "convert_source",
+"args": {
+"source": "\\documentclass{article}\\acro{GPU}[GfxPU]{Graphics Processing Unit}\\begin{document}\\acs{GPU}\\end{document}"
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_acronym_package.py::test_acro_optional_short_overrides_key"
+]
+}

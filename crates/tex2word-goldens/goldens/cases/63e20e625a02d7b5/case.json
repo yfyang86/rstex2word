@@ -1,0 +1,11 @@
+{
+"api": "convert_source",
+"args": {
+"source": "\\begin{document}\\sout{a} \\hl{b} {\\large c}\\end{document}"
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_inline_extras.py::test_text_spans_roundtrip"
+]
+}

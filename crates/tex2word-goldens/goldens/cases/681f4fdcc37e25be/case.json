@@ -1,0 +1,11 @@
+{
+"api": "convert_source",
+"args": {
+"source": "\\begin{document}\\textquote{hello}\\end{document}"
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_csquotes_inline.py::test_textquote_outer_quotes"
+]
+}

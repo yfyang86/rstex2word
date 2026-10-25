@@ -1,0 +1,11 @@
+{
+"api": "expand_macros",
+"args": {
+"source": "\\newcommand{\\x}[2][D]{#1-#2}\\x{b}"
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_frontend.py::test_newcommand_optional_arg"
+]
+}

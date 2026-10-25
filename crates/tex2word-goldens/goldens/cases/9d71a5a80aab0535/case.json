@@ -1,0 +1,11 @@
+{
+"api": "parse_document",
+"args": {
+"source": "\\documentclass{article}\\begin{document}\\begin{multicols}{3}x\\end{multicols}\\end{document}"
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_columns.py::test_multicols_environment_count_detected"
+]
+}

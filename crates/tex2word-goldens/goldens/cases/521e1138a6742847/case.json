@@ -1,0 +1,23 @@
+{
+"api": "convert_source",
+"args": {
+"citation_mode": "static",
+"columns": 1,
+"csl": null,
+"embed_manifest": true,
+"frontend": "pure",
+"language": null,
+"math_image_fallback": false,
+"number_by_section": false,
+"reference_doc": null,
+"source": "\\begin{document}\\citeauthor{e1905} in \\citeyear{e1905}.\\bibliographystyle{plainnat}\\bibliography{refs}\\end{document}"
+},
+"base_dir": "base",
+"files": {
+"base/c.tex": "b04bd355d10a453a3427294e44c8ac1d33c6c0bb68a3702f07b029f2eb374b77",
+"base/refs.bib": "e90eee6530e4172c3102f9253ed49f1f0c1b64b5873459b98253c89a986e8e4d"
+},
+"tests": [
+"tests/test_bib.py::test_citeauthor_and_citeyear"
+]
+}

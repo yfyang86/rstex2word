@@ -1,0 +1,13 @@
+{
+"api": "validate_docx",
+"args": {
+"docx_bytes": {
+"@blob": "656839aa5278dc0821ee0ff00dabab3d8b3aa8f8793096c592e1351e5ae58b1c"
+}
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_uat_bundle.py::test_uat_bundle_converts_cleanly[bundle:cheetsheet.tex]"
+]
+}

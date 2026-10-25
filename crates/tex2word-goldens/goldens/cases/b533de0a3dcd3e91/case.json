@@ -1,0 +1,13 @@
+{
+"api": "to_latex",
+"args": {
+"docx_bytes": {
+"@blob": "34cf46c1e2626e5b99afb88e21578f3c5f6cd0f2e2b41497ea15427fb59fb52b"
+}
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_running_head.py::test_running_head_survives_reconcile"
+]
+}

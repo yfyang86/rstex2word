@@ -1,0 +1,11 @@
+{
+"api": "convert_source",
+"args": {
+"source": "\\begin{document}See \\autocite{x}.\\end{document}"
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_cite_variants.py::test_biblatex_autocite_is_parenthetical"
+]
+}

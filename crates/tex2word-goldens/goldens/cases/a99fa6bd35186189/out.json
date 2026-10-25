@@ -1,0 +1,1 @@
+{"value":"\\documentclass{article}\n\\usepackage[utf8]{inputenc}\n\\usepackage{amsmath}\n\\usepackage{amssymb}\n\\begin{document}\n\\section{Intro}\n\nThe first paragraph is unchanged.\n\n\\begin{equation}\nE = mc^2\n\\end{equation}\n\nThe second paragraph stays too.\n\\end{document}"}

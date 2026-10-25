@@ -1,0 +1,15 @@
+{
+"api": "convert_source",
+"args": {
+"source": "\n\\begin{document}\n\\part{Foundations}\n\\section{Alpha}\n\\part{Applications}\n\\section{Beta}\n\\end{document}\n"
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_part.py::test_part_numbering_part_is_valid",
+"tests/test_part.py::test_part_recovered_from_manifest",
+"tests/test_part.py::test_part_roundtrips_to_latex",
+"tests/test_part.py::test_part_unedited_reconciles_to_identity",
+"tests/test_part.py::test_part_uses_dedicated_roman_numbering"
+]
+}

@@ -1,0 +1,13 @@
+[package]
+name = "tex2word-goldens"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+authors.workspace = true
+description = "Golden parity tests: the Rust port checked against outputs recorded from the Python tex2word 1.0.9 reference"
+# Test fixtures only (~8 MB of recorded goldens) — never packaged.
+publish = false
+
+[dependencies]
+tex2word-ir.workspace = true

@@ -1,0 +1,11 @@
+{
+"api": "parse_document",
+"args": {
+"source": "\\documentclass{article}\\begin{document}\\section{S}\\end{document}"
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_book.py::test_article_section_stays_level_1"
+]
+}

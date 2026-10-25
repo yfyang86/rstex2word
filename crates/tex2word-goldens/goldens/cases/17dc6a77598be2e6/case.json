@@ -1,0 +1,11 @@
+{
+"api": "convert_source",
+"args": {
+"source": "\\begin{document}\\textcolor{red}{a} \\colorbox{yellow}{b}\\end{document}"
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_color.py::test_color_roundtrips_to_ir_and_latex"
+]
+}

@@ -1,0 +1,106 @@
+{
+  "generated": "2026-01-02T00:00:00+00:00",
+  "ir": {
+    "@type": "Document",
+    "blocks": [
+      {
+        "@type": "Theorem",
+        "blocks": [
+          {
+            "@type": "Paragraph",
+            "align": null,
+            "inlines": [
+              {
+                "@type": "Text",
+                "value": "A statement."
+              }
+            ]
+          }
+        ],
+        "counter": "Theorem",
+        "kind": "Theorem",
+        "label": "t1",
+        "title": null
+      },
+      {
+        "@type": "Theorem",
+        "blocks": [
+          {
+            "@type": "Paragraph",
+            "align": null,
+            "inlines": [
+              {
+                "@type": "Text",
+                "value": "A titled lemma."
+              }
+            ]
+          }
+        ],
+        "counter": "Theorem",
+        "kind": "My Lemma",
+        "label": null,
+        "title": [
+          {
+            "@type": "Text",
+            "value": "Euclid"
+          }
+        ]
+      },
+      {
+        "@type": "Theorem",
+        "blocks": [
+          {
+            "@type": "Paragraph",
+            "align": null,
+            "inlines": [
+              {
+                "@type": "Text",
+                "value": "An unnumbered remark."
+              }
+            ]
+          }
+        ],
+        "counter": null,
+        "kind": "Remark",
+        "label": null,
+        "title": null
+      }
+    ],
+    "book": false,
+    "labels": {
+      "t1": {
+        "@type": "LabelInfo",
+        "bookmark": "t1",
+        "counter_name": "Theorem",
+        "kind": "theorem",
+        "name": "Theorem",
+        "number": null
+      }
+    },
+    "meta": {
+      "@type": "DocumentMeta",
+      "abstract": null,
+      "affiliations": [],
+      "authors": [],
+      "cjk_main_font": null,
+      "cjk_mono_font": null,
+      "cjk_sans_font": null,
+      "columns": 1,
+      "date": null,
+      "keywords": null,
+      "language": null,
+      "main_font": null,
+      "running_head": null,
+      "title": null
+    }
+  },
+  "labels": {
+    "t1": {
+      "bookmark": "t1",
+      "counter": "Theorem",
+      "kind": "theorem"
+    }
+  },
+  "manifest_version": 1,
+  "tool": "tex2word"
+}

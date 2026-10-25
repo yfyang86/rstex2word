@@ -1,0 +1,11 @@
+{
+"api": "convert_source",
+"args": {
+"source": "\\begin{document}\\begin{wrapfigure}{r}{0.4\\textwidth}\\centering\\includegraphics{a.png}\\caption{Wrapped fig.}\\label{fig:w}\\end{wrapfigure}\\end{document}"
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_wrapfloat.py::test_wrapfigure_is_a_figure_with_caption"
+]
+}

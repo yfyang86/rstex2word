@@ -1,0 +1,11 @@
+{
+"api": "convert_source",
+"args": {
+"source": "\\begin{document}Code \\lstinline|x = f(a)| done.\\end{document}"
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_lstinline.py::test_lstinline_pipe_delimiter"
+]
+}

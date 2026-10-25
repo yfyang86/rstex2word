@@ -1,0 +1,11 @@
+{
+"api": "convert_source",
+"args": {
+"source": "\\begin{document}$x^2$\\end{document}"
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_backend.py::test_inline_math_produces_omath"
+]
+}

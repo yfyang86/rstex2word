@@ -1,0 +1,11 @@
+{
+"api": "expand_macros",
+"args": {
+"source": "\\newcommand{\\foo}[1]{Hello #1!}\\foo{World}"
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_frontend.py::test_newcommand_expansion"
+]
+}

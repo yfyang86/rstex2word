@@ -1,0 +1,15 @@
+{
+"api": "convert_source",
+"args": {
+"source": "\\documentclass{article}\\usepackage{graphicx}\\begin{document}\\begin{figure}\\centering\\includegraphics[width=5cm]{a.png}\\caption{First}\\label{fig:a}\\includegraphics[width=5cm]{b.png}\\caption{Second}\\label{fig:b}\\end{figure}\\end{document}"
+},
+"base_dir": "base",
+"files": {
+"base/a.png": "2a632e643461ede961710e0ae6b9dc238fa98028a4ed8ac0272a84fb940083e9",
+"base/b.png": "30692217bc8d4c812a60d2f0c6da22a88160e1e00e715f18d6f9626d09f3ee08",
+"base/main.tex": "1c13a0ecaa90a4437fa1a2dbf903b826b95b3c44fcf85d9c6a864e29eecaab2e"
+},
+"tests": [
+"tests/test_images.py::test_multi_image_figure_keeps_all_panels"
+]
+}

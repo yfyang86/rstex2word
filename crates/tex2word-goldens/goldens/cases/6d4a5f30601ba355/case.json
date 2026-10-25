@@ -1,0 +1,12 @@
+{
+"api": "convert_source",
+"args": {
+"embed_manifest": false,
+"source": "\\begin{document}\\section{S}\\label{myweird:lbl}See \\ref{myweird:lbl}.\\end{document}"
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_labels.py::test_without_map_unknown_prefix_is_left_alone"
+]
+}

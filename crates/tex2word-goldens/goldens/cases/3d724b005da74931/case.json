@@ -1,0 +1,11 @@
+{
+"api": "convert_source",
+"args": {
+"source": "\\documentclass{article}\\usepackage{amsmath,amssymb}\\begin{document}\\begin{aligned}& \\frac{1}{2}\\int_B x\\,ds = a \\\\ & = b\\end{aligned}\\end{document}"
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_aligned_envs.py::test_bare_aligned_block_is_math_not_text"
+]
+}

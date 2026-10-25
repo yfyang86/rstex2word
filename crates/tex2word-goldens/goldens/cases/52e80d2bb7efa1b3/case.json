@@ -1,0 +1,11 @@
+{
+"api": "convert_source",
+"args": {
+"source": "\\begin{document}See \\cite{a}.\\begin{thebibliography}{9}\\bibitem{a} Some Author, Title, 2020.\\end{thebibliography}\\end{document}"
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_bib.py::test_thebibliography"
+]
+}

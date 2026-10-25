@@ -1,0 +1,11 @@
+{
+"api": "expand_macros",
+"args": {
+"source": "\\RenewDocumentCommand{\\g}{m}{#1}\\g{B}"
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_xparse.py::test_declare_and_renew_document_command"
+]
+}

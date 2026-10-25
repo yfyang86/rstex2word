@@ -1,0 +1,13 @@
+{
+"api": "convert_source",
+"args": {
+"source": "\\documentclass{article}\\usepackage{graphicx,caption}\\begin{document}\\begin{center}\\includegraphics[width=3cm]{t.png}\\captionof{figure}{A non-floating figure}\\label{fig:nf}\\end{center}See \\ref{fig:nf}.\\end{document}"
+},
+"base_dir": "base",
+"files": {
+"base/t.png": "2302d533ba535ce871e6293d50ec3181687c6df406c791adf8532e5f1e1c849f"
+},
+"tests": [
+"tests/test_images.py::test_captionof_in_center_is_a_numbered_figure"
+]
+}

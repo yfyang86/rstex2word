@@ -1,0 +1,11 @@
+{
+"api": "parse_document",
+"args": {
+"source": "\\newcommand{\\dvalp}[2]{\\hphantom{\\textsubscript{+#2}}#1\\textsubscript{\\textcolor{red}{+#2}}}\\begin{document}\\begin{tabular}{lc}A & \\dvalp{86.1}{4.1} \\\\\\end{tabular}\\end{document}"
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_boxes_verbatim.py::test_dvalp_style_macro_in_table_has_no_leak"
+]
+}

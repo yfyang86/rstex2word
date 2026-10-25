@@ -1,0 +1,14 @@
+{
+"api": "parse_bibtex",
+"args": {
+"source": "\n@article{vaswani2017,\n  author = {Vaswani, Ashish and Shazeer, Noam},\n  title = {Attention Is All You Need},\n  year = {2017},\n  eprint = {1706.03762},\n  archivePrefix = {arXiv},\n  primaryClass = {cs.CL}\n}\n@article{withdoi,\n  author = {Doe, Jane},\n  title = {A Paper}, journal = {J}, year = {2020},\n  doi = {10.1/x}, eprint = {2001.00001}, archivePrefix = {arXiv}\n}\n@book{withissn,\n  author = {Roe, R.}, title = {Vol}, year = {1999},\n  issn = {1234-5678}, chapter = {3}\n}\n"
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_bibtex_eprint.py::test_arxiv_eprint_becomes_abs_url",
+"tests/test_bibtex_eprint.py::test_eprint_url_renders",
+"tests/test_bibtex_eprint.py::test_existing_doi_wins_over_eprint_url",
+"tests/test_bibtex_eprint.py::test_issn_and_chapter_mapped"
+]
+}

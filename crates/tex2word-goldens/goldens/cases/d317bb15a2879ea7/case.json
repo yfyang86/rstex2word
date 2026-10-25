@@ -1,0 +1,11 @@
+{
+"api": "convert_source",
+"args": {
+"source": "\\begin{document}Code \\lstinline[language=Py]!a & b! done.\\end{document}"
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_lstinline.py::test_lstinline_with_options_and_special_chars"
+]
+}

@@ -1,0 +1,11 @@
+{
+"api": "convert_source",
+"args": {
+"source": "\\begin{document}\\begin{enumerate}\\item a\\begin{enumerate}\\item b\\begin{enumerate}\\item c\\end{enumerate}\\end{enumerate}\\end{enumerate}\\end{document}"
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_lists.py::test_three_level_nesting_uses_distinct_ilvls"
+]
+}

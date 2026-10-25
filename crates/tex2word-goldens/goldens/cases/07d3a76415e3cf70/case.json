@@ -1,0 +1,14 @@
+{
+"api": "recover_ir",
+"args": {
+"docx_bytes": {
+"@blob": "e74221f4bf52ebc60bd271b66a34fd68b787787f669825e5a401ba98058799f6"
+}
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_reconcile.py::test_unedited_docs_reconcile_to_identity[arXiv-2507.17026v2/main.tex]",
+"tests/test_uat_arxiv.py::test_uat_roundtrips_to_same_ir"
+]
+}

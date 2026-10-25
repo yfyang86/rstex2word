@@ -1,0 +1,1 @@
+{"value":"\\documentclass{article}\n\\usepackage[utf8]{inputenc}\n\\begin{document}\n\\title{T}\n\\author{A}\n\\date{January 2, 2026}\n\\maketitle\n\\begin{abstract}\nSummary.\n\\end{abstract}\n\\keywords{graphs, trees}\n\\end{document}"}
