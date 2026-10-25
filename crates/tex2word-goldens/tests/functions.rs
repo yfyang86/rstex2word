@@ -6,6 +6,11 @@
 use tex2word_frontend::{macros, preprocess as p};
 use tex2word_goldens::root;
 use tex2word_ir::json::{self, Value};
+use tex2word_ir::ToJson;
+
+fn dumps(v: &Value) -> String {
+    json::dumps(v, Default::default())
+}
 
 fn call(f: &str, s: &str) -> Option<String> {
     Some(match f {
@@ -21,6 +26,10 @@ fn call(f: &str, s: &str) -> Option<String> {
         "normalize_spacing_and_icons" => p::normalize_spacing_and_icons(s),
         "expand_macros" => macros::expand_macros(s, "."),
         "collect_macros_stripped" => macros::collect_macros(s).1,
+        // an exception is recorded as {"error": ...}; compare as "<error>"
+        "latex2text" => tex2word_latexwalker::latex2text::latex_to_text(s).unwrap_or_else(|_| "<error>".into()),
+        "parse_bibtex" => dumps(&tex2word_bib::bibtex::parse_bibtex(s).to_json()),
+        "parse_bbl" => dumps(&tex2word_bib::bbl::parse_bbl(s).to_json()),
         _ => return None,
     })
 }
@@ -55,13 +64,24 @@ fn frontend_functions_match_python() {
         let row = json::parse(line).unwrap();
         let f = row.get("f").and_then(Value::as_str).unwrap();
         let input = row.get("in").and_then(Value::as_str).unwrap();
-        let want = row.get("out").and_then(Value::as_str).unwrap();
+        let want_v = row.get("out").unwrap();
+        let want = match want_v.as_str() {
+            Some(w) => w,
+            None if want_v.get("error").is_some() => "<error>",
+            None => panic!("bad row {line}"),
+        };
         let Some(got) = call(f, input) else {
             failures.push(format!("{f}: not wired into the test"));
             continue;
         };
         n += 1;
-        if got != want {
+        let same = if f.starts_with("parse_b") {
+            // JSON outputs: compare values (key order matters, as in Python dicts)
+            json::parse(want).ok() == json::parse(&got).ok()
+        } else {
+            got == want
+        };
+        if !same {
             failures.push(format!("{f} (input {} bytes) {}", input.len(), first_diff(want, &got)));
         }
     }

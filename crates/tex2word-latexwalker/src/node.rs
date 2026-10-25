@@ -34,6 +34,9 @@ pub enum NodeKind {
         macroname: String,
         nodeargd: Option<ParsedArgs>,
         macro_post_space: String,
+        /// read by `get_latex_expression` (as another macro's argument):
+        /// pylatexenc then sets the legacy `nodeoptarg`/`nodeargs` to `None`
+        bare_expression: bool,
     },
     /// `LatexEnvironmentNode`
     Environment {

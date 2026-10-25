@@ -64,6 +64,7 @@ fn node_json(n: &Node) -> Value {
             macroname,
             nodeargd,
             macro_post_space,
+            ..
         } => {
             o.push(("m".into(), s(macroname)));
             o.push(("s".into(), s(macro_post_space)));

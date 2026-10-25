@@ -25,6 +25,11 @@ import resource
 import signal
 import sys
 
+from pylatexenc.latex2text import LatexNodes2Text
+
+from tex2word import ir
+from tex2word.bib.bbl import parse_bbl
+from tex2word.bib.bibtex import parse_bibtex
 from tex2word.frontend import macros as M
 from tex2word.frontend import preprocess as P
 
@@ -32,6 +37,14 @@ OUT = os.path.join(
     os.path.dirname(os.path.abspath(__file__)),
     "..", "..", "crates", "tex2word-goldens", "goldens", "fn.jsonl",
 )
+
+def _latex2text(s):
+    # a fresh converter per call (\title/\maketitle state isn't shared)
+    try:
+        return LatexNodes2Text(keep_comments=False, strict_latex_spaces=False).latex_to_text(s)
+    except Exception as e:  # recorded: Rust must fail too
+        return {"error": type(e).__name__}
+
 
 FUNCS = {
     "strip_comments": P.strip_comments,
@@ -46,6 +59,10 @@ FUNCS = {
     "normalize_spacing_and_icons": P.normalize_spacing_and_icons,
     "expand_macros": lambda s: M.expand_macros(s, "."),
     "collect_macros_stripped": lambda s: M.collect_macros(s)[1],
+    "latex2text": _latex2text,
+    # dict outputs, compared as JSON (insertion order included)
+    "parse_bibtex": lambda s: json.dumps(ir._to_jsonable(parse_bibtex(s)), ensure_ascii=False),
+    "parse_bbl": lambda s: json.dumps(ir._to_jsonable(parse_bbl(s)), ensure_ascii=False),
 }
 
 
@@ -105,6 +122,32 @@ VOCAB = {
                       "\\IfNoValueF{#2}", "\\providecommand", "\\newcommand\\B\\mathbb", "\\B"],
 }
 VOCAB["collect_macros_stripped"] = VOCAB["expand_macros"]
+VOCAB["latex2text"] = [
+    "\\'e", "\\\"o", "\\c{c}", "\\v{s}", "\\~n", "\\^", "\\i", "\\ss", "\\o", "\\&",
+    "\\textbf{", "\\emph{", "$", "$$", "\\(", "\\)", "\\[", "\\]", "\\frac{a}{b}", "\\sqrt{x}",
+    "\\alpha", "\\mathbb{R}", "\\mathcal{L}", "\\begin{pmatrix}", "\\end{pmatrix}", "&", "\\\\",
+    "\\begin{equation}", "\\end{equation}", "\\url{x}", "\\href{u}{t}", "\\footnote{n}",
+    "\\section{T}", "\\item", "\\item[a]", "\\textcolor{red}{x}", "--", "---", "``", "''", "~",
+    "\\title{T}", "\\maketitle", "\\author{A}", "\\cite{k}", "\\ref{r}", "\\vec{v}", "\\bar",
+    "\\texorpdfstring{a}{b}", "\\input{f}", "\\begin{center}", "\\end{center}", "\\unknown",
+    "\\begin{array}", "\\end{array}", "\\%", "\\textit", "\\hspace{1em}", "\\par", "!`",
+    "\\begin{itemize}", "\\end{itemize}", "\\includegraphics{p}", "\\mathrm{d}", "\\verb|x|",
+]
+
+
+VOCAB["parse_bibtex"] = [
+    "@article{", "@book{knuth84,", "@misc{k,", "@string{jn = {J. Name}}", "@comment{x}", "@preamble{p}",
+    "author = {", "Knuth, Donald E. and Lamport, L.", "Donald Knuth", " and ", "title = {T: {S}ub}",
+    'title = "Q"', "year = 1984", "year = {c. 2001}", "date = {2020-05}", "month = jan", "journal = jn",
+    "booktitle={B}", "pages = {1--10}", "doi = {10.1/x}", "url={http://u}", "eprint = {2101.00001}",
+    "archivePrefix = {arXiv}", "eprinttype={hal}", "note = {N}", ",", "}", "{", "\\'e", "\\&", "%",
+    "editor = {E. Ditor}", "publisher = {P}", "volume=3", "number={4}", "@inproceedings{c,",
+]
+VOCAB["parse_bbl"] = [
+    "\\begin{thebibliography}{99}", "\\end{thebibliography}", "\\bibitem{a}", "\\bibitem[Knuth(1984)]{k}",
+    "\\bibitem[{A}et~al.(2020)]{b}", "\\newblock", "\\emph{T}", "\\bibinfo{author}{X}", "Knuth, D.",
+    "\\natexlab{a}", "\\providecommand{\\x}{}", "\\url{u}", "\\'e", ".", ",", "\\bibitem{}",
+]
 
 
 def soups(name: str, k: int, rng: random.Random) -> list[str]:
@@ -118,13 +161,16 @@ def main() -> None:
     files = sorted(
         f for f in glob.glob("tests/**/*.tex", recursive=True)
         + glob.glob("tests/**/*.sty", recursive=True)
+        + glob.glob("tests/**/*.bib", recursive=True)
+        + glob.glob("tests/**/*.bbl", recursive=True)
     )
     inputs: list[str] = []
     seen: set[str] = set()
     for f in files:
         with open(f, encoding="utf-8", errors="replace") as fh:
             text = fh.read()
-        for c in chunks(text):
+        extra = text.splitlines() if f.endswith((".bib", ".bbl")) else []
+        for c in chunks(text) + extra:
             if c not in seen and len(c) < 200_000:
                 seen.add(c)
                 inputs.append(c)
@@ -146,7 +192,7 @@ def main() -> None:
                 if out is None:
                     print(f"  {name}: skipped a {len(s)}-char input (blows up)", file=sys.stderr)
                     continue
-                if out == s:
+                if out == s or out == "{}":
                     if kept_noop > (kept + 4) // 3 or rng.random() < 0.5:
                         continue
                     kept_noop += 1

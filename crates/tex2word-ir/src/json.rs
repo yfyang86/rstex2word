@@ -74,6 +74,47 @@ impl Value {
         matches!(self, Value::Null)
     }
 
+    /// Python truthiness (`bool(value)`).
+    pub fn py_truthy(&self) -> bool {
+        match self {
+            Value::Null => false,
+            Value::Bool(b) => *b,
+            Value::Int(i) => *i != 0,
+            Value::Float(f) => *f != 0.0,
+            Value::Str(s) => !s.is_empty(),
+            Value::Array(a) => !a.is_empty(),
+            Value::Object(o) => !o.is_empty(),
+        }
+    }
+
+    /// Python `str(value)` (containers use `repr` of their items).
+    pub fn py_str(&self) -> String {
+        match self {
+            Value::Str(s) => s.clone(),
+            other => other.py_repr(),
+        }
+    }
+
+    /// Python `repr(value)`.
+    pub fn py_repr(&self) -> String {
+        match self {
+            Value::Null => "None".into(),
+            Value::Bool(true) => "True".into(),
+            Value::Bool(false) => "False".into(),
+            Value::Int(i) => i.to_string(),
+            Value::Float(f) => py_float_repr(*f),
+            Value::Str(s) => py_str_repr(s),
+            Value::Array(a) => format!("[{}]", a.iter().map(Value::py_repr).collect::<Vec<_>>().join(", ")),
+            Value::Object(o) => format!(
+                "{{{}}}",
+                o.iter()
+                    .map(|(k, v)| format!("{}: {}", py_str_repr(k), v.py_repr()))
+                    .collect::<Vec<_>>()
+                    .join(", ")
+            ),
+        }
+    }
+
     /// Look up a key in an object (first match, like a Python dict lookup).
     pub fn get(&self, key: &str) -> Option<&Value> {
         self.as_object()?
@@ -81,6 +122,29 @@ impl Value {
             .find(|(k, _)| k == key)
             .map(|(_, v)| v)
     }
+}
+
+/// Python `repr(str)`: single quotes unless the text holds `'` but no `"`.
+pub fn py_str_repr(s: &str) -> String {
+    let q = if s.contains('\'') && !s.contains('"') { '"' } else { '\'' };
+    let mut out = String::with_capacity(s.len() + 2);
+    out.push(q);
+    for c in s.chars() {
+        match c {
+            '\\' => out.push_str("\\\\"),
+            '\n' => out.push_str("\\n"),
+            '\r' => out.push_str("\\r"),
+            '\t' => out.push_str("\\t"),
+            c if c == q => {
+                out.push('\\');
+                out.push(c);
+            }
+            c if (c as u32) < 0x20 || c as u32 == 0x7f => out.push_str(&format!("\\x{:02x}", c as u32)),
+            c => out.push(c),
+        }
+    }
+    out.push(q);
+    out
 }
 
 /// A JSON (de)serialisation error.

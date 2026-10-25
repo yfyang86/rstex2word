@@ -1599,40 +1599,7 @@ pub(crate) fn font_cmd(preamble: &str, cmd: &str) -> Option<String> {
     (!v.is_empty()).then(|| v.to_string())
 }
 
-/// `\today` -> the current date in LaTeX's default English format
-/// (`Month D, YYYY`). Honours `SOURCE_DATE_EPOCH` (reproducible builds);
-/// otherwise uses the current UTC date.
-pub fn today_text() -> String {
-    let secs = std::env::var("SOURCE_DATE_EPOCH")
-        .ok()
-        .and_then(|v| v.trim().parse::<i64>().ok())
-        .unwrap_or_else(|| {
-            std::time::SystemTime::now()
-                .duration_since(std::time::UNIX_EPOCH)
-                .map_or(0, |d| d.as_secs() as i64)
-        });
-    let (y, m, d) = civil_from_days(secs.div_euclid(86400));
-    const MONTHS: [&str; 12] = [
-        "January", "February", "March", "April", "May", "June", "July", "August", "September",
-        "October", "November", "December",
-    ];
-    format!("{} {}, {}", MONTHS[(m - 1) as usize], d, y)
-}
-
-/// Days since 1970-01-01 -> (year, month, day) in the proleptic Gregorian
-/// calendar (Howard Hinnant's algorithm).
-fn civil_from_days(z: i64) -> (i64, i64, i64) {
-    let z = z + 719468;
-    let era = z.div_euclid(146097);
-    let doe = z - era * 146097;
-    let yoe = (doe - doe / 1460 + doe / 36524 - doe / 146096) / 365;
-    let y = yoe + era * 400;
-    let doy = doe - (365 * yoe + yoe / 4 - yoe / 100);
-    let mp = (5 * doy + 2) / 153;
-    let d = doy - (153 * mp + 2) / 5 + 1;
-    let m = if mp < 10 { mp + 3 } else { mp - 9 };
-    (if m <= 2 { y + 1 } else { y }, m, d)
-}
+pub use tex2word_ir::pyos::today_text;
 
 #[cfg(test)]
 mod tests {
@@ -1640,8 +1607,6 @@ mod tests {
 
     #[test]
     fn dates_and_markers() {
-        assert_eq!(civil_from_days(20455), (2026, 1, 2));
-        assert_eq!(civil_from_days(0), (1970, 1, 1));
         assert_eq!(script_marker("^{*1}"), Some(("superscript", "*1".into())));
         assert_eq!(script_marker("^\\circ"), Some(("plain", "°".into())));
         assert_eq!(script_marker("^{a}_b"), None);
