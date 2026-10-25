@@ -44,20 +44,18 @@ def main():
         table("SYMBOLS", "Greek + symbols rendered as a single Unicode glyph.", S.SYMBOLS),
         table("NARY", "n-ary / big operators (rendered with limits via OMML m:nary).", S.NARY),
         table("ACCENTS", "Accents: command -> accent character used by OMML m:acc.", S.ACCENTS),
-        "/// Upright multi-letter function names.",
+        "/// Upright multi-letter function names.\n"
         "pub static FUNCTIONS: &[&str] = &[" + ", ".join(rs(f) for f in sorted(S.FUNCTIONS)) + "];",
         table("DELIMITERS", "Delimiter commands -> the literal delimiter character.", S.DELIMITERS),
         table("MATHBB", "Blackboard-bold (\\mathbb) letters -> Unicode double-struck.", S.MATHBB),
         table("SPACING", "Spacing commands that produce (roughly) nothing / thin spaces.", S.SPACING),
-        "",
-        "/// Look up a key in a table.",
-        "pub fn get(table: &'static [(&'static str, &'static str)], key: &str) -> Option<&'static str> {",
-        "    table.iter().find(|(k, _)| *k == key).map(|(_, v)| *v)",
+        "/// Look up a key in a table.\n"
+        "pub fn get(table: &'static [(&'static str, &'static str)], key: &str) -> Option<&'static str> {\n"
+        "    table.iter().find(|(k, _)| *k == key).map(|(_, v)| *v)\n"
         "}",
-        "",
-        "/// Membership in [`FUNCTIONS`].",
-        "pub fn is_function(name: &str) -> bool {",
-        "    FUNCTIONS.contains(&name)",
+        "/// Membership in [`FUNCTIONS`].\n"
+        "pub fn is_function(name: &str) -> bool {\n"
+        "    FUNCTIONS.contains(&name)\n"
         "}",
     ]
     with open(OUT, "w", encoding="utf-8") as fh:

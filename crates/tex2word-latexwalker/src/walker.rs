@@ -264,7 +264,11 @@ impl LatexWalker {
                     // tolerant: a placeholder char token
                     None => tok(Tok::Char, format!("\\{mac}"), pos, i, &space),
                     Some((name, mlen)) => tok(
-                        if mac == "begin" { Tok::BeginEnv } else { Tok::EndEnv },
+                        if mac == "begin" {
+                            Tok::BeginEnv
+                        } else {
+                            Tok::EndEnv
+                        },
                         name,
                         pos,
                         i + mlen,
@@ -359,7 +363,11 @@ impl LatexWalker {
 
     /// `get_latex_expression(pos, strict_braces=False)`: a single token or a
     /// braced group. Returns the node and its `(pos, len)`.
-    pub fn get_latex_expression(&self, pos: usize, ps: &ParsingState) -> WResult<(Node, usize, usize)> {
+    pub fn get_latex_expression(
+        &self,
+        pos: usize,
+        ps: &ParsingState,
+    ) -> WResult<(Node, usize, usize)> {
         let tok = self.get_token(pos, &[], false, ps)?;
         let made = |n: Node| {
             let (p, l) = (n.pos, n.len);
@@ -463,7 +471,8 @@ impl LatexWalker {
             closing_brace: Some((brace_type, closing)),
             ..Stop::default()
         };
-        let (nodelist, npos, nlen) = self.get_latex_nodes(firsttok.pos + firsttok.len, &stop, ps)?;
+        let (nodelist, npos, nlen) =
+            self.get_latex_nodes(firsttok.pos + firsttok.len, &stop, ps)?;
         let len = npos + nlen - firsttok.pos;
         let n = self.node(
             NodeKind::Group {
@@ -543,7 +552,10 @@ impl LatexWalker {
                 args_math_mode,
             } => {
                 let inner = |j: usize| -> ParsingState {
-                    match args_math_mode.as_ref().and_then(|a| a.get(j).copied().flatten()) {
+                    match args_math_mode
+                        .as_ref()
+                        .and_then(|a| a.get(j).copied().flatten())
+                    {
                         Some(flag) if flag != ps.in_math_mode => ps.with_math_mode(flag),
                         _ => ps.clone(),
                     }
@@ -638,7 +650,8 @@ impl LatexWalker {
                 let beginpos = pos + delim.len_utf8();
                 let Some(off) = s[beginpos..].find(delim) else {
                     return Err(WalkError::Parse {
-                        msg: "End of stream reached while reading argument to \\verb command".into(),
+                        msg: "End of stream reached while reading argument to \\verb command"
+                            .into(),
                         pos,
                     });
                 };
@@ -718,7 +731,8 @@ impl LatexWalker {
     }
 
     fn reached_max(stop: &Stop, nodelist: &[Node]) -> bool {
-        stop.read_max_nodes.is_some_and(|m| m > 0 && nodelist.len() >= m)
+        stop.read_max_nodes
+            .is_some_and(|m| m > 0 && nodelist.len() >= m)
     }
 
     fn do_read(
@@ -735,7 +749,10 @@ impl LatexWalker {
         };
         p.pos = tok.pos + tok.len;
         if tok.tok == Tok::Char {
-            p.push_lastchars(tok.pos - tok.pre_space.len(), &format!("{}{}", tok.pre_space, tok.arg));
+            p.push_lastchars(
+                tok.pos - tok.pre_space.len(),
+                &format!("{}{}", tok.pre_space, tok.arg),
+            );
             return Ok(ReadResult::Continue);
         }
         if !p.lastchars.is_empty() {
@@ -806,7 +823,11 @@ impl LatexWalker {
                     "\\[" => "\\]".to_string(),
                     other => other.to_string(),
                 };
-                let displaytype = if tok.arg == "\\(" || tok.arg == "$" { "inline" } else { "display" };
+                let displaytype = if tok.arg == "\\(" || tok.arg == "$" {
+                    "inline"
+                } else {
+                    "display"
+                };
                 let inner = p.ps.math(&tok.arg);
                 let mstop = Stop {
                     closing_mathmode: Some(closing.clone()),

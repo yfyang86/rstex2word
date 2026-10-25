@@ -56,7 +56,9 @@ pub fn apply_language(styles_xml: &[u8], lang: Option<&str>, east_asia: Option<&
 }
 
 /// Heading/title styles that pick up the CJK *sans* font.
-const SANS_CJK_STYLES: &[&str] = &["Title", "Subtitle", "Heading1", "Heading2", "Heading3", "Heading4", "Heading5"];
+const SANS_CJK_STYLES: &[&str] = &[
+    "Title", "Subtitle", "Heading1", "Heading2", "Heading3", "Heading4", "Heading5",
+];
 
 /// Set/merge `w:rFonts` (first child of `w:rPr`).
 fn set_rfonts(rpr: &mut Element, attrs: &[(&str, Option<&str>)]) {
@@ -93,7 +95,10 @@ pub fn apply_fonts(
     };
     if main.is_some() || cjk_main.is_some() {
         if let Some(rpr) = default_rpr(&mut root) {
-            set_rfonts(rpr, &[("ascii", main), ("hAnsi", main), ("eastAsia", cjk_main)]);
+            set_rfonts(
+                rpr,
+                &[("ascii", main), ("hAnsi", main), ("eastAsia", cjk_main)],
+            );
         }
     }
     if cjk_sans.is_some() || cjk_mono.is_some() {
@@ -104,7 +109,7 @@ pub fn apply_fonts(
                 .enumerate()
                 .filter(|(_, s)| s.is(&w("style")) && s.get(&w("styleId")) == Some(sid))
                 .map(|(i, _)| i)
-                .last()
+                .next_back()
         };
         let apply = |root: &mut Element, sid: &str, font: &str| {
             if let Some(i) = style_index(root, sid) {
@@ -112,7 +117,10 @@ pub fn apply_fonts(
                 if style.find(&w("rPr")).is_none() {
                     style.append(Element::new(&w("rPr"))); // rPr is late in CT_Style
                 }
-                set_rfonts(style.find_mut(&w("rPr")).unwrap(), &[("eastAsia", Some(font))]);
+                set_rfonts(
+                    style.find_mut(&w("rPr")).unwrap(),
+                    &[("eastAsia", Some(font))],
+                );
             }
         };
         if let Some(f) = cjk_sans {

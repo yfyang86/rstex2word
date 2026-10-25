@@ -23,7 +23,12 @@ use tex2word::{convert_file, ConvertOptions, Error};
 const COMMANDS: [&str; 4] = ["convert", "coverage", "benchmark", "to-latex"];
 
 const fn opt(dest: &'static str, flags: &'static [&'static str], kind: Kind) -> Opt {
-    Opt { dest, flags, kind, choices: &[] }
+    Opt {
+        dest,
+        flags,
+        kind,
+        choices: &[],
+    }
 }
 
 const HELP: Opt = opt("help", &["-h", "--help"], Kind::Help);
@@ -49,10 +54,20 @@ fn sub_parser(command: &str) -> Parser {
                 opt("report", &["--report"], Kind::Value),
                 opt("no_manifest", &["--no-manifest"], Kind::Flag),
                 opt("number_by_section", &["--number-by-section"], Kind::Flag),
-                Opt { choices: &["static", "zotero"], ..opt("citations", &["--citations"], Kind::Value) },
+                Opt {
+                    choices: &["static", "zotero"],
+                    ..opt("citations", &["--citations"], Kind::Value)
+                },
                 opt("columns", &["--columns"], Kind::Int),
-                Opt { choices: &["pure", "latexml"], ..opt("frontend", &["--frontend"], Kind::Value) },
-                opt("math_image_fallback", &["--math-image-fallback"], Kind::Flag),
+                Opt {
+                    choices: &["pure", "latexml"],
+                    ..opt("frontend", &["--frontend"], Kind::Value)
+                },
+                opt(
+                    "math_image_fallback",
+                    &["--math-image-fallback"],
+                    Kind::Flag,
+                ),
                 opt("csl", &["--csl"], Kind::Value),
                 opt("reference_doc", &["--reference-doc"], Kind::Value),
                 opt("lang", &["--lang"], Kind::Value),
@@ -69,13 +84,21 @@ fn sub_parser(command: &str) -> Parser {
         "benchmark" => Parser {
             prog: "tex2word benchmark",
             help: include_str!("help/help_benchmark.txt"),
-            opts: vec![HELP, output, opt("fail_on_regression", &["--fail-on-regression"], Kind::Flag)],
+            opts: vec![
+                HELP,
+                output,
+                opt("fail_on_regression", &["--fail-on-regression"], Kind::Flag),
+            ],
             positionals: &["directory"],
         },
         _ => Parser {
             prog: "tex2word to-latex",
             help: include_str!("help/help_to-latex.txt"),
-            opts: vec![HELP, output, opt("no_reconcile", &["--no-reconcile"], Kind::Flag)],
+            opts: vec![
+                HELP,
+                output,
+                opt("no_reconcile", &["--no-reconcile"], Kind::Flag),
+            ],
             positionals: &["input"],
         },
     }
@@ -95,25 +118,39 @@ fn parse_args(argv: &[String]) -> Result<(String, Parsed), Exit> {
             break;
         }
         if a == "-h" || (a.len() > 2 && "--help".starts_with(a.as_str())) {
-            return Err(Exit { code: 0, stdout: main.help.to_string(), stderr: String::new() });
+            return Err(Exit {
+                code: 0,
+                stdout: main.help.to_string(),
+                stderr: String::new(),
+            });
         }
         extras.push(a.clone());
         k += 1;
     }
     let Some(command) = argv.get(k) else {
-        return Err(Exit::error(&main, "the following arguments are required: command"));
+        return Err(Exit::error(
+            &main,
+            "the following arguments are required: command",
+        ));
     };
     if !COMMANDS.contains(&command.as_str()) {
         let choices: Vec<String> = COMMANDS.iter().map(|c| argparse::repr(c)).collect();
         return Err(Exit::error(
             &main,
-            &format!("argument command: invalid choice: {} (choose from {})", argparse::repr(command), choices.join(", ")),
+            &format!(
+                "argument command: invalid choice: {} (choose from {})",
+                argparse::repr(command),
+                choices.join(", ")
+            ),
         ));
     }
     let parsed = sub_parser(command).parse(&argv[k + 1..])?;
     extras.extend(parsed.extras.iter().cloned());
     if !extras.is_empty() {
-        return Err(Exit::error(&main, &format!("unrecognized arguments: {}", extras.join(" "))));
+        return Err(Exit::error(
+            &main,
+            &format!("unrecognized arguments: {}", extras.join(" ")),
+        ));
     }
     Ok((command.clone(), parsed))
 }
@@ -146,7 +183,10 @@ fn cmd_convert(args: &Parsed) -> i32 {
         embed_manifest: !args.flag("no_manifest"),
         number_by_section: args.flag("number_by_section"),
         citation_mode: args.get("citations").unwrap_or("static").into(),
-        columns: args.get("columns").and_then(tex2word::ir::pystr::parse_int).unwrap_or(1),
+        columns: args
+            .get("columns")
+            .and_then(tex2word::ir::pystr::parse_int)
+            .unwrap_or(1),
         frontend: args.get("frontend").unwrap_or("pure").into(),
         math_image_fallback: args.flag("math_image_fallback"),
         csl: args.get("csl").map(str::to_string),
@@ -165,7 +205,11 @@ fn cmd_convert(args: &Parsed) -> i32 {
         }
     };
     if let Some(report) = args.get("report") {
-        let content = if report.ends_with(".html") { result.report.to_html() } else { result.report.to_json() };
+        let content = if report.ends_with(".html") {
+            result.report.to_html()
+        } else {
+            result.report.to_json()
+        };
         if let Err(e) = std::fs::write(report, content) {
             eprintln!("error: {report}: {e}");
             return 1;
@@ -229,7 +273,12 @@ fn cmd_benchmark(args: &Parsed) -> i32 {
     if let Some(out) = args.get("output") {
         let text = json::dumps(
             &result.to_value(),
-            DumpOptions { ensure_ascii: true, indent: Some(2), sort_keys: false, compact: false },
+            DumpOptions {
+                ensure_ascii: true,
+                indent: Some(2),
+                sort_keys: false,
+                compact: false,
+            },
         );
         if let Err(e) = std::fs::write(out, text) {
             eprintln!("error: {out}: {e}");
@@ -253,7 +302,10 @@ fn cmd_coverage(args: &Parsed) -> i32 {
         eprintln!("no .tex files under {directory}");
         return 2;
     }
-    let opts = ConvertOptions { embed_manifest: false, ..ConvertOptions::default() };
+    let opts = ConvertOptions {
+        embed_manifest: false,
+        ..ConvertOptions::default()
+    };
     let mut results = Vec::new();
     for path in &paths {
         // never abort the whole run on one file

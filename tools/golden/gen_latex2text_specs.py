@@ -13,6 +13,7 @@ Run with the reference interpreter from the repo root:
 from __future__ import annotations
 
 import os
+import unicodedata
 import sys
 
 import pylatexenc
@@ -33,9 +34,7 @@ def rs(s: str) -> str:
             out.append("\\n")
         elif c == "\t":
             out.append("\\t")
-        elif ord(c) < 0x20 or ord(c) == 0x7F or (0x80 <= ord(c) < 0xA0) \
-                or c in " ​             　" \
-                or 0x300 <= ord(c) < 0x370:
+        elif not c.isprintable() or (c != " " and unicodedata.category(c) in ("Zs", "Cf", "Mn", "Me")):
             out.append(f"\\u{{{ord(c):x}}}")
         else:
             out.append(c)

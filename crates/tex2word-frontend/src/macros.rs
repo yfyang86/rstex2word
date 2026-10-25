@@ -36,7 +36,10 @@ lazy_re!(
         r"(?:\[(?P<default>[^\]]*)\])?"
     )
 );
-lazy_re!(DEF_RE, r"\\def\s*\\(?P<name>[A-Za-z]+)\s*(?P<params>(?:#\d)*)\s*\{");
+lazy_re!(
+    DEF_RE,
+    r"\\def\s*\\(?P<name>[A-Za-z]+)\s*(?P<params>(?:#\d)*)\s*\{"
+);
 // xparse: \NewDocumentCommand{\name}{argspec}{body}
 lazy_re!(
     XPARSE_RE,
@@ -143,7 +146,9 @@ pub fn collect_macros(source: &str) -> (Macros, String) {
             if pystr::lstrip(&source[m.end()..]).starts_with('{') {
                 let brace_start = m.end() + source[m.end()..].find('{').unwrap();
                 let (body, end) = read_balanced(source, brace_start);
-                let nargs = m.name("nargs").map_or(0, |s| pystr::parse_int(s).unwrap_or(0));
+                let nargs = m
+                    .name("nargs")
+                    .map_or(0, |s| pystr::parse_int(s).unwrap_or(0));
                 let name = m.name("name").unwrap().to_string();
                 macros.insert(
                     name.clone(),
@@ -498,12 +503,44 @@ lazy_re!(
 // is free to redefine them, but harvesting that definition would clobber the
 // real heading with raw markup.
 const PROTECTED_NAMES: &[&str] = &[
-    "section", "subsection", "subsubsection", "paragraph", "subparagraph",
-    "chapter", "part", "title", "author", "date", "thanks", "maketitle",
-    "caption", "captionof", "label", "ref", "cref", "Cref", "autoref",
-    "eqref", "pageref", "cite", "citep", "citet", "item", "footnote",
-    "begin", "end", "abstract", "appendix", "bibliography", "tableofcontents",
-    "includegraphics", "newpage", "clearpage", "input", "include", "today",
+    "section",
+    "subsection",
+    "subsubsection",
+    "paragraph",
+    "subparagraph",
+    "chapter",
+    "part",
+    "title",
+    "author",
+    "date",
+    "thanks",
+    "maketitle",
+    "caption",
+    "captionof",
+    "label",
+    "ref",
+    "cref",
+    "Cref",
+    "autoref",
+    "eqref",
+    "pageref",
+    "cite",
+    "citep",
+    "citet",
+    "item",
+    "footnote",
+    "begin",
+    "end",
+    "abstract",
+    "appendix",
+    "bibliography",
+    "tableofcontents",
+    "includegraphics",
+    "newpage",
+    "clearpage",
+    "input",
+    "include",
+    "today",
 ];
 
 // A control sequence containing `@` is package-internal machinery.
@@ -518,17 +555,28 @@ fn is_safe_macro(mac: &Macro) -> bool {
         return false;
     }
     // reject self-reference (direct recursion the expander can't terminate)
-    let self_ref = re::compile(&format!(r"\\{}(?![A-Za-z])", re::escape(&mac.name)), Flags::NONE);
+    let self_ref = re::compile(
+        &format!(r"\\{}(?![A-Za-z])", re::escape(&mac.name)),
+        Flags::NONE,
+    );
     !self_ref.is_match(&mac.body)
 }
 
 fn safe_only(macros: Macros) -> Macros {
-    macros.into_iter().filter(|(_, m)| is_safe_macro(m)).collect()
+    macros
+        .into_iter()
+        .filter(|(_, m)| is_safe_macro(m))
+        .collect()
 }
 
 /// Turn `\csname foo\endcsname` into `\foo` (dropping inner spaces).
 fn resolve_csname(text: &str) -> String {
-    CSNAME_RE.sub_fn(text, |m| format!("\\{}", pystr::strip(m.name("body").unwrap()).replace(' ', "")))
+    CSNAME_RE.sub_fn(text, |m| {
+        format!(
+            "\\{}",
+            pystr::strip(m.name("body").unwrap()).replace(' ', "")
+        )
+    })
 }
 
 /// Unroll `\@for\i:=\List\do{ body }` and return *only* the bodies.
@@ -590,7 +638,12 @@ fn collect_package_macros(sty_source: &str) -> Macros {
 
 /// Read each local `<name>.sty` named by a `\usepackage` in `source` (once
 /// per absolute path), calling `f` with its text.
-fn for_each_local_sty(source: &str, base_dir: &str, seen: &mut HashSet<String>, mut f: impl FnMut(String, &mut HashSet<String>)) {
+fn for_each_local_sty(
+    source: &str,
+    base_dir: &str,
+    seen: &mut HashSet<String>,
+    mut f: impl FnMut(String, &mut HashSet<String>),
+) {
     for m in USEPKG_RE.find_iter(source) {
         for name in m.name("names").unwrap().split(',') {
             let name = pystr::strip(name);
@@ -611,7 +664,12 @@ fn for_each_local_sty(source: &str, base_dir: &str, seen: &mut HashSet<String>, 
     }
 }
 
-fn load_local_package_macros(source: &str, base_dir: &str, seen: &mut HashSet<String>, depth: usize) -> Macros {
+fn load_local_package_macros(
+    source: &str,
+    base_dir: &str,
+    seen: &mut HashSet<String>,
+    depth: usize,
+) -> Macros {
     if depth > 8 {
         return Macros::new();
     }
@@ -633,7 +691,12 @@ pub fn local_package_sources(source: &str, base_dir: &str) -> String {
     local_package_sources_depth(source, base_dir, &mut HashSet::new(), 0)
 }
 
-fn local_package_sources_depth(source: &str, base_dir: &str, seen: &mut HashSet<String>, depth: usize) -> String {
+fn local_package_sources_depth(
+    source: &str,
+    base_dir: &str,
+    seen: &mut HashSet<String>,
+    depth: usize,
+) -> String {
     if depth > 8 {
         return String::new();
     }
@@ -668,6 +731,9 @@ mod tests {
 
     #[test]
     fn def_and_unbraced_body() {
-        assert_eq!(expand_macros(r"\def\sq#1{#1^2}\newcommand\BB\mathbb $\sq{x}\BB R$", "."), r" $x^2\mathbb R$");
+        assert_eq!(
+            expand_macros(r"\def\sq#1{#1^2}\newcommand\BB\mathbb $\sq{x}\BB R$", "."),
+            r" $x^2\mathbb R$"
+        );
     }
 }

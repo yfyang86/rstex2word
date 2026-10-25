@@ -20,11 +20,15 @@ fn check(case: &Case, dump: Option<&std::path::Path>) -> Option<String> {
         Ok(r) => r,
         Err(e) => return Some(format!("error: {e}")),
     };
-    let got_ir = json::parse(&m.to_placeholders(&json::dumps(&r.document.to_json(), Default::default()))).unwrap();
+    let got_ir =
+        json::parse(&m.to_placeholders(&json::dumps(&r.document.to_json(), Default::default())))
+            .unwrap();
     if let Some(d) = json_diff(case.out.get("ir").unwrap(), &got_ir, "ir") {
         return Some(d);
     }
-    let got_report = json::parse(&m.to_placeholders(&json::dumps(&r.report.to_value(), Default::default()))).unwrap();
+    let got_report =
+        json::parse(&m.to_placeholders(&json::dumps(&r.report.to_value(), Default::default())))
+            .unwrap();
     if let Some(d) = json_diff(case.out.get("report").unwrap(), &got_report, "report") {
         return Some(d);
     }
@@ -80,7 +84,11 @@ fn convert_source_matches_python() {
         }
         n += 1;
         // tests/test_reproducible.py records its cases under SOURCE_DATE_EPOCH=1700000000
-        let epoch = if case.tests().iter().any(|t| t.starts_with("tests/test_reproducible.py")) {
+        let epoch = if case
+            .tests()
+            .iter()
+            .any(|t| t.starts_with("tests/test_reproducible.py"))
+        {
             "1700000000"
         } else {
             "1767312000"
@@ -95,7 +103,12 @@ fn convert_source_matches_python() {
         failures.is_empty(),
         "{} of {n} cases differ:\n{}",
         failures.len(),
-        failures.iter().take(40).cloned().collect::<Vec<_>>().join("\n")
+        failures
+            .iter()
+            .take(40)
+            .cloned()
+            .collect::<Vec<_>>()
+            .join("\n")
     );
 }
 
@@ -103,7 +116,12 @@ fn convert_source_matches_python() {
 fn invalid_source_date_epoch_falls_back_to_now() {
     let _env = ENV.lock().unwrap_or_else(|e| e.into_inner());
     std::env::set_var("SOURCE_DATE_EPOCH", "not-a-number");
-    let r = convert_source(r"\begin{document}Hello $x^2$.\end{document}", ".", &ConvertOptions::default()).unwrap();
+    let r = convert_source(
+        r"\begin{document}Hello $x^2$.\end{document}",
+        ".",
+        &ConvertOptions::default(),
+    )
+    .unwrap();
     std::env::set_var("SOURCE_DATE_EPOCH", "1767312000");
     let a = Archive::new(&r.docx).unwrap();
     let manifest = String::from_utf8(a.read("word/tex2word/manifest.json").unwrap()).unwrap();

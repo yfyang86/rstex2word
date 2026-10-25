@@ -28,7 +28,10 @@ fn in_ranges(table: &[(u32, u32)], c: char) -> bool {
 /// `c.isspace()`.
 pub fn is_space(c: char) -> bool {
     if c.is_ascii() {
-        return matches!(c, ' ' | '\t' | '\n' | '\r' | '\x0b' | '\x0c' | '\x1c'..='\x1f');
+        return matches!(
+            c,
+            ' ' | '\t' | '\n' | '\r' | '\x0b' | '\x0c' | '\x1c'..='\x1f'
+        );
     }
     in_ranges(SPACE, c)
 }
@@ -91,7 +94,11 @@ pub fn parse_int(s: &str) -> Option<i64> {
         Some(rest) => (true, rest),
         None => (false, t.strip_prefix('+').unwrap_or(t)),
     };
-    if digits.is_empty() || digits.starts_with('_') || digits.ends_with('_') || digits.contains("__") {
+    if digits.is_empty()
+        || digits.starts_with('_')
+        || digits.ends_with('_')
+        || digits.contains("__")
+    {
         return None;
     }
     let mut v: i64 = 0;
@@ -264,7 +271,10 @@ pub fn capitalize(s: &str) -> String {
     let mut chars = s.chars();
     match chars.next() {
         None => String::new(),
-        Some(c) => c.to_uppercase().chain(chars.flat_map(char::to_lowercase)).collect(),
+        Some(c) => c
+            .to_uppercase()
+            .chain(chars.flat_map(char::to_lowercase))
+            .collect(),
     }
 }
 
@@ -416,7 +426,11 @@ mod tests {
         assert_eq!(nfc("a\u{302}\u{323}"), "ậ");
         assert_eq!(nfc("\u{1100}\u{1161}\u{11A8}"), "각", "Hangul LVT");
         assert_eq!(nfc("\u{212B}"), "Å", "singleton decomposes");
-        assert_eq!(nfc("\u{0344}"), "\u{308}\u{301}", "non-starter decomposition");
+        assert_eq!(
+            nfc("\u{0344}"),
+            "\u{308}\u{301}",
+            "non-starter decomposition"
+        );
         assert_eq!(nfc("\u{301}e"), "\u{301}e", "no starter before the mark");
         assert_eq!(nfc("i\u{307}\u{301}"), "i\u{307}\u{301}");
     }

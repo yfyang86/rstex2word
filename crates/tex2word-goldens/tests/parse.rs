@@ -16,11 +16,14 @@ fn check(case: &Case, want_ir: &Value, want_report: &Value) -> Option<String> {
         Ok(r) => r,
         Err(e) => return Some(format!("error: {e}")),
     };
-    let got_ir = json::parse(&m.to_placeholders(&json::dumps(&doc.to_json(), Default::default()))).unwrap();
+    let got_ir =
+        json::parse(&m.to_placeholders(&json::dumps(&doc.to_json(), Default::default()))).unwrap();
     if let Some(d) = json_diff(want_ir, &got_ir, "ir") {
         return Some(d);
     }
-    let got_report = json::parse(&m.to_placeholders(&json::dumps(&report.to_value(), Default::default()))).unwrap();
+    let got_report =
+        json::parse(&m.to_placeholders(&json::dumps(&report.to_value(), Default::default())))
+            .unwrap();
     json_diff(want_report, &got_report, "report")
 }
 
@@ -53,6 +56,11 @@ fn parse_document_matches_python() {
         failures.is_empty(),
         "{} of {n} cases differ:\n{}",
         failures.len(),
-        failures.iter().take(30).cloned().collect::<Vec<_>>().join("\n")
+        failures
+            .iter()
+            .take(30)
+            .cloned()
+            .collect::<Vec<_>>()
+            .join("\n")
     );
 }

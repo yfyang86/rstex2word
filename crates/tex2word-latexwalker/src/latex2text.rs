@@ -140,7 +140,13 @@ pub fn latex_to_text(latex: &str) -> Result<String, L2tError> {
 /// pylatexenc's legacy `(nodeoptarg, nodeargs)` view of a node's arguments;
 /// `nodeargs` is `None` for a macro read as another macro's bare argument.
 fn legacy_args_opt(node: &Node) -> (Option<&Node>, Option<Vec<Option<&Node>>>) {
-    if matches!(node.kind, NodeKind::Macro { bare_expression: true, .. }) {
+    if matches!(
+        node.kind,
+        NodeKind::Macro {
+            bare_expression: true,
+            ..
+        }
+    ) {
         return (None, None);
     }
     let (o, a) = legacy_args(node);
@@ -168,7 +174,9 @@ fn legacy_args(node: &Node) -> (Option<&Node>, Vec<Option<&Node>>) {
 }
 
 fn argnlist(node: &Node) -> Vec<Option<&Node>> {
-    node.nodeargd().map_or_else(Vec::new, |a| a.argnlist.iter().map(Option::as_ref).collect())
+    node.nodeargd().map_or_else(Vec::new, |a| {
+        a.argnlist.iter().map(Option::as_ref).collect()
+    })
 }
 
 impl LatexNodes2Text {
@@ -202,7 +210,10 @@ impl LatexNodes2Text {
             if let (Some(p), Some(n)) = (prev, node) {
                 if is_bare_macro(p)? && n.is_chars() && !self.strict.between_macro_and_chars {
                     // after a macro with no arguments, keep its post_space
-                    if let NodeKind::Macro { macro_post_space, .. } = &p.kind {
+                    if let NodeKind::Macro {
+                        macro_post_space, ..
+                    } = &p.kind
+                    {
                         s.push_str(macro_post_space);
                     }
                 }
@@ -224,7 +235,9 @@ impl LatexNodes2Text {
                 }
                 Ok(chars.clone())
             }
-            NodeKind::Comment { comment_post_space, .. } => {
+            NodeKind::Comment {
+                comment_post_space, ..
+            } => {
                 // keep_comments=False
                 if self.strict.after_comment {
                     Ok(String::new())
@@ -234,10 +247,14 @@ impl LatexNodes2Text {
             }
             NodeKind::Group { nodelist, .. } => self.nodelist_to_text(nodelist),
             NodeKind::Macro { macroname, .. } => {
-                let spec = DB.macros.get(macroname.as_str()).copied().unwrap_or(TextSpec {
-                    repl: Repl::Str(""),
-                    discard: Some(true),
-                });
+                let spec = DB
+                    .macros
+                    .get(macroname.as_str())
+                    .copied()
+                    .unwrap_or(TextSpec {
+                        repl: Repl::Str(""),
+                        discard: Some(true),
+                    });
                 if is_truthy(&spec.repl) {
                     return self.apply_simplify_repl(node, spec.repl);
                 }
@@ -250,11 +267,19 @@ impl LatexNodes2Text {
                 }
                 Ok(out)
             }
-            NodeKind::Environment { environmentname, nodelist, .. } => {
-                let spec = DB.envs.get(environmentname.as_str()).copied().unwrap_or(TextSpec {
-                    repl: Repl::Str(""),
-                    discard: Some(false),
-                });
+            NodeKind::Environment {
+                environmentname,
+                nodelist,
+                ..
+            } => {
+                let spec = DB
+                    .envs
+                    .get(environmentname.as_str())
+                    .copied()
+                    .unwrap_or(TextSpec {
+                        repl: Repl::Str(""),
+                        discard: Some(false),
+                    });
                 if is_truthy(&spec.repl) {
                     return self.apply_simplify_repl(node, spec.repl);
                 }
@@ -271,7 +296,9 @@ impl LatexNodes2Text {
                     return self.apply_simplify_repl(node, spec.repl);
                 }
                 match spec.discard {
-                    None => Err(L2tError("'SpecialsTextSpec' object has no attribute 'discard'".into())),
+                    None => Err(L2tError(
+                        "'SpecialsTextSpec' object has no attribute 'discard'".into(),
+                    )),
                     Some(true) => Ok(String::new()),
                     Some(false) => {
                         let mut out = String::new();
@@ -300,7 +327,11 @@ impl LatexNodes2Text {
             NodeKind::Math { displaytype, .. } => displaytype == "display",
             _ => false,
         };
-        Ok(if display { indented_block(&content, "    ") } else { content })
+        Ok(if display {
+            indented_block(&content, "    ")
+        } else {
+            content
+        })
     }
 
     fn groupnode_contents(&mut self, n: Option<&Node>) -> R<String> {
@@ -319,7 +350,9 @@ impl LatexNodes2Text {
         if args.is_empty() {
             return Ok(String::new());
         }
-        let a = *args.get(k).ok_or_else(|| L2tError("list index out of range".into()))?;
+        let a = *args
+            .get(k)
+            .ok_or_else(|| L2tError("list index out of range".into()))?;
         self.groupnode_contents(a)
     }
 
@@ -372,7 +405,9 @@ impl LatexNodes2Text {
             Fn::EquationEnv => self.math_node_to_text(node)?,
             Fn::InputMacro => {
                 let nodeargs = legacy_args_opt(node).1.ok_or_else(none_err)?;
-                let first = *nodeargs.first().ok_or_else(|| L2tError("list index out of range".into()))?;
+                let first = *nodeargs
+                    .first()
+                    .ok_or_else(|| L2tError("list index out of range".into()))?;
                 self.nodes_to_text(&[first])?;
                 String::new() // no tex_input_directory: never reads files
             }
@@ -383,9 +418,13 @@ impl LatexNodes2Text {
             Fn::MatrixEnv => self.matrix(node)?,
             Fn::Uebung => {
                 let nodeargs = legacy_args_opt(node).1.ok_or_else(none_err)?;
-                let first = *nodeargs.first().ok_or_else(|| L2tError("list index out of range".into()))?;
+                let first = *nodeargs
+                    .first()
+                    .ok_or_else(|| L2tError("list index out of range".into()))?;
                 let mut s = format!("\n{}\n", self.nodes_to_text(&[first])?);
-                let optarg = *nodeargs.get(1).ok_or_else(|| L2tError("list index out of range".into()))?;
+                let optarg = *nodeargs
+                    .get(1)
+                    .ok_or_else(|| L2tError("list index out of range".into()))?;
                 if optarg.is_some() {
                     s.push_str(&format!("[{}]\n", self.nodes_to_text(&[optarg])?));
                 }
@@ -396,8 +435,11 @@ impl LatexNodes2Text {
                 fmt_math_text_style(&arg, style)
             }
             Fn::Title | Fn::Author | Fn::Date => {
-                let argd = node.nodeargd().ok_or_else(|| L2tError("'NoneType' object has no attribute 'argnlist'".into()))?;
-                let first: Vec<Option<&Node>> = argd.argnlist.iter().take(1).map(Option::as_ref).collect();
+                let argd = node.nodeargd().ok_or_else(|| {
+                    L2tError("'NoneType' object has no attribute 'argnlist'".into())
+                })?;
+                let first: Vec<Option<&Node>> =
+                    argd.argnlist.iter().take(1).map(Option::as_ref).collect();
                 let text = self.nodes_to_text(&first)?;
                 match f {
                     Fn::Title => self.doc_title = Some(text),
@@ -407,11 +449,25 @@ impl LatexNodes2Text {
                 String::new()
             }
             Fn::Maketitle => {
-                let title = self.doc_title.clone().unwrap_or_else(|| r"[NO \title GIVEN]".into());
-                let author = self.doc_author.clone().unwrap_or_else(|| r"[NO \author GIVEN]".into());
-                let date = self.doc_date.clone().unwrap_or_else(tex2word_ir::pyos::today_text);
-                let width = pystr::char_len(&title).max(4 + pystr::char_len(&author)).max(4 + pystr::char_len(&date));
-                format!("{title}\n    {author}\n    {date}\n{}\n\n", "=".repeat(width))
+                let title = self
+                    .doc_title
+                    .clone()
+                    .unwrap_or_else(|| r"[NO \title GIVEN]".into());
+                let author = self
+                    .doc_author
+                    .clone()
+                    .unwrap_or_else(|| r"[NO \author GIVEN]".into());
+                let date = self
+                    .doc_date
+                    .clone()
+                    .unwrap_or_else(tex2word_ir::pyos::today_text);
+                let width = pystr::char_len(&title)
+                    .max(4 + pystr::char_len(&author))
+                    .max(4 + pystr::char_len(&date));
+                format!(
+                    "{title}\n    {author}\n    {date}\n{}\n\n",
+                    "=".repeat(width)
+                )
             }
             Fn::Item => {
                 let (opt, _) = legacy_args(node);
@@ -423,19 +479,31 @@ impl LatexNodes2Text {
             Fn::Href => {
                 let args = node
                     .nodeargd()
-                    .ok_or_else(|| L2tError("'NoneType' object has no attribute 'argnlist'".into()))?
+                    .ok_or_else(|| {
+                        L2tError("'NoneType' object has no attribute 'argnlist'".into())
+                    })?
                     .argnlist
                     .iter()
                     .map(Option::as_ref)
                     .collect::<Vec<_>>();
-                let idx = |k: usize| args.get(k).copied().ok_or_else(|| L2tError("list index out of range".into()));
+                let idx = |k: usize| {
+                    args.get(k)
+                        .copied()
+                        .ok_or_else(|| L2tError("list index out of range".into()))
+                };
                 let (a1, a0) = (idx(1)?, idx(0)?);
                 let text = self.nodes_to_text(&[a1])?;
                 let url = self.nodes_to_text(&[a0])?;
                 format!("{text} <{url}>")
             }
-            Fn::Part => format!("\n\nPART: {}\n", pystr::upper(&self.node_arg_to_text(node, 2)?)),
-            Fn::Chapter => format!("\n\nCHAPTER: {}\n", pystr::upper(&self.node_arg_to_text(node, 2)?)),
+            Fn::Part => format!(
+                "\n\nPART: {}\n",
+                pystr::upper(&self.node_arg_to_text(node, 2)?)
+            ),
+            Fn::Chapter => format!(
+                "\n\nCHAPTER: {}\n",
+                pystr::upper(&self.node_arg_to_text(node, 2)?)
+            ),
             Fn::Section => format!("\n\n§ {}\n", pystr::upper(&self.node_arg_to_text(node, 2)?)),
             Fn::Subsection => format!("\n\n §.§ {}\n", self.node_arg_to_text(node, 2)?),
             Fn::Subsubsection => format!("\n\n  §.§.§ {}\n", self.node_arg_to_text(node, 2)?),
@@ -475,16 +543,18 @@ impl LatexNodes2Text {
         let mut rows: Vec<Vec<String>> = Vec::new();
         let mut this_col: Vec<String> = Vec::new();
         let mut buf: Vec<&Node> = Vec::new();
-        let new_column = |b: &mut Self, buf: &mut Vec<&Node>, this_col: &mut Vec<String>| -> R<()> {
-            if !buf.is_empty() {
-                let refs: Vec<Option<&Node>> = buf.iter().map(|n| Some(*n)).collect();
-                this_col.push(pystr::strip(&b.nodes_to_text(&refs)?).to_string());
-            }
-            buf.clear();
-            Ok(())
-        };
+        let new_column =
+            |b: &mut Self, buf: &mut Vec<&Node>, this_col: &mut Vec<String>| -> R<()> {
+                if !buf.is_empty() {
+                    let refs: Vec<Option<&Node>> = buf.iter().map(|n| Some(*n)).collect();
+                    this_col.push(pystr::strip(&b.nodes_to_text(&refs)?).to_string());
+                }
+                buf.clear();
+                Ok(())
+            };
         for n in node.nodelist().unwrap_or(&[]) {
-            if matches!(&n.kind, NodeKind::Specials { specials_chars, .. } if specials_chars == "&") {
+            if matches!(&n.kind, NodeKind::Specials { specials_chars, .. } if specials_chars == "&")
+            {
                 new_column(self, &mut buf, &mut this_col)?;
                 continue;
             }
@@ -540,7 +610,10 @@ fn is_bare_macro(node: &Node) -> R<bool> {
 }
 
 fn indented_block(contents: &str, indent: &str) -> String {
-    format!("\n{indent}{}\n", contents.replace('\n', &format!("\n{indent}")))
+    format!(
+        "\n{indent}{}\n",
+        contents.replace('\n', &format!("\n{indent}"))
+    )
 }
 
 /// `re.search('(^|[^%])(%%)*%s', s)`.
@@ -722,7 +795,10 @@ mod tests {
 
     #[test]
     fn basics() {
-        assert_eq!(latex_to_text(r"Caf\'e \& {Bar} --- \textbf{x}").unwrap(), "Café & Bar — x");
+        assert_eq!(
+            latex_to_text(r"Caf\'e \& {Bar} --- \textbf{x}").unwrap(),
+            "Café & Bar — x"
+        );
         assert_eq!(latex_to_text(r"$\alpha + \mathbb{R}$").unwrap(), "α + ℝ");
         assert!(has_percent_s("%s") && has_percent_s("a%%%s") && !has_percent_s("%%s"));
     }

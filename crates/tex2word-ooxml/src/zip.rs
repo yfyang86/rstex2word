@@ -10,7 +10,11 @@ fn crc_table() -> [u32; 256] {
     for (n, slot) in t.iter_mut().enumerate() {
         let mut c = n as u32;
         for _ in 0..8 {
-            c = if c & 1 != 0 { 0xEDB88320 ^ (c >> 1) } else { c >> 1 };
+            c = if c & 1 != 0 {
+                0xEDB88320 ^ (c >> 1)
+            } else {
+                c >> 1
+            };
         }
         *slot = c;
     }
@@ -100,7 +104,9 @@ pub fn write(members: &[(String, Vec<u8>)]) -> Vec<u8> {
 }
 
 fn rd16(b: &[u8], i: usize) -> Result<usize, String> {
-    b.get(i..i + 2).map(|s| u16::from_le_bytes([s[0], s[1]]) as usize).ok_or_else(|| "truncated zip".into())
+    b.get(i..i + 2)
+        .map(|s| u16::from_le_bytes([s[0], s[1]]) as usize)
+        .ok_or_else(|| "truncated zip".into())
 }
 
 fn rd32(b: &[u8], i: usize) -> Result<usize, String> {
@@ -179,10 +185,23 @@ impl<'a> Archive<'a> {
                 String::from_utf8_lossy(raw).into_owned()
             } else {
                 raw.iter()
-                    .map(|&b| if b < 0x80 { char::from(b) } else { CP437_HIGH[(b - 0x80) as usize] })
+                    .map(|&b| {
+                        if b < 0x80 {
+                            char::from(b)
+                        } else {
+                            CP437_HIGH[(b - 0x80) as usize]
+                        }
+                    })
                     .collect()
             };
-            infos.push(Info { name, method, compressed_size, size, crc, offset });
+            infos.push(Info {
+                name,
+                method,
+                compressed_size,
+                size,
+                crc,
+                offset,
+            });
             p += 46 + nlen + elen + clen;
         }
         Ok(Archive { data, infos })
@@ -210,7 +229,10 @@ impl<'a> Archive<'a> {
             return Err("Bad magic number for file header".into());
         }
         let start = p + 30 + rd16(self.data, p + 26)? + rd16(self.data, p + 28)?;
-        let raw = self.data.get(start..start + info.compressed_size).ok_or("truncated zip member")?;
+        let raw = self
+            .data
+            .get(start..start + info.compressed_size)
+            .ok_or("truncated zip member")?;
         let out = match info.method {
             0 => raw.to_vec(),
             8 => inflate(raw)?,
@@ -231,7 +253,10 @@ mod tests {
     fn write_then_read() {
         let members = vec![
             ("[Content_Types].xml".to_string(), b"<Types/>".to_vec()),
-            ("word/document.xml".to_string(), b"<w:document>hello hello hello</w:document>".repeat(50)),
+            (
+                "word/document.xml".to_string(),
+                b"<w:document>hello hello hello</w:document>".repeat(50),
+            ),
         ];
         let z = write(&members);
         let a = Archive::new(&z).unwrap();

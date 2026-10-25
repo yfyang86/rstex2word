@@ -24,7 +24,10 @@ lazy_re!(
     r"\\bibitem\s*(?:\[(?P<label>(?:[^\[\]]|\[[^\]]*\])*)\])?\s*\{(?P<key>[^}]*)\}"
 );
 // noise commands inside .bbl entries that should become a space
-lazy_re!(NEWBLOCK_RE, r"\\(?:newblock|bibinfo|natexlab|urlprefix|doibase)\b");
+lazy_re!(
+    NEWBLOCK_RE,
+    r"\\(?:newblock|bibinfo|natexlab|urlprefix|doibase)\b"
+);
 lazy_re!(CS_RE, r"\\[A-Za-z]+");
 lazy_re!(WS_RE, r"\s+");
 lazy_re!(THEBIB_RE, r"\\begin\{thebibliography\}.*?\}", Flags::S);
@@ -36,7 +39,11 @@ fn clean(text: &str) -> String {
         Err(_) => CS_RE.sub("", &text).replace(['{', '}'], ""),
     };
     let collapsed = WS_RE.sub(" ", &out);
-    let dot = if pystr::strip(&out).is_empty() { "" } else { "." };
+    let dot = if pystr::strip(&out).is_empty() {
+        ""
+    } else {
+        "."
+    };
     format!("{}{dot}", pystr::strip_chars(&collapsed, " .,"))
 }
 
@@ -63,7 +70,10 @@ pub fn parse_bbl(text: &str) -> Dict<CSLItem> {
         fields.insert("note", Value::Str(clean(raw)));
         fields.insert("_order", Value::Int(order as i64));
         if let Some(label) = m.name("label").filter(|l| !l.is_empty()) {
-            fields.insert("_label", Value::Str(clean(label).trim_end_matches('.').to_string()));
+            fields.insert(
+                "_label",
+                Value::Str(clean(label).trim_end_matches('.').to_string()),
+            );
         }
         items.insert(
             key,
@@ -79,7 +89,10 @@ pub fn parse_bbl(text: &str) -> Dict<CSLItem> {
 
 /// Infer numeric vs author-year from whether entries carry `_label`.
 pub fn bbl_style(items: &Dict<CSLItem>) -> String {
-    if items.values().any(|it| it.csl_fields.contains_key("_label")) {
+    if items
+        .values()
+        .any(|it| it.csl_fields.contains_key("_label"))
+    {
         "author-year".into()
     } else {
         "numeric".into()

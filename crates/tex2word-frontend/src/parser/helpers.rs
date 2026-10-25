@@ -90,7 +90,10 @@ pub(crate) fn emphasis_decl(name: &str) -> Option<&'static str> {
 
 /// Upright/roman/sans/medium font resets: rendered with no added emphasis.
 pub(crate) fn is_font_reset(name: &str) -> bool {
-    matches!(name, "textnormal" | "textrm" | "textsf" | "textmd" | "textup" | "text")
+    matches!(
+        name,
+        "textnormal" | "textrm" | "textsf" | "textmd" | "textup" | "text"
+    )
 }
 
 /// Font-size declarations (10pt base) -> `w:sz` half-points.
@@ -113,20 +116,41 @@ pub(crate) fn font_size_hp(name: &str) -> Option<i64> {
 pub(crate) fn is_math_env(base: &str) -> bool {
     matches!(
         base,
-        "equation" | "align" | "gather" | "multline" | "eqnarray" | "displaymath" | "math"
-            | "alignat" | "flalign" | "aligned" | "gathered" | "split" | "multlined"
+        "equation"
+            | "align"
+            | "gather"
+            | "multline"
+            | "eqnarray"
+            | "displaymath"
+            | "math"
+            | "alignat"
+            | "flalign"
+            | "aligned"
+            | "gathered"
+            | "split"
+            | "multlined"
     )
 }
 
 /// Of the math environments, these never carry equation numbers.
 pub(crate) fn is_unnumbered_math_env(base: &str) -> bool {
-    matches!(base, "displaymath" | "math" | "aligned" | "gathered" | "split" | "multlined")
+    matches!(
+        base,
+        "displaymath" | "math" | "aligned" | "gathered" | "split" | "multlined"
+    )
 }
 
 /// Environments we cannot translate to Word primitives -> graphics placeholder.
 pub(crate) const OPAQUE_ENVS: &[&str] = &[
-    "tikzpicture", "pspicture", "pgfpicture", "circuitikz", "tikzcd", "tikzcd*", "forest",
-    "pgfplots", "axis",
+    "tikzpicture",
+    "pspicture",
+    "pgfpicture",
+    "circuitikz",
+    "tikzcd",
+    "tikzcd*",
+    "forest",
+    "pgfplots",
+    "axis",
 ];
 
 pub(crate) fn cite_mode(name: &str) -> Option<&'static str> {
@@ -163,50 +187,141 @@ pub(crate) fn ref_style(name: &str) -> &'static str {
     }
 }
 
-pub(crate) static TEXT_SYMBOLS: LazyLock<HashMap<&'static str, &'static str>> = LazyLock::new(|| {
-    [
-        ("LaTeX", "LaTeX"), ("TeX", "TeX"), ("ldots", "…"), ("dots", "…"),
-        ("textellipsis", "…"), ("textemdash", "—"), ("textendash", "–"),
-        ("textasciitilde", "~"), ("textbackslash", "\\"), ("textasciicircum", "^"),
-        ("textbar", "|"), ("textless", "<"), ("textgreater", ">"), ("S", "§"),
-        ("P", "¶"), ("copyright", "©"), ("textregistered", "®"), ("texttrademark", "™"),
-        ("dag", "†"), ("ddag", "‡"), ("pounds", "£"), ("euro", "€"), ("%", "%"),
-        ("textdegree", "°"), ("textbullet", "•"), ("textmu", "µ"), ("textperthousand", "‰"),
-        ("textquotedblleft", "“"), ("textquotedblright", "”"),
-        ("textquoteleft", "‘"), ("textquoteright", "’"),
-        ("guillemotleft", "«"), ("guillemotright", "»"), ("textsection", "§"),
-        ("textparagraph", "¶"),
-        // vulgar fractions, currencies, and assorted text symbols
-        ("textonehalf", "½"), ("textonequarter", "¼"), ("textthreequarters", "¾"),
-        ("textonesuperior", "¹"), ("texttwosuperior", "²"), ("textthreesuperior", "³"),
-        ("texteuro", "€"), ("textcent", "¢"), ("textsterling", "£"), ("textyen", "¥"),
-        ("textdollar", "$"), ("textnumero", "№"), ("textcelsius", "℃"), ("textohm", "Ω"),
-        ("textmho", "℧"), ("textdiv", "÷"), ("texttimes", "×"), ("textpm", "±"),
-        ("textminus", "−"), ("textperiodcentered", "·"), ("textdaggerdbl", "‡"),
-        ("textdagger", "†"), ("checkmark", "✓"), ("slash", "/"), ("nobreakspace", " "),
-        // bbding dingbats (\greencheck-style macros expand to these)
-        ("Checkmark", "✓"), ("CheckmarkBold", "✔"), ("XSolid", "✗"), ("XSolidBold", "✘"),
-        ("XSolidBrush", "✘"), ("Cross", "✗"), ("CrossBold", "✘"), ("HandRight", "☞"),
-        ("HandLeft", "☜"), ("PencilRight", "✎"), ("Envelope", "✉"), ("Phone", "☎"),
-        // gensymb package text/math symbols
-        ("degree", "°"), ("celsius", "℃"), ("ohm", "Ω"), ("micro", "µ"), ("perthousand", "‰"),
-        ("&", "&"), ("_", "_"), ("#", "#"), ("$", "$"), ("{", "{"), ("}", "}"),
-        (" ", " "), (",", "\u{202f}"), (";", " "), (":", " "), ("!", ""), ("@", ""),
-        // \quad = 1em, \qquad = 2em: em spaces
-        ("quad", "\u{2003}"), ("qquad", "\u{2003}\u{2003}"), ("hfill", " "), ("newline", "\n"),
-        // \xspace re-inserts the space pylatexenc gobbles after a control word
-        ("xspace", " "),
-        // common math-ish operators that also appear in text / pseudocode
-        ("gets", "←"), ("to", "→"), ("leftarrow", "←"), ("rightarrow", "→"),
-        ("Rightarrow", "⇒"), ("Leftarrow", "⇐"), ("leftrightarrow", "↔"),
-        ("land", "∧"), ("lor", "∨"), ("lnot", "¬"), ("neg", "¬"), ("neq", "≠"), ("ne", "≠"),
-        ("leq", "≤"), ("le", "≤"), ("geq", "≥"), ("ge", "≥"), ("times", "×"), ("cdot", "·"),
-        ("infty", "∞"), ("star", "★"), ("ast", "∗"), ("approx", "≈"), ("equiv", "≡"),
-        ("in", "∈"), ("forall", "∀"), ("exists", "∃"), ("emptyset", "∅"),
-    ]
-    .into_iter()
-    .collect()
-});
+pub(crate) static TEXT_SYMBOLS: LazyLock<HashMap<&'static str, &'static str>> =
+    LazyLock::new(|| {
+        [
+            ("LaTeX", "LaTeX"),
+            ("TeX", "TeX"),
+            ("ldots", "…"),
+            ("dots", "…"),
+            ("textellipsis", "…"),
+            ("textemdash", "—"),
+            ("textendash", "–"),
+            ("textasciitilde", "~"),
+            ("textbackslash", "\\"),
+            ("textasciicircum", "^"),
+            ("textbar", "|"),
+            ("textless", "<"),
+            ("textgreater", ">"),
+            ("S", "§"),
+            ("P", "¶"),
+            ("copyright", "©"),
+            ("textregistered", "®"),
+            ("texttrademark", "™"),
+            ("dag", "†"),
+            ("ddag", "‡"),
+            ("pounds", "£"),
+            ("euro", "€"),
+            ("%", "%"),
+            ("textdegree", "°"),
+            ("textbullet", "•"),
+            ("textmu", "µ"),
+            ("textperthousand", "‰"),
+            ("textquotedblleft", "“"),
+            ("textquotedblright", "”"),
+            ("textquoteleft", "‘"),
+            ("textquoteright", "’"),
+            ("guillemotleft", "«"),
+            ("guillemotright", "»"),
+            ("textsection", "§"),
+            ("textparagraph", "¶"),
+            // vulgar fractions, currencies, and assorted text symbols
+            ("textonehalf", "½"),
+            ("textonequarter", "¼"),
+            ("textthreequarters", "¾"),
+            ("textonesuperior", "¹"),
+            ("texttwosuperior", "²"),
+            ("textthreesuperior", "³"),
+            ("texteuro", "€"),
+            ("textcent", "¢"),
+            ("textsterling", "£"),
+            ("textyen", "¥"),
+            ("textdollar", "$"),
+            ("textnumero", "№"),
+            ("textcelsius", "℃"),
+            ("textohm", "Ω"),
+            ("textmho", "℧"),
+            ("textdiv", "÷"),
+            ("texttimes", "×"),
+            ("textpm", "±"),
+            ("textminus", "−"),
+            ("textperiodcentered", "·"),
+            ("textdaggerdbl", "‡"),
+            ("textdagger", "†"),
+            ("checkmark", "✓"),
+            ("slash", "/"),
+            ("nobreakspace", " "),
+            // bbding dingbats (\greencheck-style macros expand to these)
+            ("Checkmark", "✓"),
+            ("CheckmarkBold", "✔"),
+            ("XSolid", "✗"),
+            ("XSolidBold", "✘"),
+            ("XSolidBrush", "✘"),
+            ("Cross", "✗"),
+            ("CrossBold", "✘"),
+            ("HandRight", "☞"),
+            ("HandLeft", "☜"),
+            ("PencilRight", "✎"),
+            ("Envelope", "✉"),
+            ("Phone", "☎"),
+            // gensymb package text/math symbols
+            ("degree", "°"),
+            ("celsius", "℃"),
+            ("ohm", "Ω"),
+            ("micro", "µ"),
+            ("perthousand", "‰"),
+            ("&", "&"),
+            ("_", "_"),
+            ("#", "#"),
+            ("$", "$"),
+            ("{", "{"),
+            ("}", "}"),
+            (" ", " "),
+            (",", "\u{202f}"),
+            (";", " "),
+            (":", " "),
+            ("!", ""),
+            ("@", ""),
+            // \quad = 1em, \qquad = 2em: em spaces
+            ("quad", "\u{2003}"),
+            ("qquad", "\u{2003}\u{2003}"),
+            ("hfill", " "),
+            ("newline", "\n"),
+            // \xspace re-inserts the space pylatexenc gobbles after a control word
+            ("xspace", " "),
+            // common math-ish operators that also appear in text / pseudocode
+            ("gets", "←"),
+            ("to", "→"),
+            ("leftarrow", "←"),
+            ("rightarrow", "→"),
+            ("Rightarrow", "⇒"),
+            ("Leftarrow", "⇐"),
+            ("leftrightarrow", "↔"),
+            ("land", "∧"),
+            ("lor", "∨"),
+            ("lnot", "¬"),
+            ("neg", "¬"),
+            ("neq", "≠"),
+            ("ne", "≠"),
+            ("leq", "≤"),
+            ("le", "≤"),
+            ("geq", "≥"),
+            ("ge", "≥"),
+            ("times", "×"),
+            ("cdot", "·"),
+            ("infty", "∞"),
+            ("star", "★"),
+            ("ast", "∗"),
+            ("approx", "≈"),
+            ("equiv", "≡"),
+            ("in", "∈"),
+            ("forall", "∀"),
+            ("exists", "∃"),
+            ("emptyset", "∅"),
+        ]
+        .into_iter()
+        .collect()
+    });
 
 /// Map a pifont `\ding{N}` code to a Unicode dingbat (`•` if unknown).
 pub(crate) fn ding_char(code: &str) -> String {
@@ -232,21 +347,47 @@ pub(crate) fn ding_char(code: &str) -> String {
 pub(crate) fn is_transparent_env(base: &str) -> bool {
     matches!(
         base,
-        "subequations" | "samepage" | "sloppypar" | "spacing" | "singlespace" | "doublespace"
-            | "onehalfspace" | "noindent" | "raggedright" | "raggedleft" | "small"
-            | "footnotesize" | "large" | "Large" | "flushleftright"
+        "subequations"
+            | "samepage"
+            | "sloppypar"
+            | "spacing"
+            | "singlespace"
+            | "doublespace"
+            | "onehalfspace"
+            | "noindent"
+            | "raggedright"
+            | "raggedleft"
+            | "small"
+            | "footnotesize"
+            | "large"
+            | "Large"
+            | "flushleftright"
     )
 }
 
 /// theorem-like environment name -> display name (proof is handled specially).
 pub(crate) const THEOREM_ENVS: &[(&str, &str)] = &[
-    ("theorem", "Theorem"), ("thm", "Theorem"), ("lemma", "Lemma"),
-    ("corollary", "Corollary"), ("cor", "Corollary"), ("proposition", "Proposition"),
-    ("prop", "Proposition"), ("definition", "Definition"), ("defn", "Definition"),
-    ("remark", "Remark"), ("example", "Example"), ("conjecture", "Conjecture"),
-    ("claim", "Claim"), ("fact", "Fact"), ("observation", "Observation"),
-    ("notation", "Notation"), ("assumption", "Assumption"), ("axiom", "Axiom"),
-    ("exercise", "Exercise"), ("problem", "Problem"), ("question", "Question"),
+    ("theorem", "Theorem"),
+    ("thm", "Theorem"),
+    ("lemma", "Lemma"),
+    ("corollary", "Corollary"),
+    ("cor", "Corollary"),
+    ("proposition", "Proposition"),
+    ("prop", "Proposition"),
+    ("definition", "Definition"),
+    ("defn", "Definition"),
+    ("remark", "Remark"),
+    ("example", "Example"),
+    ("conjecture", "Conjecture"),
+    ("claim", "Claim"),
+    ("fact", "Fact"),
+    ("observation", "Observation"),
+    ("notation", "Notation"),
+    ("assumption", "Assumption"),
+    ("axiom", "Axiom"),
+    ("exercise", "Exercise"),
+    ("problem", "Problem"),
+    ("question", "Question"),
 ];
 
 pub(crate) fn toc_kind(name: &str) -> Option<&'static str> {
@@ -261,30 +402,107 @@ pub(crate) fn toc_kind(name: &str) -> Option<&'static str> {
 pub(crate) fn is_ignore_macro(name: &str) -> bool {
     matches!(
         name,
-        "maketitle" | "frontmatter" | "mainmatter" | "backmatter"
-            | "newpage" | "clearpage" | "pagebreak" | "noindent" | "centering"
-            | "small" | "large" | "Large" | "LARGE" | "normalsize" | "footnotesize"
-            | "scriptsize" | "tiny" | "huge" | "Huge" | "vspace" | "hspace" | "vfill"
-            | "bigskip" | "medskip" | "smallskip" | "indent" | "par" | "protect"
-            | "displaystyle" | "unskip" | "ignorespaces" | "leavevmode"
+        "maketitle"
+            | "frontmatter"
+            | "mainmatter"
+            | "backmatter"
+            | "newpage"
+            | "clearpage"
+            | "pagebreak"
+            | "noindent"
+            | "centering"
+            | "small"
+            | "large"
+            | "Large"
+            | "LARGE"
+            | "normalsize"
+            | "footnotesize"
+            | "scriptsize"
+            | "tiny"
+            | "huge"
+            | "Huge"
+            | "vspace"
+            | "hspace"
+            | "vfill"
+            | "bigskip"
+            | "medskip"
+            | "smallskip"
+            | "indent"
+            | "par"
+            | "protect"
+            | "displaystyle"
+            | "unskip"
+            | "ignorespaces"
+            | "leavevmode"
             | "/"
-            | "sloppy" | "fussy" | "raggedright" | "raggedleft" | "flushbottom"
-            | "samepage" | "frenchspacing" | "boldmath" | "unboldmath"
-            | "selectfont" | "rmfamily" | "sffamily" | "normalfont" | "floatbarrier"
-            | "rm" | "sf" | "md" | "up" | "mdseries" | "upshape"
-            | "FloatBarrier" | "height" | "width" | "depth" | "totalheight"
-            | "fontfamily" | "fontsize" | "nohyphens"
-            | "documentclass" | "usepackage" | "RequirePackage" | "pagestyle"
-            | "thispagestyle" | "setlength" | "setcounter" | "hypersetup"
-            | "graphicspath" | "definecolor" | "pagenumbering"
-            | "renewcommand" | "newcommand" | "providecommand"
-            | "setitemize" | "setenumerate" | "hyphenation" | "settopmatter"
-            | "begingroup" | "endgroup" | "bgroup" | "egroup"
-            | "AddToShipoutPicture" | "ClearShipoutPicture"
-            | "newcounter" | "addtocounter" | "refstepcounter" | "stepcounter"
-            | "authornote" | "authornotemark" | "balance" | "acmnote"
-            | "institution" | "department" | "city" | "state" | "country"
-            | "postcode" | "streetaddress" | "position"
+            | "sloppy"
+            | "fussy"
+            | "raggedright"
+            | "raggedleft"
+            | "flushbottom"
+            | "samepage"
+            | "frenchspacing"
+            | "boldmath"
+            | "unboldmath"
+            | "selectfont"
+            | "rmfamily"
+            | "sffamily"
+            | "normalfont"
+            | "floatbarrier"
+            | "rm"
+            | "sf"
+            | "md"
+            | "up"
+            | "mdseries"
+            | "upshape"
+            | "FloatBarrier"
+            | "height"
+            | "width"
+            | "depth"
+            | "totalheight"
+            | "fontfamily"
+            | "fontsize"
+            | "nohyphens"
+            | "documentclass"
+            | "usepackage"
+            | "RequirePackage"
+            | "pagestyle"
+            | "thispagestyle"
+            | "setlength"
+            | "setcounter"
+            | "hypersetup"
+            | "graphicspath"
+            | "definecolor"
+            | "pagenumbering"
+            | "renewcommand"
+            | "newcommand"
+            | "providecommand"
+            | "setitemize"
+            | "setenumerate"
+            | "hyphenation"
+            | "settopmatter"
+            | "begingroup"
+            | "endgroup"
+            | "bgroup"
+            | "egroup"
+            | "AddToShipoutPicture"
+            | "ClearShipoutPicture"
+            | "newcounter"
+            | "addtocounter"
+            | "refstepcounter"
+            | "stepcounter"
+            | "authornote"
+            | "authornotemark"
+            | "balance"
+            | "acmnote"
+            | "institution"
+            | "department"
+            | "city"
+            | "state"
+            | "country"
+            | "postcode"
+            | "streetaddress"
+            | "position"
     )
 }
 
@@ -321,8 +539,16 @@ fn marker_symbol(name: &str) -> Option<&'static str> {
 fn is_marker_wrapper(name: &str) -> bool {
     matches!(
         name,
-        "mathrm" | "text" | "textrm" | "mathit" | "mathbf" | "textbf" | "mathsf" | "textit"
-            | "textup" | "mathnormal"
+        "mathrm"
+            | "text"
+            | "textrm"
+            | "mathit"
+            | "mathbf"
+            | "textbf"
+            | "mathsf"
+            | "textit"
+            | "textup"
+            | "mathnormal"
     )
 }
 
@@ -386,7 +612,11 @@ pub(crate) fn script_marker(latex: &str) -> Option<(&'static str, String)> {
     if pystr::char_len(s) < 2 || !(first == '^' || first == '_') {
         return None;
     }
-    let kind = if first == '^' { "superscript" } else { "subscript" };
+    let kind = if first == '^' {
+        "superscript"
+    } else {
+        "subscript"
+    };
     let rest = pystr::lstrip(&s[1..]);
     let (body, tail) = if rest.starts_with('{') {
         let (body, end) = braced_group(rest, 0);
@@ -409,8 +639,20 @@ pub(crate) fn script_marker(latex: &str) -> Option<(&'static str, String)> {
 fn is_layout_glue_macro(name: &str) -> bool {
     matches!(
         name,
-        "hfill" | "hspace" | "hskip" | "quad" | "qquad" | "enspace" | "thinspace" | "centering"
-            | "noindent" | "hss" | "hfil" | "," | " " | "~"
+        "hfill"
+            | "hspace"
+            | "hskip"
+            | "quad"
+            | "qquad"
+            | "enspace"
+            | "thinspace"
+            | "centering"
+            | "noindent"
+            | "hss"
+            | "hfil"
+            | ","
+            | " "
+            | "~"
     )
 }
 
@@ -444,7 +686,10 @@ pub(crate) fn argnlist(node: &Node) -> &[Option<Node>] {
 
 pub(crate) fn group_parts(node: &Node) -> Option<(&[Node], &(String, String))> {
     match &node.kind {
-        NodeKind::Group { nodelist, delimiters } => Some((nodelist, delimiters)),
+        NodeKind::Group {
+            nodelist,
+            delimiters,
+        } => Some((nodelist, delimiters)),
         _ => None,
     }
 }
@@ -519,7 +764,12 @@ pub(crate) fn group_nodes_at(node: &Node, which: i64) -> Cow<'_, [Node]> {
     if args.is_empty() {
         return Cow::Borrowed(&[]);
     }
-    let groups: Vec<&[Node]> = args.iter().flatten().filter_map(group_parts).map(|(n, _)| n).collect();
+    let groups: Vec<&[Node]> = args
+        .iter()
+        .flatten()
+        .filter_map(group_parts)
+        .map(|(n, _)| n)
+        .collect();
     if groups.is_empty() {
         // a single non-group argument (e.g. \ref e)
         return match args.iter().flatten().next() {
@@ -572,7 +822,9 @@ pub(crate) fn chars_of(nodes: &[Node]) -> String {
 
 /// True if a figure source holds a drawing environment (TikZ & co.).
 pub(crate) fn has_opaque_env(source: &str) -> bool {
-    OPAQUE_ENVS.iter().any(|env| source.contains(&format!("\\begin{{{env}}}")))
+    OPAQUE_ENVS
+        .iter()
+        .any(|env| source.contains(&format!("\\begin{{{env}}}")))
 }
 
 /// A paragraph with no visible content (only whitespace / line breaks).
@@ -620,9 +872,12 @@ pub(crate) fn flatten_stacked_tables(blocks: Vec<Block>) -> Vec<Block> {
             Block::Table(t)
                 if !t.rows.is_empty()
                     && t.rows.iter().all(|r| r.cells.len() == 1)
-                    && t.rows
-                        .iter()
-                        .all(|r| r.cells[0].blocks.iter().all(|cb| matches!(cb, Block::Paragraph(_)))) =>
+                    && t.rows.iter().all(|r| {
+                        r.cells[0]
+                            .blocks
+                            .iter()
+                            .all(|cb| matches!(cb, Block::Paragraph(_)))
+                    }) =>
             {
                 let mut inlines = Vec::new();
                 for (i, row) in t.rows.into_iter().enumerate() {
@@ -635,7 +890,10 @@ pub(crate) fn flatten_stacked_tables(blocks: Vec<Block>) -> Vec<Block> {
                         }
                     }
                 }
-                Block::Paragraph(Paragraph { inlines, align: None })
+                Block::Paragraph(Paragraph {
+                    inlines,
+                    align: None,
+                })
             }
             other => other,
         })
@@ -651,7 +909,10 @@ pub(crate) fn int_or_default(value: &str, default: i64) -> i64 {
     pystr::parse_int(value).unwrap_or(default)
 }
 
-pub(crate) fn inlines_to_text_with(inlines: &[Inline], resolve: &dyn Fn(&Inline) -> Option<Vec<Inline>>) -> String {
+pub(crate) fn inlines_to_text_with(
+    inlines: &[Inline],
+    resolve: &dyn Fn(&Inline) -> Option<Vec<Inline>>,
+) -> String {
     let mut out: Vec<String> = Vec::new();
     for node in inlines {
         match node {
@@ -751,7 +1012,9 @@ pub(crate) fn strip_math_delims(verbatim: &str, _env: &str) -> String {
     for (op, cl) in [("\\[", "\\]"), ("$$", "$$"), ("\\(", "\\)"), ("$", "$")] {
         if v.starts_with(op) && v.ends_with(cl) {
             // v[len(op) : len(v) - len(cl)] (empty when they overlap)
-            let inner = v.get(op.len()..v.len().saturating_sub(cl.len())).unwrap_or("");
+            let inner = v
+                .get(op.len()..v.len().saturating_sub(cl.len()))
+                .unwrap_or("");
             return pystr::strip(inner).to_string();
         }
     }
@@ -764,11 +1027,16 @@ pub(crate) fn strip_math_delims(verbatim: &str, _env: &str) -> String {
     v.to_string()
 }
 
-lazy_re!(LABEL_TAG_RE, r"\\(?:label|tag|nonumber|notag)\b\s*(?:\{[^{}]*\})?");
+lazy_re!(
+    LABEL_TAG_RE,
+    r"\\(?:label|tag|nonumber|notag)\b\s*(?:\{[^{}]*\})?"
+);
 lazy_re!(EXTRACT_LABEL_RE, r"\\label\{([^}]*)\}");
 
 pub(crate) fn extract_label(latex: &str) -> Option<String> {
-    EXTRACT_LABEL_RE.search(latex).map(|m| m.group_str(1).to_string())
+    EXTRACT_LABEL_RE
+        .search(latex)
+        .map(|m| m.group_str(1).to_string())
 }
 
 pub(crate) fn env_colspec(node: &Node) -> String {
@@ -782,7 +1050,10 @@ pub(crate) fn env_colspec(node: &Node) -> String {
     if let Some(last) = groups.last() {
         let verb = pystr::strip(last.latex_verbatim());
         if verb.starts_with('{') && verb.ends_with('}') {
-            return verb.get(1..verb.len().saturating_sub(1)).unwrap_or("").to_string(); // keep p{3cm} braces
+            return verb
+                .get(1..verb.len().saturating_sub(1))
+                .unwrap_or("")
+                .to_string(); // keep p{3cm} braces
         }
         return chars_of(last.nodelist().unwrap_or(&[]));
     }
@@ -799,7 +1070,11 @@ lazy_re!(CMIDRULE_RE, r"(\d+)\s*-\s*(\d+)");
 /// The 1-based `{a-b}` column range of a `\cmidrule`/`\cline`.
 pub(crate) fn cmidrule_range(node: &Node) -> Option<(i64, i64)> {
     let chars = chars_of(&group_nodes(node));
-    let text = if chars.is_empty() { node.latex_verbatim().to_string() } else { chars };
+    let text = if chars.is_empty() {
+        node.latex_verbatim().to_string()
+    } else {
+        chars
+    };
     let m = CMIDRULE_RE.search(&text)?;
     let a = pystr::parse_int(m.group_str(1))?;
     let b = pystr::parse_int(m.group_str(2))?;
@@ -851,7 +1126,11 @@ pub(crate) fn parse_colspec(spec: &str) -> (Vec<String>, Vec<Option<f64>>) {
         let next_brace = b.get(i + c.len_utf8()) == Some(&b'{');
         if c == '>' && next_brace {
             let (body, j) = braced_group(spec, i + 1);
-            for (key, al) in [("centering", "center"), ("raggedright", "left"), ("raggedleft", "right")] {
+            for (key, al) in [
+                ("centering", "center"),
+                ("raggedright", "left"),
+                ("raggedleft", "right"),
+            ] {
                 if body.contains(&format!("\\{key}")) {
                     pending_align = Some(al);
                 }
@@ -897,7 +1176,11 @@ pub(crate) fn parse_colspec(spec: &str) -> (Vec<String>, Vec<Option<f64>>) {
             // ignore |, @{...}, etc.
             _ => {}
         }
-        i += if i < spec.len() { char_at(spec, i).map_or(1, char::len_utf8) } else { 1 };
+        i += if i < spec.len() {
+            char_at(spec, i).map_or(1, char::len_utf8)
+        } else {
+            1
+        };
     }
     (aligns, widths)
 }
@@ -988,7 +1271,10 @@ pub(crate) fn parse_graphics_options(opts: &str) -> tex2word_ir::Dict<String> {
     let mut out = tex2word_ir::Dict::new();
     for part in split_top_commas(opts) {
         if let Some((key, val)) = part.split_once('=') {
-            out.insert(pystr::lower(pystr::strip(key)), pystr::strip(val).to_string());
+            out.insert(
+                pystr::lower(pystr::strip(key)),
+                pystr::strip(val).to_string(),
+            );
         } else if !pystr::strip(&part).is_empty() {
             out.insert(pystr::lower(pystr::strip(&part)), String::new());
         }
@@ -1034,7 +1320,8 @@ pub(crate) fn make_image(node: &Node) -> Image {
             image.clip = true;
         }
         if let Some(t) = parsed.get("trim") {
-            let trims: Vec<Option<f64>> = pystr::split_ws(t).into_iter().map(length_to_emu).collect();
+            let trims: Vec<Option<f64>> =
+                pystr::split_ws(t).into_iter().map(length_to_emu).collect();
             if trims.len() == 4 && trims.iter().all(Option::is_some) {
                 image.trim = Some(trims.into_iter().flatten().collect());
             }
@@ -1051,7 +1338,10 @@ pub(crate) fn graphics_option_text(node: &Node) -> String {
             if first_delim_char(d) == Some('[') {
                 let verb = pystr::strip(a.latex_verbatim());
                 if verb.starts_with('[') && verb.ends_with(']') {
-                    return verb.get(1..verb.len().saturating_sub(1)).unwrap_or("").to_string();
+                    return verb
+                        .get(1..verb.len().saturating_sub(1))
+                        .unwrap_or("")
+                        .to_string();
                 }
                 return chars_of(list);
             }
@@ -1125,7 +1415,10 @@ lazy_re!(TCBSET_RE, r"\\tcbset\s*\{");
 
 /// tcolorbox keys that shape the rendered callout; everything else is layout.
 pub(crate) fn is_tcb_key(key: &str) -> bool {
-    matches!(key, "colback" | "colframe" | "colbacktitle" | "coltitle" | "title" | "fonttitle" | "boxrule")
+    matches!(
+        key,
+        "colback" | "colframe" | "colbacktitle" | "coltitle" | "title" | "fonttitle" | "boxrule"
+    )
 }
 
 pub(crate) fn skip_ws(s: &str, mut i: usize) -> usize {
@@ -1173,7 +1466,10 @@ pub(crate) fn kv_list(opts: &str) -> Vec<(String, Option<String>)> {
             continue;
         }
         match part.split_once('=') {
-            Some((k, v)) => out.push((pystr::strip(k).to_string(), Some(pystr::strip(v).to_string()))),
+            Some((k, v)) => out.push((
+                pystr::strip(k).to_string(),
+                Some(pystr::strip(v).to_string()),
+            )),
             None => out.push((part.to_string(), None)),
         }
     }
@@ -1207,10 +1503,21 @@ pub(crate) fn collect_tcolorbox_defs(
                 i = skip_ws(source, j);
             }
         }
-        let opts = if b.get(i) == Some(&b'{') { braced_group(source, i).0.to_string() } else { String::new() };
+        let opts = if b.get(i) == Some(&b'{') {
+            braced_group(source, i).0.to_string()
+        } else {
+            String::new()
+        };
         let name = pystr::strip(name);
         if !name.is_empty() {
-            envs.insert(name, TcbEnv { nargs, default, opts });
+            envs.insert(
+                name,
+                TcbEnv {
+                    nargs,
+                    default,
+                    opts,
+                },
+            );
         }
     }
     let mut styles = HashMap::new();
@@ -1244,10 +1551,15 @@ lazy_re!(
     ),
     Flags::S
 );
-lazy_re!(MDOPT_RE, r"(backgroundcolor|linecolor)\s*=\s*([A-Za-z][\w!.]*)");
+lazy_re!(
+    MDOPT_RE,
+    r"(backgroundcolor|linecolor)\s*=\s*([A-Za-z][\w!.]*)"
+);
 
 /// Each user `\newmdenv` environment -> `(backgroundcolor, linecolor)`.
-pub(crate) fn collect_mdframed_envs(source: &str) -> HashMap<String, (Option<String>, Option<String>)> {
+pub(crate) fn collect_mdframed_envs(
+    source: &str,
+) -> HashMap<String, (Option<String>, Option<String>)> {
     let mut out = HashMap::new();
     for m in NEWMDENV_RE.find_iter(source) {
         let name = pystr::strip(m.group_str(2));
@@ -1260,7 +1572,10 @@ pub(crate) fn collect_mdframed_envs(source: &str) -> HashMap<String, (Option<Str
         }
         out.insert(
             name.to_string(),
-            (opts.get("backgroundcolor").cloned(), opts.get("linecolor").cloned()),
+            (
+                opts.get("backgroundcolor").cloned(),
+                opts.get("linecolor").cloned(),
+            ),
         );
     }
     out
@@ -1334,7 +1649,10 @@ pub(crate) fn resolve_theorem_counters(
             root = next.clone();
             seen.insert(root.clone());
         }
-        counters.insert(name.clone(), envs.get(&root).cloned().unwrap_or_else(|| display.clone()));
+        counters.insert(
+            name.clone(),
+            envs.get(&root).cloned().unwrap_or_else(|| display.clone()),
+        );
     }
     counters
 }
@@ -1387,7 +1705,14 @@ pub(crate) fn running_head_from_preamble(preamble: &str) -> Option<String> {
     if let Some(m) = TITLE_OPT_RE.search(preamble) {
         return nonempty(pystr::strip(&normalize_ws(m.group_str(1))).to_string());
     }
-    for macro_ in ["runninghead", "shorttitle", "markright", "setheadertext", "titlerunning", "runningtitle"] {
+    for macro_ in [
+        "runninghead",
+        "shorttitle",
+        "markright",
+        "setheadertext",
+        "titlerunning",
+        "runningtitle",
+    ] {
         if let Some(content) = braced_content(preamble, macro_) {
             if !content.is_empty() {
                 return nonempty(pystr::strip(&normalize_ws(&content)).to_string());
@@ -1400,7 +1725,10 @@ pub(crate) fn running_head_from_preamble(preamble: &str) -> Option<String> {
     None
 }
 
-lazy_re!(DEFINECOLOR_RE, r"\\definecolor\s*\{([^}]*)\}\s*\{([^}]*)\}\s*\{([^}]*)\}");
+lazy_re!(
+    DEFINECOLOR_RE,
+    r"\\definecolor\s*\{([^}]*)\}\s*\{([^}]*)\}\s*\{([^}]*)\}"
+);
 lazy_re!(COLORLET_RE, r"\\colorlet\s*\{([^}]*)\}\s*\{([^}]*)\}");
 
 pub(crate) fn collect_color_defs(source: &str, table: &mut crate::colors::ColorTable) {
@@ -1417,14 +1745,26 @@ pub(crate) fn collect_color_defs(source: &str, table: &mut crate::colors::ColorT
 pub(crate) fn is_gls_macro(lower: &str) -> bool {
     matches!(
         lower,
-        "gls" | "glspl" | "acrshort" | "acrshortpl" | "acrlong" | "acrlongpl" | "acrfull"
-            | "acrfullpl" | "glsentryshort" | "glsentrylong"
+        "gls"
+            | "glspl"
+            | "acrshort"
+            | "acrshortpl"
+            | "acrlong"
+            | "acrlongpl"
+            | "acrfull"
+            | "acrfullpl"
+            | "glsentryshort"
+            | "glsentrylong"
     )
 }
 
 pub(crate) const PRINTGLOSSARY_MACROS: &[&str] = &[
-    "printglossaries", "printglossary", "printnoidxglossaries", "printnoidxglossary",
-    "printacronyms", "printabbreviations",
+    "printglossaries",
+    "printglossary",
+    "printnoidxglossaries",
+    "printnoidxglossary",
+    "printacronyms",
+    "printabbreviations",
 ];
 
 /// acronym package: `\ac/\acs/\acl/\acf` (+ plural -p) -> glossaries names.
@@ -1446,23 +1786,35 @@ lazy_re!(
     NEWACRONYM_RE,
     r"\\newacronym\s*(?:\[[^\]]*\])?\s*\{([^}]*)\}\s*\{([^}]*)\}\s*\{([^}]*)\}"
 );
-lazy_re!(ACRO_RE, r"\\acro(?:def)?\s*\{([^}]*)\}\s*(?:\[([^\]]*)\])?\s*\{([^}]*)\}");
+lazy_re!(
+    ACRO_RE,
+    r"\\acro(?:def)?\s*\{([^}]*)\}\s*(?:\[([^\]]*)\])?\s*\{([^}]*)\}"
+);
 
 pub(crate) fn collect_acronyms(source: &str, acronyms: &mut tex2word_ir::Dict<(String, String)>) {
     for m in NEWACRONYM_RE.find_iter(source) {
         acronyms.insert(
             pystr::strip(m.group_str(1)),
-            (pystr::strip(m.group_str(2)).to_string(), pystr::strip(m.group_str(3)).to_string()),
+            (
+                pystr::strip(m.group_str(2)).to_string(),
+                pystr::strip(m.group_str(3)).to_string(),
+            ),
         );
     }
     for m in ACRO_RE.find_iter(source) {
         let key = pystr::strip(m.group_str(1)).to_string();
         let short = pystr::strip(m.group(2).unwrap_or(&key)).to_string();
-        acronyms.set_default(key.clone(), (short, pystr::strip(m.group_str(3)).to_string()));
+        acronyms.set_default(
+            key.clone(),
+            (short, pystr::strip(m.group_str(3)).to_string()),
+        );
     }
 }
 
-lazy_re!(NEWGLOSSARYENTRY_RE, r"\\newglossaryentry\s*\{([^}]*)\}\s*\{");
+lazy_re!(
+    NEWGLOSSARYENTRY_RE,
+    r"\\newglossaryentry\s*\{([^}]*)\}\s*\{"
+);
 lazy_re!(GLS_NAME_RE, r"\bname\s*=\s*(?:\{([^{}]*)\}|([^,}]+))");
 
 /// Register `\newglossaryentry{key}{name=…, description=…}` term names.
@@ -1492,7 +1844,11 @@ pub(crate) fn collect_glossary_entries(source: &str, glossary: &mut tex2word_ir:
         }
         let opts = if stop > i { &source[i..stop] } else { "" };
         if let Some(nm) = GLS_NAME_RE.search(opts) {
-            let name = nm.group(1).filter(|s| !s.is_empty()).or(nm.group(2)).unwrap_or("");
+            let name = nm
+                .group(1)
+                .filter(|s| !s.is_empty())
+                .or(nm.group(2))
+                .unwrap_or("");
             glossary.insert(key, pystr::strip(name).to_string());
         }
     }
@@ -1517,7 +1873,10 @@ lazy_re!(TWOCOLUMN_RE, r"\\twocolumn\b");
 pub(crate) fn detect_columns(source: &str) -> i64 {
     let mut cols = 1;
     if let Some(m) = DOCCLASS_OPTS_RE.search(source) {
-        if m.group_str(1).split(',').any(|o| pystr::strip(o) == "twocolumn") {
+        if m.group_str(1)
+            .split(',')
+            .any(|o| pystr::strip(o) == "twocolumn")
+        {
             cols = 2;
         }
     }
@@ -1574,8 +1933,15 @@ pub(crate) fn detect_language(preamble: &str) -> Option<String> {
         }
     }
     if let Some(m) = BABEL_RE.search(preamble) {
-        let opts: Vec<String> = m.group_str(1).split(',').map(|o| pystr::lower(pystr::strip(o))).collect();
-        let main = opts.iter().find(|o| o.starts_with("main=")).map(|o| o.split_once('=').unwrap().1.to_string());
+        let opts: Vec<String> = m
+            .group_str(1)
+            .split(',')
+            .map(|o| pystr::lower(pystr::strip(o)))
+            .collect();
+        let main = opts
+            .iter()
+            .find(|o| o.starts_with("main="))
+            .map(|o| o.split_once('=').unwrap().1.to_string());
         if let Some(l) = main.as_deref().and_then(babel_lang) {
             return Some(l.into());
         }
@@ -1584,7 +1950,13 @@ pub(crate) fn detect_language(preamble: &str) -> Option<String> {
         }
     }
     if let Some(m) = DOCCLASS_OPT_RE.search(preamble) {
-        if let Some(l) = m.group_str(1).split(',').map(|o| pystr::lower(pystr::strip(o))).rev().find_map(|o| babel_lang(&o)) {
+        if let Some(l) = m
+            .group_str(1)
+            .split(',')
+            .map(|o| pystr::lower(pystr::strip(o)))
+            .rev()
+            .find_map(|o| babel_lang(&o))
+        {
             return Some(l.into());
         }
     }
@@ -1593,7 +1965,10 @@ pub(crate) fn detect_language(preamble: &str) -> Option<String> {
 
 /// A fontspec/xeCJK `\cmd[opts]{Font}` value from the preamble.
 pub(crate) fn font_cmd(preamble: &str, cmd: &str) -> Option<String> {
-    let pat = re::compile(&format!(r"\\{cmd}\s*(?:\[[^\]]*\])?\s*\{{([^}}]*)\}}"), Flags::NONE);
+    let pat = re::compile(
+        &format!(r"\\{cmd}\s*(?:\[[^\]]*\])?\s*\{{([^}}]*)\}}"),
+        Flags::NONE,
+    );
     let m = pat.search(preamble)?;
     let v = pystr::strip(m.group_str(1));
     (!v.is_empty()).then(|| v.to_string())
@@ -1610,7 +1985,10 @@ mod tests {
         assert_eq!(script_marker("^{*1}"), Some(("superscript", "*1".into())));
         assert_eq!(script_marker("^\\circ"), Some(("plain", "°".into())));
         assert_eq!(script_marker("^{a}_b"), None);
-        assert_eq!(parse_colspec("|l|>{\\centering}p{2cm}r|").0, vec!["left", "center", "right"]);
+        assert_eq!(
+            parse_colspec("|l|>{\\centering}p{2cm}r|").0,
+            vec!["left", "center", "right"]
+        );
         assert_eq!(apply_text_accent("'", "e"), "é");
     }
 }

@@ -15,7 +15,9 @@ use std::sync::Arc;
 use tex2word_ir::pyos::{self, Errors};
 use tex2word_ir::pystr;
 use tex2word_ir::{Block, CSLItem, ConversionReport, Dict, Document, Inline};
-use tex2word_latexwalker::{ContextDb, EnvironmentSpec, LatexWalker, MacroSpec, ParsingState, Stop};
+use tex2word_latexwalker::{
+    ContextDb, EnvironmentSpec, LatexWalker, MacroSpec, ParsingState, Stop,
+};
 
 use builder::Builder;
 use helpers::*;
@@ -26,7 +28,10 @@ use crate::preprocess::{normalize_spacing_and_icons, preprocess, replace_inline_
 
 /// Augment the default walker context with the argument signatures it lacks
 /// (`_build_context`).
-pub fn build_context(extra_theorem_envs: &[String], extra_env_specs: &[(String, String)]) -> ContextDb {
+pub fn build_context(
+    extra_theorem_envs: &[String],
+    extra_env_specs: &[(String, String)],
+) -> ContextDb {
     let mut ctx = ContextDb::default_db();
     let m = |name: &str, spec: &'static str| MacroSpec::new(name.to_string(), spec);
     let mut macros = vec![
@@ -195,16 +200,31 @@ pub fn build_context(extra_theorem_envs: &[String], extra_env_specs: &[(String, 
         m("shorttitle", "{"),
     ];
     for name in [
-        "gls", "Gls", "glspl", "Glspl", "acrshort", "Acrshort", "acrshortpl", "Acrshortpl",
-        "acrlong", "Acrlong", "acrlongpl", "Acrlongpl", "acrfull", "Acrfull", "acrfullpl",
-        "Acrfullpl", "glsentryshort", "glsentrylong",
+        "gls",
+        "Gls",
+        "glspl",
+        "Glspl",
+        "acrshort",
+        "Acrshort",
+        "acrshortpl",
+        "Acrshortpl",
+        "acrlong",
+        "Acrlong",
+        "acrlongpl",
+        "Acrlongpl",
+        "acrfull",
+        "Acrfull",
+        "acrfullpl",
+        "Acrfullpl",
+        "glsentryshort",
+        "glsentrylong",
     ] {
         macros.push(m(name, "[{"));
     }
     for name in [
         // acronym package references
-        "ac", "Ac", "acp", "Acp", "acs", "Acs", "acsp", "Acsp", "acl", "Acl", "aclp", "Aclp",
-        "acf", "Acf", "acfp", "Acfp",
+        "ac", "Ac", "acp", "Acp", "acs", "Acs", "acsp", "Acsp", "acl", "Acl", "aclp", "Aclp", "acf",
+        "Acf", "acfp", "Acfp",
     ] {
         macros.push(m(name, "{"));
     }
@@ -234,7 +254,12 @@ pub fn build_context(extra_theorem_envs: &[String], extra_env_specs: &[(String, 
     }
     envs.push(e("subfigure", "[{"));
     envs.push(e("minipage", "[{"));
-    for name in ["algorithmic", "algorithmicx", "algpseudocode", "algpseudocodex"] {
+    for name in [
+        "algorithmic",
+        "algorithmicx",
+        "algpseudocode",
+        "algpseudocodex",
+    ] {
         envs.push(e(name, "["));
     }
     envs.extend([
@@ -276,7 +301,11 @@ fn walk(content: &str, ctx: &Arc<ContextDb>) -> Option<Vec<tex2word_latexwalker:
 }
 
 /// Parse a preamble teaser-figure command's body into blocks (best effort).
-fn preamble_teaser_blocks(preamble: &str, ctx: &Arc<ContextDb>, builder: &mut Builder) -> Vec<Block> {
+fn preamble_teaser_blocks(
+    preamble: &str,
+    ctx: &Arc<ContextDb>,
+    builder: &mut Builder,
+) -> Vec<Block> {
     let mut out = Vec::new();
     for macro_ in TEASER_MACROS {
         let Some(content) = braced_content(preamble, macro_).filter(|c| !c.is_empty()) else {
@@ -285,14 +314,22 @@ fn preamble_teaser_blocks(preamble: &str, ctx: &Arc<ContextDb>, builder: &mut Bu
         let Some(nodes) = walk(&content, ctx) else {
             continue; // never let a class-specific teaser abort the conversion
         };
-        out.extend(builder.blocks(&nodes).into_iter().filter(|b| !is_blank_paragraph(b)));
+        out.extend(
+            builder
+                .blocks(&nodes)
+                .into_iter()
+                .filter(|b| !is_blank_paragraph(b)),
+        );
     }
     out
 }
 
 /// Run `f` on a fresh builder sharing `report` (Python's `_Builder(report)`),
 /// resolving its slots in the inlines it returns.
-fn with_fresh_builder(report: &mut ConversionReport, f: impl FnOnce(&mut Builder) -> Vec<Inline>) -> Vec<Inline> {
+fn with_fresh_builder(
+    report: &mut ConversionReport,
+    f: impl FnOnce(&mut Builder) -> Vec<Inline>,
+) -> Vec<Inline> {
     let mut b = Builder::new(std::mem::take(report));
     let mut out = f(&mut b);
     b.resolve_inlines(&mut out);
@@ -301,11 +338,23 @@ fn with_fresh_builder(report: &mut ConversionReport, f: impl FnOnce(&mut Builder
 }
 
 /// Recover `\title`/`\author`/`\date`/`\keywords` defined in the preamble.
-fn fill_meta_from_preamble(doc: &mut Document, preamble: &str, ctx: &Arc<ContextDb>, report: &mut ConversionReport) {
+fn fill_meta_from_preamble(
+    doc: &mut Document,
+    preamble: &str,
+    ctx: &Arc<ContextDb>,
+    report: &mut ConversionReport,
+) {
     if doc.meta.running_head.is_none() {
         doc.meta.running_head = running_head_from_preamble(preamble);
     }
-    for macro_ in ["title", "author", "date", "keywords", "institute", "affiliation"] {
+    for macro_ in [
+        "title",
+        "author",
+        "date",
+        "keywords",
+        "institute",
+        "affiliation",
+    ] {
         let skip = match macro_ {
             "title" => doc.meta.title.is_some(),
             "author" => !doc.meta.authors.is_empty(),
@@ -364,7 +413,10 @@ fn default_date(source: &str, builder: &mut Builder) -> Vec<Inline> {
     vec![Inline::text(today_text())]
 }
 
-helpers::lazy_re!(ADDBIBRESOURCE_RE, r"\\addbibresource(?:\[[^\]]*\])?\{([^}]*)\}");
+helpers::lazy_re!(
+    ADDBIBRESOURCE_RE,
+    r"\\addbibresource(?:\[[^\]]*\])?\{([^}]*)\}"
+);
 helpers::lazy_re!(BIBLATEX_RE, r"\\usepackage\[([^\]]*)\]\{biblatex\}");
 helpers::lazy_re!(BIBLATEX_STYLE_RE, r"\bstyle\s*=\s*([A-Za-z0-9\-]+)");
 helpers::lazy_re!(NATBIB_RE, r"\\usepackage\[([^\]]*)\]\{natbib\}");
@@ -389,7 +441,14 @@ fn detect_bib_style(preamble: &str, builder: &mut Builder) {
     if builder.bibstyle_set {
         return;
     }
-    const AY: &[&str] = &["authoryear", "apa", "chicago", "harvard", "mla", "author-year"];
+    const AY: &[&str] = &[
+        "authoryear",
+        "apa",
+        "chicago",
+        "harvard",
+        "mla",
+        "author-year",
+    ];
     if let Some(m) = BIBLATEX_RE.search(preamble) {
         if let Some(opt) = BIBLATEX_STYLE_RE.search(m.group_str(1)) {
             let s = pystr::lower(opt.group_str(1));
@@ -445,20 +504,37 @@ fn resolve_bibliography(
     let nocite = builder.nocite_keys.clone();
 
     // A .bbl (BibTeX's formatted .bst output) is authoritative
-    let mut bbl_items = if builder.bib_files.is_empty() { Dict::new() } else { load_bbl(base_dir)? };
+    let mut bbl_items = if builder.bib_files.is_empty() {
+        Dict::new()
+    } else {
+        load_bbl(base_dir)?
+    };
     if !bbl_items.is_empty() {
         for (k, v) in builder.thebib_items.iter() {
             bbl_items.insert(k.clone(), v.clone());
         }
         let bstyle = tex2word_bib::bbl::bbl_style(&bbl_items);
-        tex2word_bib::render::resolve_citations(doc, &bbl_items, &bstyle, &mut builder.report, csl_path, &nocite);
-        builder.report.info("\\bibliography", "used the .bbl (formatted .bst output)");
+        tex2word_bib::render::resolve_citations(
+            doc,
+            &bbl_items,
+            &bstyle,
+            &mut builder.report,
+            csl_path,
+            &nocite,
+        );
+        builder
+            .report
+            .info("\\bibliography", "used the .bbl (formatted .bst output)");
         return Ok(());
     }
 
     let mut items: Dict<CSLItem> = Dict::new();
     for name in builder.bib_files.clone() {
-        let candidates = if name.ends_with(".bib") { vec![name.clone()] } else { vec![name.clone(), format!("{name}.bib")] };
+        let candidates = if name.ends_with(".bib") {
+            vec![name.clone()]
+        } else {
+            vec![name.clone(), format!("{name}.bib")]
+        };
         let mut found = false;
         for cand in candidates {
             let path = pyos::join(base_dir, &[&cand]);
@@ -472,14 +548,28 @@ fn resolve_bibliography(
             }
         }
         if !found {
-            builder.report.warn("\\bibliography", format!("bibliography file not found: {name}"));
+            builder.report.warn(
+                "\\bibliography",
+                format!("bibliography file not found: {name}"),
+            );
         }
     }
     for (k, v) in builder.thebib_items.iter() {
         items.insert(k.clone(), v.clone());
     }
-    if !items.is_empty() || !builder.bib_files.is_empty() || !builder.thebib_items.is_empty() || !nocite.is_empty() {
-        tex2word_bib::render::resolve_citations(doc, &items, &style, &mut builder.report, csl_path, &nocite);
+    if !items.is_empty()
+        || !builder.bib_files.is_empty()
+        || !builder.thebib_items.is_empty()
+        || !nocite.is_empty()
+    {
+        tex2word_bib::render::resolve_citations(
+            doc,
+            &items,
+            &style,
+            &mut builder.report,
+            csl_path,
+            &nocite,
+        );
     }
     Ok(())
 }
@@ -488,7 +578,11 @@ fn resolve_bibliography(
 ///
 /// `csl_path` is an optional `.csl` style for the citation pass. Errors are
 /// I/O failures reading `\input` files or bibliographies.
-pub fn parse_document(source: &str, base_dir: &str, csl_path: Option<&str>) -> io::Result<(Document, ConversionReport)> {
+pub fn parse_document(
+    source: &str,
+    base_dir: &str,
+    csl_path: Option<&str>,
+) -> io::Result<(Document, ConversionReport)> {
     let report = ConversionReport::new();
     let expanded = replace_inline_tikz(&expand_macros(&preprocess(source, base_dir)?, base_dir));
     // after expansion, so macro-generated \vskip/\faX are cleaned up too
@@ -499,7 +593,10 @@ pub fn parse_document(source: &str, base_dir: &str, csl_path: Option<&str>) -> i
     let (custom_theorems, unnumbered_theorems, shared_counters) = collect_newtheorems(&theorem_src);
     let (tcb_envs, tcb_styles) = collect_tcolorbox_defs(&theorem_src);
     let theorem_names: Vec<String> = custom_theorems.keys().cloned().collect();
-    let tcb_specs: Vec<(String, String)> = tcb_envs.iter().map(|(n, e)| (n.clone(), tcb_argspec(e))).collect();
+    let tcb_specs: Vec<(String, String)> = tcb_envs
+        .iter()
+        .map(|(n, e)| (n.clone(), tcb_argspec(e)))
+        .collect();
     let ctx = Arc::new(build_context(&theorem_names, &tcb_specs));
     let walker = LatexWalker::new(body, ctx.clone());
     let (nodes, _, _) = walker
@@ -523,7 +620,7 @@ pub fn parse_document(source: &str, base_dir: &str, csl_path: Option<&str>) -> i
     collect_color_defs(&expanded, &mut builder.colors); // \definecolor/\colorlet
     collect_acronyms(&expanded, &mut builder.acronyms); // \newacronym
     collect_glossary_entries(&expanded, &mut builder.glossary); // \newglossaryentry
-    // A class-level teaser figure declared in the preamble leads the body
+                                                                // A class-level teaser figure declared in the preamble leads the body
     let mut blocks = preamble_teaser_blocks(&preamble, &ctx, &mut builder);
     blocks.extend(builder.blocks(&nodes));
     let mut doc = Document {

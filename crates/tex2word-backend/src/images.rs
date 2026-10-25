@@ -65,7 +65,11 @@ pub fn probe_bytes(data: &[u8], fmt: &str) -> ImageInfo {
     };
     // unknown intrinsic size (e.g. emf) -> 4 x 3 inches worth of px
     let (w, h) = size.unwrap_or((4 * PX_PER_INCH, 3 * PX_PER_INCH));
-    ImageInfo { fmt, width_px: w, height_px: h }
+    ImageInfo {
+        fmt,
+        width_px: w,
+        height_px: h,
+    }
 }
 
 /// [`ImageInfo`] for an image file, or `None` if unreadable.

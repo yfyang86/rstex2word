@@ -13,28 +13,47 @@ use tex2word_ir::ToJson;
 fn omml_json(r: Result<Vec<tex2word_ooxml::Element>, tex2word_math::MathError>) -> String {
     use tex2word_math::MathError;
     use tex2word_ooxml::xml::{tostring, ToString, NS};
-    let decls: Vec<String> = NS.iter().map(|(k, v)| format!("xmlns:{k}=\"{v}\"")).collect();
+    let decls: Vec<String> = NS
+        .iter()
+        .map(|(k, v)| format!("xmlns:{k}=\"{v}\""))
+        .collect();
     let decls = decls.join(" ");
     let v = match r {
         Ok(els) => {
             let mut out = Vec::new();
             for e in els {
-                match tostring(&e, ToString { utf8: true, declaration: false, with_tail: true }) {
+                match tostring(
+                    &e,
+                    ToString {
+                        utf8: true,
+                        declaration: false,
+                        with_tail: true,
+                    },
+                ) {
                     Ok(x) => out.push(Value::Str(x.replace(&decls, "@NS"))),
                     // lxml raises ValueError while building the element
-                    Err(_) => return dumps(&Value::Object(vec![("error".into(), Value::Str("ValueError".into()))])),
+                    Err(_) => {
+                        return dumps(&Value::Object(vec![(
+                            "error".into(),
+                            Value::Str("ValueError".into()),
+                        )]))
+                    }
                 }
             }
             Value::Object(vec![("ok".into(), Value::Array(out))])
         }
         Err(e @ MathError::Unsupported { .. }) => {
-            let MathError::Unsupported { construct, .. } = &e else { unreachable!() };
+            let MathError::Unsupported { construct, .. } = &e else {
+                unreachable!()
+            };
             Value::Object(vec![
                 ("unsupported".into(), Value::Str(construct.clone())),
                 ("msg".into(), Value::Str(e.to_string())),
             ])
         }
-        Err(MathError::Other { type_name, .. }) => Value::Object(vec![("error".into(), Value::Str(type_name))]),
+        Err(MathError::Other { type_name, .. }) => {
+            Value::Object(vec![("error".into(), Value::Str(type_name))])
+        }
     };
     dumps(&v)
 }
@@ -58,7 +77,9 @@ fn call(f: &str, s: &str) -> Option<String> {
         "expand_macros" => macros::expand_macros(s, "."),
         "collect_macros_stripped" => macros::collect_macros(s).1,
         // an exception is recorded as {"error": ...}; compare as "<error>"
-        "latex2text" => tex2word_latexwalker::latex2text::latex_to_text(s).unwrap_or_else(|_| "<error>".into()),
+        "latex2text" => {
+            tex2word_latexwalker::latex2text::latex_to_text(s).unwrap_or_else(|_| "<error>".into())
+        }
         "parse_bibtex" => dumps(&tex2word_bib::bibtex::parse_bibtex(s).to_json()),
         "parse_bbl" => dumps(&tex2word_bib::bbl::parse_bbl(s).to_json()),
         "omml_inline" => omml_json(tex2word_math::omml::render_inline(s).map(|e| vec![e])),
@@ -86,7 +107,11 @@ fn first_diff(a: &str, b: &str) -> String {
         }
         s[start..end].to_string()
     };
-    format!("at byte {i}:\n      python: {:?}\n      rust:   {:?}", ctx(a), ctx(b))
+    format!(
+        "at byte {i}:\n      python: {:?}\n      rust:   {:?}",
+        ctx(a),
+        ctx(b)
+    )
 }
 
 #[test]
@@ -116,7 +141,11 @@ fn frontend_functions_match_python() {
             got == want
         };
         if !same {
-            failures.push(format!("{f} (input {} bytes) {}", input.len(), first_diff(want, &got)));
+            failures.push(format!(
+                "{f} (input {} bytes) {}",
+                input.len(),
+                first_diff(want, &got)
+            ));
         }
     }
     assert!(n > 500, "only {n} rows");
@@ -124,6 +153,11 @@ fn frontend_functions_match_python() {
         failures.is_empty(),
         "{} of {n} rows differ:\n{}",
         failures.len(),
-        failures.iter().take(15).cloned().collect::<Vec<_>>().join("\n")
+        failures
+            .iter()
+            .take(15)
+            .cloned()
+            .collect::<Vec<_>>()
+            .join("\n")
     );
 }

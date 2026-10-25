@@ -19,7 +19,10 @@ Euler: $e^{i\pi} + 1 = 0$, see Section~\ref{sec:intro}.
 fn converts_to_a_valid_docx() {
     let r = convert_source(SRC, ".", &ConvertOptions::default()).unwrap();
     assert!(r.docx.starts_with(b"PK"));
-    assert_eq!(tex2word_validate::validate_docx(&r.docx).unwrap(), Vec::<String>::new());
+    assert_eq!(
+        tex2word_validate::validate_docx(&r.docx).unwrap(),
+        Vec::<String>::new()
+    );
     assert_eq!(r.report.math_omml, 2);
 }
 

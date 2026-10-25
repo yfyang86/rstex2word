@@ -184,7 +184,11 @@ impl ContextDb {
             cat.environments.insert(e.environmentname.clone(), e);
         }
         for s in specials {
-            match cat.specials.iter_mut().find(|x| x.specials_chars == s.specials_chars) {
+            match cat
+                .specials
+                .iter_mut()
+                .find(|x| x.specials_chars == s.specials_chars)
+            {
                 Some(slot) => *slot = s,
                 None => cat.specials.push(s),
             }
@@ -206,7 +210,9 @@ impl ContextDb {
     }
 
     pub fn get_environment_spec(&self, name: &str) -> Option<&EnvironmentSpec> {
-        self.categories.iter().find_map(|c| c.environments.get(name))
+        self.categories
+            .iter()
+            .find_map(|c| c.environments.get(name))
     }
 
     pub fn get_specials_spec(&self, chars: &str) -> Option<&SpecialsSpec> {

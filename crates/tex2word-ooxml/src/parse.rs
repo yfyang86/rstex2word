@@ -353,7 +353,10 @@ impl Parser {
         if (c3 & 0xC0) != 0x80 {
             return self.encoding_error();
         }
-        let val = ((c as i32 & 0x0F) << 18) | ((c1 as i32 & 0x3F) << 12) | ((c2 as i32 & 0x3F) << 6) | (c3 as i32 & 0x3F);
+        let val = ((c as i32 & 0x0F) << 18)
+            | ((c1 as i32 & 0x3F) << 12)
+            | ((c2 as i32 & 0x3F) << 6)
+            | (c3 as i32 & 0x3F);
         if !(0x10000..0x110000).contains(&val) {
             return self.encoding_error();
         }
@@ -795,7 +798,9 @@ impl Parser {
         };
         self.skip_blanks();
         if self.raw() != b'=' {
-            return self.err(format!("Specification mandates value for attribute {name}\n"));
+            return self.err(format!(
+                "Specification mandates value for attribute {name}\n"
+            ));
         }
         self.next()?;
         self.skip_blanks();
@@ -804,7 +809,10 @@ impl Parser {
     }
 
     fn ns_lookup(&self, prefix: Option<&str>) -> Option<&(Option<String>, String, usize)> {
-        self.ns.iter().rev().find(|(p, _, _)| p.as_deref() == prefix)
+        self.ns
+            .iter()
+            .rev()
+            .find(|(p, _, _)| p.as_deref() == prefix)
     }
 
     /// `xmlParserNsPush`: `Ok(true)` when pushed.
@@ -820,7 +828,8 @@ impl Parser {
                 };
             }
         }
-        self.ns.push((prefix.map(str::to_string), uri.to_string(), self.element_id));
+        self.ns
+            .push((prefix.map(str::to_string), uri.to_string(), self.element_id));
         Ok(true)
     }
 
@@ -837,7 +846,10 @@ impl Parser {
         let mut nb_ns = 0;
         let mut nsdefs: Vec<(Option<String>, String)> = Vec::new();
         let mut atts: Vec<(String, Option<String>, String)> = Vec::new();
-        while self.raw() != b'>' && !(self.raw() == b'/' && self.nxt(1) == b'>') && is_byte_char(self.raw()) {
+        while self.raw() != b'>'
+            && !(self.raw() == b'/' && self.nxt(1) == b'>')
+            && is_byte_char(self.raw())
+        {
             let (aname, aprefix, value) = self.parse_attribute()?;
             if aname == "xmlns" && aprefix.is_none() {
                 let uri = value;
@@ -866,7 +878,9 @@ impl Parser {
                 } else if uri == XMLNS_NS {
                     return self.err("reuse of the xmlns namespace name is forbidden\n");
                 } else if uri.is_empty() {
-                    return self.err(format!("xmlns:{aname}: Empty XML namespace is not allowed\n"));
+                    return self.err(format!(
+                        "xmlns:{aname}: Empty XML namespace is not allowed\n"
+                    ));
                 } else if self.ns_push(Some(&aname), &uri)? {
                     nb_ns += 1;
                     nsdefs.push((Some(aname), uri));
@@ -890,7 +904,9 @@ impl Parser {
                 Some(p) => match self.ns_lookup(Some(p)) {
                     Some((_, uri, _)) => Some(uri.clone()),
                     None => {
-                        return self.err(format!("Namespace prefix {p} for {aname} on {local} is not defined\n"));
+                        return self.err(format!(
+                            "Namespace prefix {p} for {aname} on {local} is not defined\n"
+                        ));
                     }
                 },
             };
@@ -904,7 +920,10 @@ impl Parser {
         // unique attribute names
         for j in 1..attrs.len() {
             let a = &attrs[j];
-            if let Some(prev) = attrs[..j].iter().find(|p| p.local == a.local && p.ns == a.ns) {
+            if let Some(prev) = attrs[..j]
+                .iter()
+                .find(|p| p.local == a.local && p.ns == a.ns)
+            {
                 if prev.prefix == a.prefix {
                     return match &a.prefix {
                         None => self.err(format!("Attribute {} redefined\n", a.local)),
@@ -920,7 +939,10 @@ impl Parser {
         }
         let uri = match prefix.as_deref() {
             Some("xml") => Some(XML_NS.to_string()),
-            p => self.ns_lookup(p).map(|(_, u, _)| u.clone()).filter(|u| !u.is_empty()),
+            p => self
+                .ns_lookup(p)
+                .map(|(_, u, _)| u.clone())
+                .filter(|u| !u.is_empty()),
         };
         if let (Some(p), None) = (&prefix, &uri) {
             return self.err(format!("Namespace prefix {p} on {local} is not defined\n"));
@@ -969,7 +991,9 @@ impl Parser {
             self.next1();
             return Ok(false);
         }
-        self.err(format!("Couldn't find end of Start Tag {local} line {line}\n"))
+        self.err(format!(
+            "Couldn't find end of Start Tag {local} line {line}\n"
+        ))
     }
 
     /// `xmlParseElementEnd` / `xmlParseEndTag2`.
@@ -992,7 +1016,9 @@ impl Parser {
         }
         self.next1();
         if let Some(name) = mismatch {
-            return self.err(format!("Opening and ending tag mismatch: {local} line {line} and {name}\n"));
+            return self.err(format!(
+                "Opening and ending tag mismatch: {local} line {line} and {name}\n"
+            ));
         }
         self.close_element();
         Ok(())
@@ -1029,7 +1055,10 @@ impl Parser {
         }
         if self.cur >= self.end {
             let top = self.stack.last().expect("an open element");
-            return self.err(format!("Premature end of data in tag {} line {}\n", top.local, top.line));
+            return self.err(format!(
+                "Premature end of data in tag {} line {}\n",
+                top.local, top.line
+            ));
         }
         self.parse_element_end()
     }
@@ -1099,17 +1128,15 @@ impl Parser {
                 col = self.col;
             }
             self.cur = i;
-            if self.b[i] == 0xD {
-                if self.b[i + 1] == 0xA {
-                    self.cur = i + 1;
-                    i += 2;
-                    self.line += 1;
-                    self.col = 1;
-                    if char_data_continue(self.b[i]) {
-                        continue;
-                    }
-                    break;
+            if self.b[i] == 0xD && self.b[i + 1] == 0xA {
+                self.cur = i + 1;
+                i += 2;
+                self.line += 1;
+                self.col = 1;
+                if char_data_continue(self.b[i]) {
+                    continue;
                 }
+                break;
             }
             if self.b[i] == b'<' || self.b[i] == b'&' {
                 return Ok(());
@@ -1142,7 +1169,10 @@ impl Parser {
         }
         if self.cur < self.end {
             if cur == 0 && self.raw() != 0 {
-                return self.err(format!("Incomplete UTF-8 sequence starting with {:02X}\n", self.raw()));
+                return self.err(format!(
+                    "Incomplete UTF-8 sequence starting with {:02X}\n",
+                    self.raw()
+                ));
             } else if cur != b'<' as i32 && cur != b'&' as i32 && cur != b']' as i32 {
                 return self.err(format!("PCDATA invalid Char value {cur}\n"));
             }
@@ -1202,7 +1232,7 @@ impl Parser {
                 let mut ccol = self.col;
                 while {
                     let c = self.b[i];
-                    (c > b'-' && c <= 0x7F) || (c >= 0x20 && c < b'-') || c == 0x09
+                    (c > b'-' && c <= 0x7F) || (0x20..b'-').contains(&c) || c == 0x09
                 } {
                     i += 1;
                     ccol += 1;
@@ -1217,7 +1247,8 @@ impl Parser {
                     continue 'get_more;
                 }
                 if i > self.cur {
-                    buf.get_or_insert_with(Vec::new).extend_from_slice(&self.b[self.cur..i]);
+                    buf.get_or_insert_with(Vec::new)
+                        .extend_from_slice(&self.b[self.cur..i]);
                 }
                 self.cur = i;
                 if self.b[i] == 0xA {
@@ -1238,13 +1269,18 @@ impl Parser {
                         if self.b[i + 2] == b'>' {
                             self.skip(3);
                             if keep {
-                                let text = buf.map(|b| String::from_utf8_lossy(&b).into_owned()).unwrap_or_default();
+                                let text = buf
+                                    .map(|b| String::from_utf8_lossy(&b).into_owned())
+                                    .unwrap_or_default();
                                 self.add_node(Element::comment(&text));
                             }
                             return Ok(());
                         }
                         return match &buf {
-                            Some(b) => self.err(format!("Double hyphen within comment: <!--{}\n", trunc50(b))),
+                            Some(b) => self.err(format!(
+                                "Double hyphen within comment: <!--{}\n",
+                                trunc50(b)
+                            )),
                             None => self.err("Double hyphen within comment\n"),
                         };
                     }
@@ -1506,7 +1542,10 @@ impl Parser {
 
     /// Re-decode the unread input from Latin-1 (`xmlSwitchEncoding`).
     fn switch_to_latin1(&mut self) {
-        let rest: String = self.b[self.cur..self.end].iter().map(|&c| c as char).collect();
+        let rest: String = self.b[self.cur..self.end]
+            .iter()
+            .map(|&c| c as char)
+            .collect();
         self.b.truncate(self.cur);
         self.b.extend_from_slice(rest.as_bytes());
         self.end = self.b.len();
@@ -1710,7 +1749,11 @@ mod tests {
     fn round_trips_like_lxml() {
         let src = "<?xml version=\"1.0\"?>\n<!-- c --><r xmlns=\"urn:d\" xmlns:w=\"urn:w\"><w:a xmlns:w=\"urn:w\" w:x=\"1&#10;2\n3\t4\">t&amp;<![CDATA[<c>]]>\r\nu</w:a><?pi data?><!--k-->tail<b/></r>";
         let r = parse_str(src).unwrap();
-        let opts = ToString { utf8: true, declaration: true, with_tail: true };
+        let opts = ToString {
+            utf8: true,
+            declaration: true,
+            with_tail: true,
+        };
         assert_eq!(
             tostring(&r, opts).unwrap(),
             "<?xml version='1.0' encoding='UTF-8' standalone='yes'?>\n<r xmlns=\"urn:d\" xmlns:w=\"urn:w\"><w:a xmlns:w=\"urn:w\" w:x=\"1&#10;2 3 4\">t&amp;&lt;c&gt;\nu</w:a><?pi data?><!--k-->tail<b/></r>"
@@ -1721,14 +1764,22 @@ mod tests {
         n.set("{urn:w}v", "1");
         r.append(n);
         r.append(Element::new("{urn:zz}q"));
-        assert!(tostring(&r, opts).unwrap().ends_with("<w:new w:v=\"1\"/><ns0:q xmlns:ns0=\"urn:zz\"/></r>"));
+        assert!(tostring(&r, opts)
+            .unwrap()
+            .ends_with("<w:new w:v=\"1\"/><ns0:q xmlns:ns0=\"urn:zz\"/></r>"));
     }
 
     #[test]
     fn errors_like_lxml() {
         let e = fromstring(b"<w:document><unclosed>").unwrap_err();
-        assert_eq!(e.0, "Namespace prefix w on document is not defined, line 1, column 12 (<string>, line 1)");
+        assert_eq!(
+            e.0,
+            "Namespace prefix w on document is not defined, line 1, column 12 (<string>, line 1)"
+        );
         let e = fromstring(b"<a>\n<b>\n</c>\n</a>").unwrap_err();
-        assert_eq!(e.0, "Opening and ending tag mismatch: b line 2 and c, line 3, column 5 (<string>, line 3)");
+        assert_eq!(
+            e.0,
+            "Opening and ending tag mismatch: b line 2 and c, line 3, column 5 (<string>, line 3)"
+        );
     }
 }

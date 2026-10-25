@@ -10,14 +10,17 @@ use tex2word_ir::crossref::{figure_bookmark, sanitize_bookmark};
 use tex2word_ir::pyos;
 use tex2word_ir::pystr;
 use tex2word_ir::{
-    Algorithm, Bibliography, Block, CSLItem, Cite, CodeBlock, Comment, ConversionReport, Dict, Document,
-    DocumentMeta, Emphasis, Endnote, Figure, Footnote, Heading, Image, Inline, ItemList, Link, ListItem,
-    Math, MathBlock, Paragraph, Quote, Ref, Table, TableCell, TableOfContents, Text, Theorem,
+    Algorithm, Bibliography, Block, CSLItem, Cite, CodeBlock, Comment, ConversionReport, Dict,
+    Document, DocumentMeta, Emphasis, Endnote, Figure, Footnote, Heading, Image, Inline, ItemList,
+    Link, ListItem, Math, MathBlock, Paragraph, Quote, Ref, Table, TableCell, TableOfContents,
+    Text, Theorem,
 };
 use tex2word_math::cascade::{ImageMathRenderer, MathCascade, MathResult};
 use tex2word_ooxml::xml::{el, preserve_space, qn, serialize, sub, text_el, Element, XmlError};
 
-use crate::package::{BULLET_NUM_ID, DECIMAL_NUM_ID, HEADING_APPENDIX_NUM_ID, HEADING_NUM_ID, PART_NUM_ID};
+use crate::package::{
+    BULLET_NUM_ID, DECIMAL_NUM_ID, HEADING_APPENDIX_NUM_ID, HEADING_NUM_ID, PART_NUM_ID,
+};
 use crate::{fields, images, raster, tikz, zotero};
 
 fn heading_style(level: i64) -> &'static str {
@@ -46,7 +49,8 @@ fn toc_spec(kind: &str) -> (&'static str, &'static str) {
 }
 
 const PIC_URI: &str = "http://schemas.openxmlformats.org/drawingml/2006/picture";
-const IMAGE_REL_TYPE: &str = "http://schemas.openxmlformats.org/officeDocument/2006/relationships/image";
+const IMAGE_REL_TYPE: &str =
+    "http://schemas.openxmlformats.org/officeDocument/2006/relationships/image";
 /// `w:sdt` tags marking regions for faithful round-trip recovery.
 pub const BIB_SDT_TAG: &str = "tex2word:bibliography";
 pub const FIG_SDT_TAG: &str = "tex2word:figure";
@@ -89,7 +93,10 @@ impl RunStyle {
     }
 
     fn italic(&self) -> RunStyle {
-        RunStyle { italic: true, ..self.clone() }
+        RunStyle {
+            italic: true,
+            ..self.clone()
+        }
     }
 }
 
@@ -183,12 +190,16 @@ enum Region {
     Block(usize),
 }
 
-fn attrs<'a>(pairs: &'a [(String, String)]) -> Vec<(&'a str, &'a str)> {
-    pairs.iter().map(|(k, v)| (k.as_str(), v.as_str())).collect()
+fn attrs(pairs: &[(String, String)]) -> Vec<(&str, &str)> {
+    pairs
+        .iter()
+        .map(|(k, v)| (k.as_str(), v.as_str()))
+        .collect()
 }
 
 fn get_ppr(p: &mut Element) -> &mut Element {
-    p.find_mut(&qn("w:pPr")).expect("styled paragraph has a pPr")
+    p.find_mut(&qn("w:pPr"))
+        .expect("styled paragraph has a pPr")
 }
 
 impl<'r> DocumentWriter<'r> {
@@ -240,7 +251,11 @@ impl<'r> DocumentWriter<'r> {
             .or_else(|| doc.meta.cjk_sans_font.clone().filter(|f| !f.is_empty()));
         for block in &doc.blocks {
             if let Block::Bibliography(b) = block {
-                self.cite_items = b.entries.iter().map(|e| (e.id.clone(), e.clone())).collect();
+                self.cite_items = b
+                    .entries
+                    .iter()
+                    .map(|e| (e.id.clone(), e.clone()))
+                    .collect();
             }
         }
         let mut body = el("w:body", &[]);
@@ -314,7 +329,10 @@ impl<'r> DocumentWriter<'r> {
         }
         for affil in &meta.affiliations {
             let mut p = styled_paragraph("Subtitle");
-            let em = Inline::Emphasis(Emphasis { inlines: affil.clone(), kind: "italic".into() });
+            let em = Inline::Emphasis(Emphasis {
+                inlines: affil.clone(),
+                kind: "italic".into(),
+            });
             self.inlines(std::slice::from_ref(&em), &mut p);
             body.append(p);
         }
@@ -330,7 +348,13 @@ impl<'r> DocumentWriter<'r> {
         }
         if let Some(kw) = meta.keywords.as_ref().filter(|k| !k.is_empty()) {
             let mut p = styled_paragraph("Abstract");
-            p.append(run("Keywords: ", &RunStyle { bold: true, ..RunStyle::default() }));
+            p.append(run(
+                "Keywords: ",
+                &RunStyle {
+                    bold: true,
+                    ..RunStyle::default()
+                },
+            ));
             self.inlines(kw, &mut p);
             body.append(p);
         }
@@ -393,8 +417,16 @@ impl<'r> DocumentWriter<'r> {
             sub(numpr, "w:numId", &[("w:val", &PART_NUM_ID.to_string())]);
         } else if block.numbered && (1..=4).contains(&block.level) {
             let numpr = sub(get_ppr(&mut p), "w:numPr", &[]);
-            sub(numpr, "w:ilvl", &[("w:val", &(block.level - 1).to_string())]);
-            let num_id = if block.appendix { HEADING_APPENDIX_NUM_ID } else { HEADING_NUM_ID };
+            sub(
+                numpr,
+                "w:ilvl",
+                &[("w:val", &(block.level - 1).to_string())],
+            );
+            let num_id = if block.appendix {
+                HEADING_APPENDIX_NUM_ID
+            } else {
+                HEADING_NUM_ID
+            };
             sub(numpr, "w:numId", &[("w:val", &num_id.to_string())]);
         }
         let start = block
@@ -428,7 +460,10 @@ impl<'r> DocumentWriter<'r> {
             }
             MathResult::Raw(_) => {
                 let mut p = styled_paragraph("Normal");
-                p.append(run(&format!("\\[{}\\]", block.latex), &RunStyle::default().italic()));
+                p.append(run(
+                    &format!("\\[{}\\]", block.latex),
+                    &RunStyle::default().italic(),
+                ));
                 body.append(p);
             }
             MathResult::Omml(omaths) => {
@@ -466,7 +501,9 @@ impl<'r> DocumentWriter<'r> {
         } else {
             None
         };
-        let start = line_label.filter(|l| !l.is_empty()).map(|l| fields::bookmark_start(&bookmark_for(l)));
+        let start = line_label
+            .filter(|l| !l.is_empty())
+            .map(|l| fields::bookmark_start(&bookmark_for(l)));
         if let Some(s) = &start {
             p.append(s.clone());
         }
@@ -487,7 +524,11 @@ impl<'r> DocumentWriter<'r> {
             }
             return;
         }
-        let num_id = if block.ordered { DECIMAL_NUM_ID } else { BULLET_NUM_ID };
+        let num_id = if block.ordered {
+            DECIMAL_NUM_ID
+        } else {
+            BULLET_NUM_ID
+        };
         for item in &block.items {
             self.list_item(item, body, level, num_id);
         }
@@ -510,7 +551,10 @@ impl<'r> DocumentWriter<'r> {
         let mut marked = false;
         // an item leading with a nested list gets its own (empty) numbered
         // paragraph first so its number renders above the sub-list
-        let first_structural = item.blocks.iter().find(|b| matches!(b, Block::Paragraph(_) | Block::ItemList(_)));
+        let first_structural = item
+            .blocks
+            .iter()
+            .find(|b| matches!(b, Block::Paragraph(_) | Block::ItemList(_)));
         if matches!(first_structural, Some(Block::ItemList(_))) {
             let mut p = self.numbered_para(level, num_id);
             bookmark_list_item(item, &mut p);
@@ -532,7 +576,11 @@ impl<'r> DocumentWriter<'r> {
                         marked = true;
                     } else {
                         p = styled_paragraph("Normal");
-                        sub(get_ppr(&mut p), "w:ind", &[("w:left", &((level + 1) * 360).to_string())]);
+                        sub(
+                            get_ppr(&mut p),
+                            "w:ind",
+                            &[("w:left", &((level + 1) * 360).to_string())],
+                        );
                     }
                     self.inlines(&para.inlines, &mut p);
                     body.append(p);
@@ -549,14 +597,21 @@ impl<'r> DocumentWriter<'r> {
 
     fn description_item(&mut self, item: &ListItem, body: &mut Element, level: i64) {
         let mut p = styled_paragraph("Normal");
-        sub(get_ppr(&mut p), "w:ind", &[("w:left", &((level + 1) * 360).to_string())]);
+        sub(
+            get_ppr(&mut p),
+            "w:ind",
+            &[("w:left", &((level + 1) * 360).to_string())],
+        );
         if let Some(term) = item.term.as_ref().filter(|t| !t.is_empty()) {
             for t in term {
                 self.emit(t, &mut p, &RunStyle::default().with_flag("bold"));
             }
             p.append(run("  ", &RunStyle::default()));
         }
-        let first_para = item.blocks.iter().position(|b| matches!(b, Block::Paragraph(_)));
+        let first_para = item
+            .blocks
+            .iter()
+            .position(|b| matches!(b, Block::Paragraph(_)));
         if let Some(i) = first_para {
             if let Block::Paragraph(fp) = &item.blocks[i] {
                 self.inlines(&fp.inlines, &mut p);
@@ -576,7 +631,12 @@ impl<'r> DocumentWriter<'r> {
 
     fn table(&mut self, block: &Table, body: &mut Element) {
         let mut tbl = el("w:tbl", &[]);
-        let ncols = block.rows.iter().map(|r| r.cells.iter().map(|c| c.colspan).sum::<i64>()).max().unwrap_or(1);
+        let ncols = block
+            .rows
+            .iter()
+            .map(|r| r.cells.iter().map(|c| c.colspan).sum::<i64>())
+            .max()
+            .unwrap_or(1);
         let widths: Vec<Option<i64>>;
         {
             let tpr = sub(&mut tbl, "w:tblPr", &[]);
@@ -593,7 +653,11 @@ impl<'r> DocumentWriter<'r> {
                 sub(tpr, "w:tblW", &[("w:w", "0"), ("w:type", "auto")]);
                 let borders = sub(tpr, "w:tblBorders", &[]);
                 for side in ["top", "left", "bottom", "right", "insideH", "insideV"] {
-                    sub(borders, &format!("w:{side}"), &[("w:val", "single"), ("w:sz", "4"), ("w:color", "auto")]);
+                    sub(
+                        borders,
+                        &format!("w:{side}"),
+                        &[("w:val", "single"), ("w:sz", "4"), ("w:color", "auto")],
+                    );
                 }
                 // p{width} column widths -> twips (dxa); 914400 EMU = 1440 twips
                 widths = block
@@ -649,7 +713,13 @@ impl<'r> DocumentWriter<'r> {
         }
         body.append(tbl);
         if let Some(caption) = &block.caption {
-            let c = self.caption("Table", caption, block.label.as_deref(), None, block.caption_numbered);
+            let c = self.caption(
+                "Table",
+                caption,
+                block.label.as_deref(),
+                None,
+                block.caption_numbered,
+            );
             body.append(c);
         }
     }
@@ -670,10 +740,23 @@ impl<'r> DocumentWriter<'r> {
             }
             if cell.border_bottom {
                 let borders = sub(tcpr, "w:tcBorders", &[]);
-                sub(borders, "w:bottom", &[("w:val", "single"), ("w:sz", "4"), ("w:space", "0"), ("w:color", "auto")]);
+                sub(
+                    borders,
+                    "w:bottom",
+                    &[
+                        ("w:val", "single"),
+                        ("w:sz", "4"),
+                        ("w:space", "0"),
+                        ("w:color", "auto"),
+                    ],
+                );
             }
             if let Some(shade) = cell.shade.as_deref().filter(|s| !s.is_empty()) {
-                sub(tcpr, "w:shd", &[("w:val", "clear"), ("w:color", "auto"), ("w:fill", shade)]);
+                sub(
+                    tcpr,
+                    "w:shd",
+                    &[("w:val", "clear"), ("w:color", "auto"), ("w:fill", shade)],
+                );
             }
         }
         let mut last_is_para = false;
@@ -720,7 +803,13 @@ impl<'r> DocumentWriter<'r> {
         }
         if let Some(caption) = &block.caption {
             let bookmark = figure_bookmark(block);
-            let c = self.caption("Figure", caption, block.label.as_deref(), bookmark.as_deref(), block.caption_numbered);
+            let c = self.caption(
+                "Figure",
+                caption,
+                block.label.as_deref(),
+                bookmark.as_deref(),
+                block.caption_numbered,
+            );
             content.append(c);
         }
         sdt.append(content);
@@ -743,15 +832,21 @@ impl<'r> DocumentWriter<'r> {
                 } else {
                     "the TikZ compile failed (set TEX2WORD_TIKZ_DEBUG=1 to see the log)"
                 };
-                self.report.warn("figure", format!("TikZ figure not rendered: {reason}"));
+                self.report
+                    .warn("figure", format!("TikZ figure not rendered: {reason}"));
                 None
             }
             Some((data, w, h)) => {
-                self.report.info("figure", "rendered TikZ figure to an image");
+                self.report
+                    .info("figure", "rendered TikZ figure to an image");
                 let mut p = styled_paragraph("Normal");
                 set_align(&mut p, "center");
                 let mut r = el("w:r", &[]);
-                let info = images::ImageInfo { fmt: "png".into(), width_px: w, height_px: h };
+                let info = images::ImageInfo {
+                    fmt: "png".into(),
+                    width_px: w,
+                    height_px: h,
+                };
                 r.append(self.register_and_draw(&data, &info, "tikz.png", None, None));
                 p.append(r);
                 Some(p)
@@ -792,7 +887,10 @@ impl<'r> DocumentWriter<'r> {
                 }
             }
             let mut cap = styled_paragraph("Caption");
-            cap.append(run(&format!("({letter}) "), &RunStyle::default().with_flag("bold")));
+            cap.append(run(
+                &format!("({letter}) "),
+                &RunStyle::default().with_flag("bold"),
+            ));
             if let Some(c) = subfig.caption.as_ref().filter(|c| !c.is_empty()) {
                 self.inlines(c, &mut cap);
             }
@@ -807,7 +905,10 @@ impl<'r> DocumentWriter<'r> {
         let mut p = styled_paragraph("Normal");
         set_align(&mut p, "center");
         match self.embed_image(image, max_width_emu) {
-            None => p.append(run(&format!("[image: {}]", image.path), &RunStyle::default().italic())),
+            None => p.append(run(
+                &format!("[image: {}]", image.path),
+                &RunStyle::default().italic(),
+            )),
             Some(drawing) => {
                 let mut r = el("w:r", &[]);
                 r.append(drawing);
@@ -819,7 +920,10 @@ impl<'r> DocumentWriter<'r> {
 
     fn embed_image(&mut self, image: &Image, max_width_emu: Option<i64>) -> Option<Element> {
         let Some(path) = self.resolve_image_path(&image.path) else {
-            self.report.warn("includegraphics", format!("image file not found: {}", image.path));
+            self.report.warn(
+                "includegraphics",
+                format!("image file not found: {}", image.path),
+            );
             return None;
         };
         let fmt = match path.rsplit_once('.') {
@@ -834,24 +938,47 @@ impl<'r> DocumentWriter<'r> {
         // vector formats (PDF/EPS): rasterise to PNG when a backend is available
         if matches!(fmt.as_str(), "pdf" | "eps" | "ps") {
             if let Some((data, w, h)) = raster::rasterize(&path, &fmt, raster::DEFAULT_DPI) {
-                self.report.info("includegraphics", format!("rasterised {fmt} -> png: {}", image.path));
-                let info = images::ImageInfo { fmt: "png".into(), width_px: w, height_px: h };
-                return Some(self.register_and_draw(&data, &info, &name, max_width_emu, Some(image)));
+                self.report.info(
+                    "includegraphics",
+                    format!("rasterised {fmt} -> png: {}", image.path),
+                );
+                let info = images::ImageInfo {
+                    fmt: "png".into(),
+                    width_px: w,
+                    height_px: h,
+                };
+                return Some(self.register_and_draw(
+                    &data,
+                    &info,
+                    &name,
+                    max_width_emu,
+                    Some(image),
+                ));
             }
             let hint = if fmt == "pdf" && !raster::has_pdf_support() {
                 "install tex2word[pdf]".to_string()
             } else {
                 format!("{fmt} rasterisation not supported")
             };
-            self.report.warn("includegraphics", format!("image not embedded ({hint}): {}", image.path));
+            self.report.warn(
+                "includegraphics",
+                format!("image not embedded ({hint}): {}", image.path),
+            );
             return None;
         }
-        self.report.warn("includegraphics", format!("unsupported image format '{fmt}': {}", image.path));
+        self.report.warn(
+            "includegraphics",
+            format!("unsupported image format '{fmt}': {}", image.path),
+        );
         None
     }
 
     fn resolve_image_path(&self, rel: &str) -> Option<String> {
-        let path = if rel.starts_with('/') { rel.to_string() } else { pyos::join(&self.base_dir, &[rel]) };
+        let path = if rel.starts_with('/') {
+            rel.to_string()
+        } else {
+            pyos::join(&self.base_dir, &[rel])
+        };
         if pyos::isfile(&path) {
             return Some(path);
         }
@@ -887,13 +1014,19 @@ impl<'r> DocumentWriter<'r> {
             None => {
                 self.image_counter += 1;
                 let n = self.image_counter;
-                let ext = if info.fmt == "jpg" { "jpeg" } else { info.fmt.as_str() };
+                let ext = if info.fmt == "jpg" {
+                    "jpeg"
+                } else {
+                    info.fmt.as_str()
+                };
                 let rel_id = format!("rIdImg{n}");
-                self.media.push((format!("word/media/image{n}.{ext}"), data.to_vec()));
+                self.media
+                    .push((format!("word/media/image{n}.{ext}"), data.to_vec()));
                 self.document_rels.push(format!(
                     "<Relationship Id=\"{rel_id}\" Type=\"{IMAGE_REL_TYPE}\" Target=\"media/image{n}.{ext}\"/>"
                 ));
-                self.media_by_hash.insert(data.to_vec(), (rel_id.clone(), n));
+                self.media_by_hash
+                    .insert(data.to_vec(), (rel_id.clone(), n));
                 rel_id
             }
         };
@@ -913,7 +1046,10 @@ impl<'r> DocumentWriter<'r> {
     /// The output page's text column (width, height) in EMU.
     fn text_box_emu(&self) -> (i64, i64) {
         const EMU_PER_TWIP: i64 = 635;
-        let default_sz = vec![("w:w".to_string(), "12240".to_string()), ("w:h".to_string(), "15840".to_string())];
+        let default_sz = vec![
+            ("w:w".to_string(), "12240".to_string()),
+            ("w:h".to_string(), "15840".to_string()),
+        ];
         let default_mar = vec![
             ("w:top".to_string(), "1440".to_string()),
             ("w:right".to_string(), "1440".to_string()),
@@ -923,7 +1059,10 @@ impl<'r> DocumentWriter<'r> {
         let pgsz = self.page_pgsz.clone().unwrap_or(default_sz);
         let pgmar = self.page_pgmar.clone().unwrap_or(default_mar);
         let tw = |d: &[(String, String)], key: &str| -> i64 {
-            let v = d.iter().find(|(k, _)| k == key).map_or("0", |(_, v)| v.as_str());
+            let v = d
+                .iter()
+                .find(|(k, _)| k == key)
+                .map_or("0", |(_, v)| v.as_str());
             pystr::parse_int(v).unwrap_or(0)
         };
         let w = tw(&pgsz, "w:w") - tw(&pgmar, "w:left") - tw(&pgmar, "w:right");
@@ -933,7 +1072,12 @@ impl<'r> DocumentWriter<'r> {
 
     /// Final (cx, cy) in EMU: relative sizes against the text box,
     /// `keepaspectratio` for a width+height box, clamped to the column.
-    fn image_extent(&self, info: &images::ImageInfo, image: Option<&Image>, max_width_emu: Option<i64>) -> (i64, i64) {
+    fn image_extent(
+        &self,
+        info: &images::ImageInfo,
+        image: Option<&Image>,
+        max_width_emu: Option<i64>,
+    ) -> (i64, i64) {
         let nat_cx = (info.width_px * images::EMU_PER_PX) as f64;
         let nat_cy = (info.height_px * images::EMU_PER_PX) as f64;
         let truthy = |x: Option<f64>| x.filter(|v| *v != 0.0);
@@ -957,8 +1101,22 @@ impl<'r> DocumentWriter<'r> {
                     (w, h)
                 }
             }
-            (Some(w), None) => (w, if nat_cx != 0.0 { nat_cy * w / nat_cx } else { nat_cy }),
-            (None, Some(h)) => (if nat_cy != 0.0 { nat_cx * h / nat_cy } else { nat_cx }, h),
+            (Some(w), None) => (
+                w,
+                if nat_cx != 0.0 {
+                    nat_cy * w / nat_cx
+                } else {
+                    nat_cy
+                },
+            ),
+            (None, Some(h)) => (
+                if nat_cy != 0.0 {
+                    nat_cx * h / nat_cy
+                } else {
+                    nat_cx
+                },
+                h,
+            ),
             (None, None) => match scale {
                 Some(s) => (nat_cx * s, nat_cy * s),
                 None => {
@@ -995,7 +1153,9 @@ impl<'r> DocumentWriter<'r> {
             Some(b) => Some(b.to_string()),
             None => label.filter(|l| !l.is_empty()).map(bookmark_for),
         };
-        let start = name.filter(|n| !n.is_empty()).map(|n| fields::bookmark_start(&n));
+        let start = name
+            .filter(|n| !n.is_empty())
+            .map(|n| fields::bookmark_start(&n));
         if let Some(s) = &start {
             p.append(s.clone());
         }
@@ -1036,7 +1196,10 @@ impl<'r> DocumentWriter<'r> {
             if block.style == "numeric" {
                 p.append(run(&format!("[{i}]\t"), &RunStyle::default()));
             }
-            p.append(run(&tex2word_bib::render::format_reference(item), &RunStyle::default()));
+            p.append(run(
+                &tex2word_bib::render::format_reference(item),
+                &RunStyle::default(),
+            ));
             p.append(fields::bookmark_end_for(&start));
             content.append(p);
         }
@@ -1053,16 +1216,33 @@ impl<'r> DocumentWriter<'r> {
             sub(tpr, "w:tblW", &[("w:w", "5000"), ("w:type", "pct")]);
             // CT_TblPr order: tblW -> tblBorders -> tblCellMar
             let borders = sub(tpr, "w:tblBorders", &[]);
-            let color = block.border.as_deref().filter(|c| !c.is_empty()).unwrap_or("auto");
+            let color = block
+                .border
+                .as_deref()
+                .filter(|c| !c.is_empty())
+                .unwrap_or("auto");
             for side in ["top", "bottom", "left", "right"] {
-                sub(borders, &format!("w:{side}"), &[("w:val", "single"), ("w:sz", "8"), ("w:color", color)]);
+                sub(
+                    borders,
+                    &format!("w:{side}"),
+                    &[("w:val", "single"), ("w:sz", "8"), ("w:color", color)],
+                );
             }
             for side in ["insideH", "insideV"] {
                 sub(borders, &format!("w:{side}"), &[("w:val", "nil")]);
             }
             let cellmar = sub(tpr, "w:tblCellMar", &[]);
-            for (side, w) in [("top", "60"), ("bottom", "60"), ("left", "108"), ("right", "108")] {
-                sub(cellmar, &format!("w:{side}"), &[("w:w", w), ("w:type", "dxa")]);
+            for (side, w) in [
+                ("top", "60"),
+                ("bottom", "60"),
+                ("left", "108"),
+                ("right", "108"),
+            ] {
+                sub(
+                    cellmar,
+                    &format!("w:{side}"),
+                    &[("w:w", w), ("w:type", "dxa")],
+                );
             }
         }
         let grid = sub(&mut tbl, "w:tblGrid", &[]);
@@ -1072,7 +1252,11 @@ impl<'r> DocumentWriter<'r> {
             let mut ttc = el("w:tc", &[]);
             if let Some(ts) = block.title_shade.as_deref().filter(|s| !s.is_empty()) {
                 let ttcpr = sub(&mut ttc, "w:tcPr", &[]);
-                sub(ttcpr, "w:shd", &[("w:val", "clear"), ("w:color", "auto"), ("w:fill", ts)]);
+                sub(
+                    ttcpr,
+                    "w:shd",
+                    &[("w:val", "clear"), ("w:color", "auto"), ("w:fill", ts)],
+                );
             }
             let mut tp = styled_paragraph("Normal");
             self.inlines(title, &mut tp);
@@ -1084,7 +1268,11 @@ impl<'r> DocumentWriter<'r> {
         let mut tc = el("w:tc", &[]);
         if let Some(shade) = block.shade.as_deref().filter(|s| !s.is_empty()) {
             let tcpr = sub(&mut tc, "w:tcPr", &[]);
-            sub(tcpr, "w:shd", &[("w:val", "clear"), ("w:color", "auto"), ("w:fill", shade)]);
+            sub(
+                tcpr,
+                "w:shd",
+                &[("w:val", "clear"), ("w:color", "auto"), ("w:fill", shade)],
+            );
         }
         for inner in &block.blocks {
             self.block(inner, &mut tc, "Normal");
@@ -1109,7 +1297,11 @@ impl<'r> DocumentWriter<'r> {
             sub(tpr, "w:tblW", &[("w:w", "5000"), ("w:type", "pct")]);
             let borders = sub(tpr, "w:tblBorders", &[]);
             for side in ["top", "bottom"] {
-                sub(borders, &format!("w:{side}"), &[("w:val", "single"), ("w:sz", "12"), ("w:color", "auto")]);
+                sub(
+                    borders,
+                    &format!("w:{side}"),
+                    &[("w:val", "single"), ("w:sz", "12"), ("w:color", "auto")],
+                );
             }
             for side in ["left", "right", "insideH", "insideV"] {
                 sub(borders, &format!("w:{side}"), &[("w:val", "nil")]);
@@ -1122,7 +1314,16 @@ impl<'r> DocumentWriter<'r> {
         if block.caption.is_some() || label.is_some() {
             let mut cap = styled_paragraph("Caption");
             let pbdr = sub(get_ppr(&mut cap), "w:pBdr", &[]);
-            sub(pbdr, "w:bottom", &[("w:val", "single"), ("w:sz", "6"), ("w:space", "2"), ("w:color", "auto")]);
+            sub(
+                pbdr,
+                "w:bottom",
+                &[
+                    ("w:val", "single"),
+                    ("w:sz", "6"),
+                    ("w:space", "2"),
+                    ("w:color", "auto"),
+                ],
+            );
             let bold = RunStyle::default().with_flag("bold");
             cap.append(run("Algorithm ", &bold));
             let start = label.map(|l| fields::bookmark_start(&bookmark_for(l)));
@@ -1145,7 +1346,11 @@ impl<'r> DocumentWriter<'r> {
         let mut line_no = 0;
         for aline in &block.lines {
             let mut p = styled_paragraph("SourceCode");
-            sub(get_ppr(&mut p), "w:ind", &[("w:left", &(360 + aline.indent * 360).to_string())]);
+            sub(
+                get_ppr(&mut p),
+                "w:ind",
+                &[("w:left", &(360 + aline.indent * 360).to_string())],
+            );
             if aline.number {
                 line_no += 1;
                 p.append(run(&format!("{line_no:>2}  "), &RunStyle::default()));
@@ -1164,7 +1369,11 @@ impl<'r> DocumentWriter<'r> {
 
     fn theorem(&mut self, block: &Theorem, body: &mut Element) {
         let empty = [Block::Paragraph(Paragraph::default())];
-        let blocks: &[Block] = if block.blocks.is_empty() { &empty } else { &block.blocks };
+        let blocks: &[Block] = if block.blocks.is_empty() {
+            &empty
+        } else {
+            &block.blocks
+        };
         let mut p = styled_paragraph("Normal");
         self.write_theorem_prefix(block, &mut p);
         let rest: &[Block] = if let Block::Paragraph(first) = &blocks[0] {
@@ -1189,7 +1398,11 @@ impl<'r> DocumentWriter<'r> {
         p.append(run(&block.kind, &flag));
         if let Some(counter) = block.counter.as_deref().filter(|c| !c.is_empty()) {
             p.append(run(" ", &flag));
-            let start = block.label.as_deref().filter(|l| !l.is_empty()).map(|l| fields::bookmark_start(&bookmark_for(l)));
+            let start = block
+                .label
+                .as_deref()
+                .filter(|l| !l.is_empty())
+                .map(|l| fields::bookmark_start(&bookmark_for(l)));
             if let Some(s) = &start {
                 p.append(s.clone());
             }
@@ -1231,8 +1444,16 @@ impl<'r> DocumentWriter<'r> {
             }
             Inline::Colored(c) => {
                 let st2 = RunStyle {
-                    color: c.fg.clone().filter(|s| !s.is_empty()).or_else(|| st.color.clone()),
-                    shade: c.bg.clone().filter(|s| !s.is_empty()).or_else(|| st.shade.clone()),
+                    color: c
+                        .fg
+                        .clone()
+                        .filter(|s| !s.is_empty())
+                        .or_else(|| st.color.clone()),
+                    shade: c
+                        .bg
+                        .clone()
+                        .filter(|s| !s.is_empty())
+                        .or_else(|| st.shade.clone()),
                     ..st.clone()
                 };
                 for child in &c.inlines {
@@ -1240,7 +1461,10 @@ impl<'r> DocumentWriter<'r> {
                 }
             }
             Inline::FontSize(f) => {
-                let st2 = RunStyle { size: Some(f.half_points), ..st.clone() };
+                let st2 = RunStyle {
+                    size: Some(f.half_points),
+                    ..st.clone()
+                };
                 for child in &f.inlines {
                     self.emit(child, p, &st2);
                 }
@@ -1284,7 +1508,11 @@ impl<'r> DocumentWriter<'r> {
         // the comment body (lives in comments.xml)
         let mut cp = styled_paragraph("Normal");
         self.inlines(&[Inline::text(node.text.clone())], &mut cp);
-        let author = if node.author.is_empty() { "tex2word" } else { node.author.as_str() };
+        let author = if node.author.is_empty() {
+            "tex2word"
+        } else {
+            node.author.as_str()
+        };
         let mut c = el("w:comment", &[]);
         c.append(cp);
         c.set(&qn("w:id"), cid.as_str());
@@ -1309,7 +1537,9 @@ impl<'r> DocumentWriter<'r> {
         match self.math.inline(&node.latex, self.report) {
             MathResult::Omml(mut v) if !v.is_empty() => {
                 let mut omath = v.swap_remove(0);
-                if st.color.as_deref().is_some_and(|c| !c.is_empty()) || st.size.is_some_and(|s| s != 0) {
+                if st.color.as_deref().is_some_and(|c| !c.is_empty())
+                    || st.size.is_some_and(|s| s != 0)
+                {
                     style_math_runs(&mut omath, st.color.as_deref(), st.size);
                 }
                 p.append(omath);
@@ -1324,8 +1554,11 @@ impl<'r> DocumentWriter<'r> {
 
     fn cite(&mut self, node: &Cite, p: &mut Element) {
         let rendered = node.rendered.as_deref();
-        if self.citation_mode == "zotero" && rendered.is_some() && node.keys.iter().any(|k| self.cite_items.contains_key(k)) {
-            for r in zotero::citation_field(node, &self.cite_items, rendered.unwrap()) {
+        if let Some(rendered) = rendered.filter(|_| {
+            self.citation_mode == "zotero"
+                && node.keys.iter().any(|k| self.cite_items.contains_key(k))
+        }) {
+            for r in zotero::citation_field(node, &self.cite_items, rendered) {
                 p.append(r);
             }
             return;
@@ -1336,7 +1569,11 @@ impl<'r> DocumentWriter<'r> {
         }
         // fallback when no bibliography is present
         let text = node.keys.join(", ");
-        let s = if node.mode == "paren" { format!("[{text}]") } else { text };
+        let s = if node.mode == "paren" {
+            format!("[{text}]")
+        } else {
+            text
+        };
         p.append(run(&s, &RunStyle::default()));
     }
 
@@ -1385,7 +1622,12 @@ impl<'r> DocumentWriter<'r> {
         }
         let mut root = el("w:footnotes", &[]);
         root.append(special_note("w:footnote", "separator", -1, "w:separator"));
-        root.append(special_note("w:footnote", "continuationSeparator", 0, "w:continuationSeparator"));
+        root.append(special_note(
+            "w:footnote",
+            "continuationSeparator",
+            0,
+            "w:continuationSeparator",
+        ));
         for f in &self.footnotes {
             root.append(f.clone());
         }
@@ -1421,7 +1663,12 @@ impl<'r> DocumentWriter<'r> {
         }
         let mut root = el("w:endnotes", &[]);
         root.append(special_note("w:endnote", "separator", -1, "w:separator"));
-        root.append(special_note("w:endnote", "continuationSeparator", 0, "w:continuationSeparator"));
+        root.append(special_note(
+            "w:endnote",
+            "continuationSeparator",
+            0,
+            "w:continuationSeparator",
+        ));
         for e in &self.endnotes {
             root.append(e.clone());
         }
@@ -1436,12 +1683,19 @@ impl<'r> DocumentWriter<'r> {
         let mut sect = el("w:sectPr", &[]);
         // CT_SectPr child order: hdr/ftr refs, type, pgSz, pgMar, cols, …, titlePg
         for (tag, w_type, rid) in &self.header_footer_refs {
-            sub(&mut sect, &format!("w:{tag}"), &[("w:type", w_type), ("r:id", rid)]);
+            sub(
+                &mut sect,
+                &format!("w:{tag}"),
+                &[("w:type", w_type), ("r:id", rid)],
+            );
         }
         if continuous {
             sub(&mut sect, "w:type", &[("w:val", "continuous")]);
         }
-        let default_sz = vec![("w:w".to_string(), "12240".to_string()), ("w:h".to_string(), "15840".to_string())];
+        let default_sz = vec![
+            ("w:w".to_string(), "12240".to_string()),
+            ("w:h".to_string(), "15840".to_string()),
+        ];
         let default_mar: Vec<(String, String)> = [
             ("w:top", "1440"),
             ("w:right", "1440"),
@@ -1459,7 +1713,11 @@ impl<'r> DocumentWriter<'r> {
         sub(&mut sect, "w:pgMar", &attrs(&pgmar));
         // only a multi-column section needs w:cols
         if cols > 1 {
-            sub(&mut sect, "w:cols", &[("w:num", &cols.to_string()), ("w:space", "720")]);
+            sub(
+                &mut sect,
+                "w:cols",
+                &[("w:num", &cols.to_string()), ("w:space", "720")],
+            );
         }
         if self.header_footer_refs.iter().any(|(_, t, _)| t == "first") {
             sub(&mut sect, "w:titlePg", &[]);
@@ -1496,7 +1754,11 @@ fn run(text: &str, st: &RunStyle) -> Element {
             sub(rpr, "w:rStyle", &[("w:val", "Hyperlink")]);
         }
         if st.typewriter {
-            sub(rpr, "w:rFonts", &[("w:ascii", "Consolas"), ("w:hAnsi", "Consolas")]);
+            sub(
+                rpr,
+                "w:rFonts",
+                &[("w:ascii", "Consolas"), ("w:hAnsi", "Consolas")],
+            );
         }
         if st.bold {
             sub(rpr, "w:b", &[]);
@@ -1524,7 +1786,11 @@ fn run(text: &str, st: &RunStyle) -> Element {
             sub(rpr, "w:u", &[("w:val", "single")]);
         }
         if let Some(s) = shade {
-            sub(rpr, "w:shd", &[("w:val", "clear"), ("w:color", "auto"), ("w:fill", s)]);
+            sub(
+                rpr,
+                "w:shd",
+                &[("w:val", "clear"), ("w:color", "auto"), ("w:fill", s)],
+            );
         }
         if st.superscript {
             sub(rpr, "w:vertAlign", &[("w:val", "superscript")]);
@@ -1696,9 +1962,30 @@ fn drawing(
     alt: &str,
 ) -> Element {
     let mut d = el("w:drawing", &[]);
-    let inline = sub(&mut d, "wp:inline", &[("distT", "0"), ("distB", "0"), ("distL", "0"), ("distR", "0")]);
-    sub(inline, "wp:extent", &[("cx", &cx.to_string()), ("cy", &cy.to_string())]);
-    sub(inline, "wp:docPr", &[("id", &n.to_string()), ("name", &format!("Picture {n}")), ("descr", alt)]);
+    let inline = sub(
+        &mut d,
+        "wp:inline",
+        &[
+            ("distT", "0"),
+            ("distB", "0"),
+            ("distL", "0"),
+            ("distR", "0"),
+        ],
+    );
+    sub(
+        inline,
+        "wp:extent",
+        &[("cx", &cx.to_string()), ("cy", &cy.to_string())],
+    );
+    sub(
+        inline,
+        "wp:docPr",
+        &[
+            ("id", &n.to_string()),
+            ("name", &format!("Picture {n}")),
+            ("descr", alt),
+        ],
+    );
     let frame = sub(inline, "wp:cNvGraphicFramePr", &[]);
     sub(frame, "a:graphicFrameLocks", &[("noChangeAspect", "1")]);
     let graphic = sub(inline, "a:graphic", &[]);
@@ -1706,7 +1993,11 @@ fn drawing(
     let pic = sub(gdata, "pic:pic", &[]);
     {
         let nv = sub(pic, "pic:nvPicPr", &[]);
-        sub(nv, "pic:cNvPr", &[("id", "0"), ("name", name), ("descr", alt)]);
+        sub(
+            nv,
+            "pic:cNvPr",
+            &[("id", "0"), ("name", name), ("descr", alt)],
+        );
         sub(nv, "pic:cNvPicPr", &[]);
     }
     {
@@ -1727,7 +2018,11 @@ fn drawing(
         };
         let xfrm = sub(sppr, "a:xfrm", &xattrs);
         sub(xfrm, "a:off", &[("x", "0"), ("y", "0")]);
-        sub(xfrm, "a:ext", &[("cx", &cx.to_string()), ("cy", &cy.to_string())]);
+        sub(
+            xfrm,
+            "a:ext",
+            &[("cx", &cx.to_string()), ("cy", &cy.to_string())],
+        );
     }
     let geom = sub(sppr, "a:prstGeom", &[("prst", "rect")]);
     sub(geom, "a:avLst", &[]);

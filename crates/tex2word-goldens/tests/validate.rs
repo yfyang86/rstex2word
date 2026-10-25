@@ -9,7 +9,11 @@ fn validate_docx_matches_python() {
     let mut n = 0;
     for case in load_all().into_iter().filter(|c| c.api == "validate_docx") {
         n += 1;
-        let sha = case.arg("docx_bytes").and_then(|v| v.get("@blob")).and_then(Value::as_str).unwrap();
+        let sha = case
+            .arg("docx_bytes")
+            .and_then(|v| v.get("@blob"))
+            .and_then(Value::as_str)
+            .unwrap();
         let want: Vec<&str> = case
             .out
             .get("value")
@@ -24,5 +28,10 @@ fn validate_docx_matches_python() {
         }
     }
     assert!(n > 50, "only {n} cases");
-    assert!(failures.is_empty(), "{} of {n} differ:\n{}", failures.len(), failures.join("\n"));
+    assert!(
+        failures.is_empty(),
+        "{} of {n} differ:\n{}",
+        failures.len(),
+        failures.join("\n")
+    );
 }

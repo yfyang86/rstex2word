@@ -58,6 +58,11 @@ fn every_recorded_ir_document_round_trips() {
         failures.is_empty(),
         "{} of {checked} IR documents failed:\n{}",
         failures.len(),
-        failures.iter().take(20).cloned().collect::<Vec<_>>().join("\n")
+        failures
+            .iter()
+            .take(20)
+            .cloned()
+            .collect::<Vec<_>>()
+            .join("\n")
     );
 }

@@ -20,9 +20,9 @@
 //! ```
 
 pub mod chars;
+mod default_specs;
 pub mod latex2text;
 mod latex2text_specs;
-mod default_specs;
 mod node;
 mod spec;
 

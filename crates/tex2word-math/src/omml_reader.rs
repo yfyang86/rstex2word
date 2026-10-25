@@ -14,7 +14,8 @@ const M: &str = "http://schemas.openxmlformats.org/officeDocument/2006/math";
 
 /// lxml's `ValueError` from `etree.QName(e)` on a comment or processing
 /// instruction: the reference raises it for any non-element child it walks.
-pub const QNAME_ERROR: &str = "Invalid input tag of type <class '_cython_3_2_9.cython_function_or_method'>";
+pub const QNAME_ERROR: &str =
+    "Invalid input tag of type <class '_cython_3_2_9.cython_function_or_method'>";
 
 /// `etree.QName(e).localname`, failing like lxml on a comment or PI.
 pub fn localname(e: &Element) -> Result<&str, String> {
@@ -49,7 +50,11 @@ fn children_to_row(parent: Option<&Element>) -> Result<Row, String> {
 
 fn flat(parent: Option<&Element>) -> Result<MNode, String> {
     let mut row = children_to_row(parent)?;
-    Ok(if row.0.len() == 1 { row.0.pop().unwrap() } else { MNode::Group(row) })
+    Ok(if row.0.len() == 1 {
+        row.0.pop().unwrap()
+    } else {
+        MNode::Group(row)
+    })
 }
 
 fn find<'a>(e: &'a Element, name: &str) -> Option<&'a Element> {
@@ -74,9 +79,18 @@ fn has_children(e: Option<&Element>) -> Option<&Element> {
 fn parse(e: &Element) -> Result<Option<MNode>, String> {
     let node = match localname(e)? {
         "r" => MNode::Lit(parse_run(e)),
-        "f" => MNode::Frac(children_to_row(find(e, "num"))?, children_to_row(find(e, "den"))?),
-        "sSup" => MNode::Sup(Box::new(flat(find(e, "e"))?), Box::new(flat(find(e, "sup"))?)),
-        "sSub" => MNode::Sub(Box::new(flat(find(e, "e"))?), Box::new(flat(find(e, "sub"))?)),
+        "f" => MNode::Frac(
+            children_to_row(find(e, "num"))?,
+            children_to_row(find(e, "den"))?,
+        ),
+        "sSup" => MNode::Sup(
+            Box::new(flat(find(e, "e"))?),
+            Box::new(flat(find(e, "sup"))?),
+        ),
+        "sSub" => MNode::Sub(
+            Box::new(flat(find(e, "e"))?),
+            Box::new(flat(find(e, "sub"))?),
+        ),
         "sSubSup" => MNode::SubSup(
             Box::new(flat(find(e, "e"))?),
             Box::new(flat(find(e, "sub"))?),
@@ -96,9 +110,15 @@ fn parse(e: &Element) -> Result<Option<MNode>, String> {
         "nary" => {
             let pr = find(e, "naryPr");
             let op = chr_val(pr, "chr", "∫");
-            let sub = has_children(find(e, "sub")).map(|s| flat(Some(s))).transpose()?;
-            let sup = has_children(find(e, "sup")).map(|s| flat(Some(s))).transpose()?;
-            let body = has_children(find(e, "e")).map(|s| flat(Some(s))).transpose()?;
+            let sub = has_children(find(e, "sub"))
+                .map(|s| flat(Some(s)))
+                .transpose()?;
+            let sup = has_children(find(e, "sup"))
+                .map(|s| flat(Some(s)))
+                .transpose()?;
+            let body = has_children(find(e, "e"))
+                .map(|s| flat(Some(s)))
+                .transpose()?;
             MNode::Nary(Nary {
                 op,
                 body: body.map(Box::new),
@@ -107,15 +127,29 @@ fn parse(e: &Element) -> Result<Option<MNode>, String> {
                 limloc: "undOvr".into(),
             })
         }
-        "acc" => MNode::Accent(children_to_row(find(e, "e"))?, chr_val(find(e, "accPr"), "chr", "\u{0302}")),
+        "acc" => MNode::Accent(
+            children_to_row(find(e, "e"))?,
+            chr_val(find(e, "accPr"), "chr", "\u{0302}"),
+        ),
         "d" => {
             let pr = find(e, "dPr");
-            MNode::Fenced(chr_val(pr, "begChr", "("), chr_val(pr, "endChr", ")"), children_to_row(find(e, "e"))?)
+            MNode::Fenced(
+                chr_val(pr, "begChr", "("),
+                chr_val(pr, "endChr", ")"),
+                children_to_row(find(e, "e"))?,
+            )
         }
-        "limLow" => MNode::LimLow(Box::new(flat(find(e, "e"))?), Box::new(flat(find(e, "lim"))?)),
+        "limLow" => MNode::LimLow(
+            Box::new(flat(find(e, "e"))?),
+            Box::new(flat(find(e, "lim"))?),
+        ),
         "groupChr" => {
             let pr = find(e, "groupChrPr");
-            MNode::GroupChr(children_to_row(find(e, "e"))?, chr_val(pr, "chr", "⏞"), chr_val(pr, "pos", "top"))
+            MNode::GroupChr(
+                children_to_row(find(e, "e"))?,
+                chr_val(pr, "chr", "⏞"),
+                chr_val(pr, "pos", "top"),
+            )
         }
         "m" => {
             let mut rows = Vec::new();
@@ -135,7 +169,10 @@ fn parse(e: &Element) -> Result<Option<MNode>, String> {
 }
 
 fn parse_run(e: &Element) -> Lit {
-    let text = e.find(&mq("t")).and_then(|t| t.text.clone()).unwrap_or_default();
+    let text = e
+        .find(&mq("t"))
+        .and_then(|t| t.text.clone())
+        .unwrap_or_default();
     let rpr = e.find(&mq("rPr"));
     let upright = rpr.is_some_and(|r| r.find(&mq("nor")).is_some());
     let mut script = None;
@@ -150,7 +187,12 @@ fn parse_run(e: &Element) -> Lit {
             }
         }
     }
-    Lit { text, upright, bold, script }
+    Lit {
+        text,
+        upright,
+        bold,
+        script,
+    }
 }
 
 // ---- math AST -> LaTeX ---------------------------------------------------------
@@ -247,11 +289,20 @@ pub fn ast_to_latex(node: &MNode) -> String {
         MNode::Fenced(open, close, body) => {
             let op = if open.is_empty() { "." } else { open };
             let cl = if close.is_empty() { "." } else { close };
-            format!("\\left{} {} \\right{}", delim(op), row_latex(body), delim(cl))
+            format!(
+                "\\left{} {} \\right{}",
+                delim(op),
+                row_latex(body),
+                delim(cl)
+            )
         }
         MNode::LimLow(base, lim) => format!("{}_{}", ast_to_latex(base), arg(lim)),
         MNode::GroupChr(body, _, pos) => {
-            let cmd = if pos == "top" { "overbrace" } else { "underbrace" };
+            let cmd = if pos == "top" {
+                "overbrace"
+            } else {
+                "underbrace"
+            };
             format!("\\{cmd}{{{}}}", row_latex(body))
         }
         MNode::Matrix(rows, _) => {

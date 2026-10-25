@@ -11,7 +11,10 @@ use tex2word_ooxml::zip::{write, Archive};
 const INSERTED: &[u8] = b"<w:p><w:r><w:t>Inserted paragraph.</w:t></w:r></w:p>";
 
 fn find(hay: &[u8], needle: &[u8], from: usize) -> Option<usize> {
-    hay.get(from..)?.windows(needle.len()).position(|w| w == needle).map(|i| i + from)
+    hay.get(from..)?
+        .windows(needle.len())
+        .position(|w| w == needle)
+        .map(|i| i + from)
 }
 
 fn replace_all(hay: &[u8], from: &[u8], to: &[u8]) -> Vec<u8> {
@@ -32,7 +35,10 @@ fn edits(xml: &[u8]) -> Vec<(&'static str, Vec<u8>)> {
     if let Some(start) = find(xml, b"<w:p>", 0) {
         if let Some(end) = find(xml, b"</w:p>", start) {
             out.push(("delete", [&xml[..start], &xml[end + 6..]].concat()));
-            out.push(("insert", [&xml[..end + 6], INSERTED, &xml[end + 6..]].concat()));
+            out.push((
+                "insert",
+                [&xml[..end + 6], INSERTED, &xml[end + 6..]].concat(),
+            ));
         }
     }
     out
@@ -56,14 +62,20 @@ fn reverse_path_matches_python() {
         n += 1;
         let row = json::parse(line).unwrap();
         let case = load(row.get("case").and_then(Value::as_str).unwrap());
-        if case.tests().iter().any(|t| t.starts_with("tests/test_reproducible.py")) {
+        if case
+            .tests()
+            .iter()
+            .any(|t| t.starts_with("tests/test_reproducible.py"))
+        {
             std::env::set_var("SOURCE_DATE_EPOCH", "1700000000");
         } else {
             std::env::set_var("SOURCE_DATE_EPOCH", "1767312000");
         }
         let source = case.arg("source").and_then(Value::as_str).unwrap();
         let m = materialize(&case);
-        let docx = convert_source(source, &m.base_dir, &convert_options(&case, &m)).unwrap().docx;
+        let docx = convert_source(source, &m.base_dir, &convert_options(&case, &m))
+            .unwrap()
+            .docx;
 
         let canon = DumpOptions {
             ensure_ascii: false,
@@ -96,14 +108,30 @@ fn reverse_path_matches_python() {
             ("latex_raw", latex(false)),
         ];
         let archive = Archive::new(&docx).unwrap();
-        let parts: Vec<(String, Vec<u8>)> =
-            archive.names().iter().map(|n| (n.to_string(), archive.read(n).unwrap())).collect();
-        let xml = &parts.iter().find(|(n, _)| n == "word/document.xml").unwrap().1;
+        let parts: Vec<(String, Vec<u8>)> = archive
+            .names()
+            .iter()
+            .map(|n| (n.to_string(), archive.read(n).unwrap()))
+            .collect();
+        let xml = &parts
+            .iter()
+            .find(|(n, _)| n == "word/document.xml")
+            .unwrap()
+            .1;
         let mut edited_checks = Vec::new();
         for (kind, new_xml) in edits(xml) {
             let members: Vec<(String, Vec<u8>)> = parts
                 .iter()
-                .map(|(n, b)| (n.clone(), if n == "word/document.xml" { new_xml.clone() } else { b.clone() }))
+                .map(|(n, b)| {
+                    (
+                        n.clone(),
+                        if n == "word/document.xml" {
+                            new_xml.clone()
+                        } else {
+                            b.clone()
+                        },
+                    )
+                })
                 .collect();
             let edited = write(&members);
             let got = match tex2word::roundtrip::to_latex(&edited, true) {
@@ -113,8 +141,11 @@ fn reverse_path_matches_python() {
             };
             edited_checks.push((format!("edit_{kind}"), got));
         }
-        let checks: Vec<(String, Value)> =
-            checks.into_iter().map(|(k, v)| (k.to_string(), v)).chain(edited_checks).collect();
+        let checks: Vec<(String, Value)> = checks
+            .into_iter()
+            .map(|(k, v)| (k.to_string(), v))
+            .chain(edited_checks)
+            .collect();
         for (key, got) in checks {
             let want = row.get(&key).unwrap();
             if &got != want {
@@ -128,6 +159,11 @@ fn reverse_path_matches_python() {
         failures.is_empty(),
         "{} differ:\n{}",
         failures.len(),
-        failures.iter().take(40).cloned().collect::<Vec<_>>().join("\n")
+        failures
+            .iter()
+            .take(40)
+            .cloned()
+            .collect::<Vec<_>>()
+            .join("\n")
     );
 }

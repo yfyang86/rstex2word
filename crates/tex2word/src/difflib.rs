@@ -29,7 +29,13 @@ impl<'a, T: Eq + Hash> Matcher<'a, T> {
         Matcher { a, b, b2j }
     }
 
-    fn find_longest_match(&self, alo: usize, ahi: usize, blo: usize, bhi: usize) -> (usize, usize, usize) {
+    fn find_longest_match(
+        &self,
+        alo: usize,
+        ahi: usize,
+        blo: usize,
+        bhi: usize,
+    ) -> (usize, usize, usize) {
         let (mut besti, mut bestj, mut bestsize) = (alo, blo, 0);
         let mut j2len: HashMap<usize, usize> = HashMap::new();
         for i in alo..ahi {
@@ -42,7 +48,11 @@ impl<'a, T: Eq + Hash> Matcher<'a, T> {
                     if j >= bhi {
                         break;
                     }
-                    let k = if j == 0 { 0 } else { j2len.get(&(j - 1)).copied().unwrap_or(0) } + 1;
+                    let k = if j == 0 {
+                        0
+                    } else {
+                        j2len.get(&(j - 1)).copied().unwrap_or(0)
+                    } + 1;
                     newj2len.insert(j, k);
                     if k > bestsize {
                         besti = i + 1 - k;
@@ -58,7 +68,10 @@ impl<'a, T: Eq + Hash> Matcher<'a, T> {
             bestj -= 1;
             bestsize += 1;
         }
-        while besti + bestsize < ahi && bestj + bestsize < bhi && self.a[besti + bestsize] == self.b[bestj + bestsize] {
+        while besti + bestsize < ahi
+            && bestj + bestsize < bhi
+            && self.a[besti + bestsize] == self.b[bestj + bestsize]
+        {
             bestsize += 1;
         }
         (besti, bestj, bestsize)
@@ -117,12 +130,24 @@ pub fn get_opcodes<T: Eq + Hash>(a: &[T], b: &[T]) -> Vec<Opcode> {
             ""
         };
         if !tag.is_empty() {
-            answer.push(Opcode { tag, i1: i, i2: ai, j1: j, j2: bj });
+            answer.push(Opcode {
+                tag,
+                i1: i,
+                i2: ai,
+                j1: j,
+                j2: bj,
+            });
         }
         i = ai + size;
         j = bj + size;
         if size > 0 {
-            answer.push(Opcode { tag: "equal", i1: ai, i2: i, j1: bj, j2: j });
+            answer.push(Opcode {
+                tag: "equal",
+                i1: ai,
+                i2: i,
+                j1: bj,
+                j2: j,
+            });
         }
     }
     answer
@@ -137,12 +162,25 @@ mod tests {
         // SequenceMatcher(a="abxcd", b="abcd", autojunk=False).get_opcodes()
         let a: Vec<char> = "abxcd".chars().collect();
         let b: Vec<char> = "abcd".chars().collect();
-        let ops: Vec<_> = get_opcodes(&a, &b).iter().map(|o| (o.tag, o.i1, o.i2, o.j1, o.j2)).collect();
-        assert_eq!(ops, vec![("equal", 0, 2, 0, 2), ("delete", 2, 3, 2, 2), ("equal", 3, 5, 2, 4)]);
+        let ops: Vec<_> = get_opcodes(&a, &b)
+            .iter()
+            .map(|o| (o.tag, o.i1, o.i2, o.j1, o.j2))
+            .collect();
+        assert_eq!(
+            ops,
+            vec![
+                ("equal", 0, 2, 0, 2),
+                ("delete", 2, 3, 2, 2),
+                ("equal", 3, 5, 2, 4)
+            ]
+        );
         // SequenceMatcher(a="qabxcd", b="abycdf", autojunk=False).get_opcodes()
         let a: Vec<char> = "qabxcd".chars().collect();
         let b: Vec<char> = "abycdf".chars().collect();
-        let ops: Vec<_> = get_opcodes(&a, &b).iter().map(|o| (o.tag, o.i1, o.i2, o.j1, o.j2)).collect();
+        let ops: Vec<_> = get_opcodes(&a, &b)
+            .iter()
+            .map(|o| (o.tag, o.i1, o.i2, o.j1, o.j2))
+            .collect();
         assert_eq!(
             ops,
             vec![

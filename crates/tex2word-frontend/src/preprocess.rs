@@ -52,7 +52,11 @@ fn flatten_inputs_depth(source: &str, base_dir: &str, depth: usize) -> io::Resul
         }
         let inner = strip_comments(&pyos::read_text(path, Errors::Strict)?);
         let dir = pyos::dirname(path);
-        let dir = if dir.is_empty() { base_dir.to_string() } else { dir };
+        let dir = if dir.is_empty() {
+            base_dir.to_string()
+        } else {
+            dir
+        };
         flatten_inputs_depth(&inner, &dir, depth + 1).map(Some)
     };
     let candidates = |name: &str| -> Vec<String> {
@@ -102,7 +106,10 @@ fn flatten_inputs_depth(source: &str, base_dir: &str, depth: usize) -> io::Resul
 // \verb* (show-spaces form) -> \verb, which pylatexenc parses natively.
 lazy_re!(VERBSTAR_RE, r"\\verb\*");
 // Delimiter-form inline listings -> \verb<delim>…<delim>.
-lazy_re!(LSTINLINE_DELIM_RE, r"\\lstinline\s*(?:\[[^\]]*\])?\s*([^\s{[*])");
+lazy_re!(
+    LSTINLINE_DELIM_RE,
+    r"\\lstinline\s*(?:\[[^\]]*\])?\s*([^\s{[*])"
+);
 lazy_re!(
     MINTINLINE_DELIM_RE,
     r"\\mintinline\s*(?:\[[^\]]*\])?\s*\{[^}]*\}\s*([^\s{[*])"
@@ -159,7 +166,10 @@ lazy_re!(
 /// Rewrite `lstlisting`/`minted`/`Verbatim` blocks to `verbatim`.
 pub fn normalize_listing_envs(source: &str) -> String {
     LISTING_ENV_RE.sub_fn(source, |m| {
-        format!("\\begin{{verbatim}}{}\\end{{verbatim}}", m.name("body").unwrap_or(""))
+        format!(
+            "\\begin{{verbatim}}{}\\end{{verbatim}}",
+            m.name("body").unwrap_or("")
+        )
     })
 }
 
@@ -188,7 +198,10 @@ pub fn rewrite_mathoperators(source: &str) -> String {
 lazy_re!(IFFALSE_RE, r"\\iffalse(?![a-zA-Z@])");
 // An \if… opener is a control word; \fi closes; \else splits. The lookaheads
 // keep \fi from matching \fill/\final and \else from \elsewhere.
-lazy_re!(IFFI_RE, r"\\(if[a-zA-Z@]*|else(?![a-zA-Z@])|fi(?![a-zA-Z@]))");
+lazy_re!(
+    IFFI_RE,
+    r"\\(if[a-zA-Z@]*|else(?![a-zA-Z@])|fi(?![a-zA-Z@]))"
+);
 
 /// Resolve `\iffalse … \fi` blocks: drop the false branch, keep an `\else`
 /// branch, tracking nested `\if…`/`\fi`.
@@ -264,7 +277,11 @@ pub fn uses_exam_class(source: &str, base_dir: &str) -> bool {
     };
     let path = pyos::join2(base_dir, &format!("{}.cls", pystr::strip(m.group_str(1))));
     match pyos::read_text(&path, Errors::Ignore) {
-        Ok(content) => re::search(r"\\LoadClass(?:WithOptions)?(?:\[[^\]]*\])?\{exam\}", &content).is_some(),
+        Ok(content) => re::search(
+            r"\\LoadClass(?:WithOptions)?(?:\[[^\]]*\])?\{exam\}",
+            &content,
+        )
+        .is_some(),
         Err(_) => false,
     }
 }
@@ -282,7 +299,11 @@ fn rewrite_exam_class(source: &str, base_dir: &str) -> String {
         }
     }
     for env in EXAM_ENVS {
-        source = re::sub(&format!(r"\\begin\{{{env}\}}"), r"\\begin{enumerate}", &source);
+        source = re::sub(
+            &format!(r"\\begin\{{{env}\}}"),
+            r"\\begin{enumerate}",
+            &source,
+        );
         source = re::sub(&format!(r"\\end\{{{env}\}}"), r"\\end{enumerate}", &source);
     }
     EXAM_ITEM_RE.sub(r"\\item ", &source)
@@ -294,7 +315,11 @@ lazy_re!(
     r"\\(draw|fill|filldraw|path|clip|shade|shadedraw|pgf|coordinate|foreach|pic)\b"
 );
 // a \tikzstyle{name} = [ ... ] declaration (produces no content)
-lazy_re!(TIKZSTYLE_RE, r"\\tikzstyle\s*\{[^}]*\}\s*=\s*\[[^\]]*\]", Flags::S);
+lazy_re!(
+    TIKZSTYLE_RE,
+    r"\\tikzstyle\s*\{[^}]*\}\s*=\s*\[[^\]]*\]",
+    Flags::S
+);
 
 /// Each `\node[style] … {content}`'s (style, content).
 fn extract_tikz_nodes(body: &str) -> Vec<(String, String)> {
@@ -376,7 +401,12 @@ pub fn rewrite_halign(source: &str) -> String {
         if rows.is_empty() {
             return inner.to_string();
         }
-        let ncols = rows.iter().map(|r| r.matches('&').count()).max().unwrap_or(0) + 1;
+        let ncols = rows
+            .iter()
+            .map(|r| r.matches('&').count())
+            .max()
+            .unwrap_or(0)
+            + 1;
         format!(
             "\\begin{{array}}{{{}}}{}\\end{{array}}",
             "c".repeat(ncols),
@@ -445,7 +475,10 @@ pub fn inject_exam_title(source: &str) -> String {
     if !title.is_empty() {
         lines.push(title);
     }
-    let block = format!("\n\\begin{{center}}\n{}\n\\end{{center}}\n", lines.join(r"\\"));
+    let block = format!(
+        "\n\\begin{{center}}\n{}\n\\end{{center}}\n",
+        lines.join(r"\\")
+    );
     re::compile(r"\\begin\{document\}", Flags::NONE)
         .subn_fn(source, 1, |m| format!("{}{block}", m.as_str()))
         .0
@@ -521,9 +554,9 @@ pub fn replace_inline_tikz(source: &str) -> String {
     let mut out = String::with_capacity(n);
     let mut i = 0;
     while i < n {
-        let next_is_alpha = source[i..].strip_prefix("\\tikz").map(|rest| {
-            rest.chars().next().is_some_and(pystr::is_alpha)
-        });
+        let next_is_alpha = source[i..]
+            .strip_prefix("\\tikz")
+            .map(|rest| rest.chars().next().is_some_and(pystr::is_alpha));
         if next_is_alpha == Some(false) {
             let mut j = i + 5;
             let skip_ws = |j: &mut usize| {
@@ -568,7 +601,9 @@ fn dimen() -> String {
 static SPACING_PRIM_RE: LazyLock<Regex> = LazyLock::new(|| {
     let d = dimen();
     let glue = format!(r"{d}(?:\s*plus\s*{d})?(?:\s*minus\s*{d})?");
-    Regex::new(&format!(r"\\(?:vskip|hskip|mskip|kern|mkern)(?![A-Za-z@])\s*{glue}"))
+    Regex::new(&format!(
+        r"\\(?:vskip|hskip|mskip|kern|mkern)(?![A-Za-z@])\s*{glue}"
+    ))
 });
 
 /// fontawesome icons with a sensible Unicode stand-in; the rest are dropped.
@@ -605,9 +640,16 @@ fn fa_glyph(name: &str) -> &'static str {
     }
 }
 
-lazy_re!(FA_RE, r"\\fa([A-Z][A-Za-z]*)\*?(?:\s*\[[^\]]*\])?(?![A-Za-z@])");
+lazy_re!(
+    FA_RE,
+    r"\\fa([A-Z][A-Za-z]*)\*?(?:\s*\[[^\]]*\])?(?![A-Za-z@])"
+);
 lazy_re!(FAICON_RE, r"\\faIcon\*?(?:\s*\[[^\]]*\])?\s*\{([^}]*)\}");
-lazy_re!(VERBATIM_BLOCK_RE, r"\\begin\{verbatim\}.*?\\end\{verbatim\}", Flags::S);
+lazy_re!(
+    VERBATIM_BLOCK_RE,
+    r"\\begin\{verbatim\}.*?\\end\{verbatim\}",
+    Flags::S
+);
 
 fn fa_name_glyph(name: &str) -> &'static str {
     // \faIcon{arrow-right} -> ArrowRight
@@ -616,7 +658,10 @@ fn fa_name_glyph(name: &str) -> &'static str {
         .filter(|p| !p.is_empty())
         .map(|p| {
             let mut cs = p.chars();
-            let first = cs.next().map(|c| c.to_uppercase().collect::<String>()).unwrap_or_default();
+            let first = cs
+                .next()
+                .map(|c| c.to_uppercase().collect::<String>())
+                .unwrap_or_default();
             first + cs.as_str()
         })
         .collect();
@@ -661,11 +706,17 @@ mod tests {
 
     #[test]
     fn inline_tikz_circled_number() {
-        assert_eq!(replace_inline_tikz(r"see \tikz\node[circle]{3}; here"), "see ③ here");
+        assert_eq!(
+            replace_inline_tikz(r"see \tikz\node[circle]{3}; here"),
+            "see ③ here"
+        );
     }
 
     #[test]
     fn spacing_primitives_are_dropped() {
-        assert_eq!(normalize_spacing_and_icons(r"a\vskip -1mm b \faEnvelope c"), "a b ✉ c");
+        assert_eq!(
+            normalize_spacing_and_icons(r"a\vskip -1mm b \faEnvelope c"),
+            "a b ✉ c"
+        );
     }
 }

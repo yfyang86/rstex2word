@@ -10,7 +10,8 @@ use tex2word_ooxml::zip::crc32;
 
 use crate::fields;
 
-const CSL_SCHEMA: &str = "https://github.com/citation-style-language/schema/raw/master/csl-citation.json";
+const CSL_SCHEMA: &str =
+    "https://github.com/citation-style-language/schema/raw/master/csl-citation.json";
 
 thread_local! {
     static CITATION_SEQ: Cell<u64> = const { Cell::new(1) };
@@ -39,7 +40,9 @@ fn citation_item(cite: &Cite, key: &str, item: &CSLItem) -> Value {
         ("id".to_string(), Value::Int(numeric_id(key))),
         (
             "uris".to_string(),
-            Value::Array(vec![Value::Str(format!("http://zotero.org/users/local/tex2word/items/{key}"))]),
+            Value::Array(vec![Value::Str(format!(
+                "http://zotero.org/users/local/tex2word/items/{key}"
+            ))]),
         ),
         ("itemData".to_string(), item_data(item)),
     ];
@@ -80,7 +83,15 @@ pub fn citation_field(cite: &Cite, items: &Dict<CSLItem>, rendered: &str) -> Vec
         ),
         ("schema".into(), Value::Str(CSL_SCHEMA.into())),
     ]);
-    let payload = dumps(&citation, DumpOptions { ensure_ascii: false, indent: None, sort_keys: false, compact: true });
+    let payload = dumps(
+        &citation,
+        DumpOptions {
+            ensure_ascii: false,
+            indent: None,
+            sort_keys: false,
+            compact: true,
+        },
+    );
     fields::field(
         &format!("ADDIN ZOTERO_ITEM CSL_CITATION {payload}"),
         if rendered.is_empty() { " " } else { rendered },

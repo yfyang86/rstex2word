@@ -32,24 +32,49 @@ fn xml_round_trip_matches_lxml() {
                 continue;
             }
         };
-        let utf8 = tostring(&r, ToString { utf8: true, declaration: true, with_tail: true }).unwrap();
+        let utf8 = tostring(
+            &r,
+            ToString {
+                utf8: true,
+                declaration: true,
+                with_tail: true,
+            },
+        )
+        .unwrap();
         if sha256_hex(utf8.as_bytes()) != row.get("out").and_then(Value::as_str).unwrap() {
             failures.push(format!("{sha}: UTF-8 serialization differs"));
         }
-        let ascii = tostring(&r, ToString { utf8: false, declaration: false, with_tail: true }).unwrap();
+        let ascii = tostring(
+            &r,
+            ToString {
+                utf8: false,
+                declaration: false,
+                with_tail: true,
+            },
+        )
+        .unwrap();
         if sha256_hex(ascii.as_bytes()) != row.get("ascii").and_then(Value::as_str).unwrap() {
             failures.push(format!("{sha}: ASCII serialization differs"));
         }
     }
     assert!(n > 300, "only {n} rows");
-    assert!(failures.is_empty(), "{} of {n} differ:\n{}", failures.len(), failures.join("\n"));
+    assert!(
+        failures.is_empty(),
+        "{} of {n} differ:\n{}",
+        failures.len(),
+        failures.join("\n")
+    );
 }
 
 #[test]
 fn reads_python_written_docx() {
     let mut n = 0;
     for case in load_all() {
-        let Some(sha) = case.arg("docx_bytes").and_then(|v| v.get("@blob")).and_then(Value::as_str) else {
+        let Some(sha) = case
+            .arg("docx_bytes")
+            .and_then(|v| v.get("@blob"))
+            .and_then(Value::as_str)
+        else {
             continue;
         };
         let data = blob(sha);
@@ -57,7 +82,8 @@ fn reads_python_written_docx() {
             continue; // deliberately broken inputs (validate tests)
         };
         for name in a.names() {
-            a.read(name).unwrap_or_else(|e| panic!("{}: {name}: {e}", case.id));
+            a.read(name)
+                .unwrap_or_else(|e| panic!("{}: {name}: {e}", case.id));
         }
         n += 1;
     }
@@ -73,7 +99,13 @@ fn xml_errors_match_lxml() {
         n += 1;
         let row = json::parse(line).unwrap();
         // the input bytes, stored as Latin-1 text
-        let data: Vec<u8> = row.get("in").and_then(Value::as_str).unwrap().chars().map(|c| c as u32 as u8).collect();
+        let data: Vec<u8> = row
+            .get("in")
+            .and_then(Value::as_str)
+            .unwrap()
+            .chars()
+            .map(|c| c as u32 as u8)
+            .collect();
         let want = row.get("err").and_then(Value::as_str);
         let got = fromstring(&data).err().map(|e| e.0);
         if got.as_deref() != want {
@@ -88,7 +120,12 @@ fn xml_errors_match_lxml() {
         failures.is_empty(),
         "{} of {n} differ:\n{}",
         failures.len(),
-        failures.iter().take(25).cloned().collect::<Vec<_>>().join("\n")
+        failures
+            .iter()
+            .take(25)
+            .cloned()
+            .collect::<Vec<_>>()
+            .join("\n")
     );
 }
 
@@ -107,5 +144,10 @@ fn deflate_matches_zlib() {
         }
     }
     assert!(n > 1000, "only {n} rows");
-    assert!(failures.is_empty(), "{} of {n} differ:\n{}", failures.len(), failures.join("\n"));
+    assert!(
+        failures.is_empty(),
+        "{} of {n} differ:\n{}",
+        failures.len(),
+        failures.join("\n")
+    );
 }

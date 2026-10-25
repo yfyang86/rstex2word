@@ -10,7 +10,10 @@ struct BitReader<'a> {
 impl BitReader<'_> {
     fn need(&mut self, count: u32) -> Result<(), String> {
         while self.n < count {
-            let b = *self.data.get(self.pos).ok_or("unexpected end of deflate stream")?;
+            let b = *self
+                .data
+                .get(self.pos)
+                .ok_or("unexpected end of deflate stream")?;
             self.pos += 1;
             self.acc |= (b as u64) << self.n;
             self.n += 8;
@@ -81,18 +84,29 @@ impl Huffman {
 }
 
 const LEN_BASE: [u16; 29] = [
-    3, 4, 5, 6, 7, 8, 9, 10, 11, 13, 15, 17, 19, 23, 27, 31, 35, 43, 51, 59, 67, 83, 99, 115, 131, 163, 195, 227, 258,
+    3, 4, 5, 6, 7, 8, 9, 10, 11, 13, 15, 17, 19, 23, 27, 31, 35, 43, 51, 59, 67, 83, 99, 115, 131,
+    163, 195, 227, 258,
 ];
-const LEN_EXTRA: [u8; 29] = [0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3, 4, 4, 4, 4, 5, 5, 5, 5, 0];
+const LEN_EXTRA: [u8; 29] = [
+    0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3, 4, 4, 4, 4, 5, 5, 5, 5, 0,
+];
 const DIST_BASE: [u16; 30] = [
-    1, 2, 3, 4, 5, 7, 9, 13, 17, 25, 33, 49, 65, 97, 129, 193, 257, 385, 513, 769, 1025, 1537, 2049, 3073, 4097, 6145,
-    8193, 12289, 16385, 24577,
+    1, 2, 3, 4, 5, 7, 9, 13, 17, 25, 33, 49, 65, 97, 129, 193, 257, 385, 513, 769, 1025, 1537,
+    2049, 3073, 4097, 6145, 8193, 12289, 16385, 24577,
 ];
-const DIST_EXTRA: [u8; 30] = [0, 0, 0, 0, 1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 6, 6, 7, 7, 8, 8, 9, 9, 10, 10, 11, 11, 12, 12, 13, 13];
+const DIST_EXTRA: [u8; 30] = [
+    0, 0, 0, 0, 1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 6, 6, 7, 7, 8, 8, 9, 9, 10, 10, 11, 11, 12, 12, 13,
+    13,
+];
 
 /// Decompress a raw DEFLATE stream.
 pub fn inflate(data: &[u8]) -> Result<Vec<u8>, String> {
-    let mut r = BitReader { data, pos: 0, acc: 0, n: 0 };
+    let mut r = BitReader {
+        data,
+        pos: 0,
+        acc: 0,
+        n: 0,
+    };
     let mut out: Vec<u8> = Vec::with_capacity(data.len() * 3);
     loop {
         let last = r.bits(1)?;
@@ -114,13 +128,20 @@ pub fn inflate(data: &[u8]) -> Result<Vec<u8>, String> {
                 l[144..256].fill(9);
                 l[256..280].fill(7);
                 l[280..].fill(8);
-                block(&mut r, &mut out, &Huffman::new(&l), &Huffman::new(&[5u8; 30]))?;
+                block(
+                    &mut r,
+                    &mut out,
+                    &Huffman::new(&l),
+                    &Huffman::new(&[5u8; 30]),
+                )?;
             }
             2 => {
                 let hlit = r.bits(5)? as usize + 257;
                 let hdist = r.bits(5)? as usize + 1;
                 let hclen = r.bits(4)? as usize + 4;
-                const ORDER: [usize; 19] = [16, 17, 18, 0, 8, 7, 9, 6, 10, 5, 11, 4, 12, 3, 13, 2, 14, 1, 15];
+                const ORDER: [usize; 19] = [
+                    16, 17, 18, 0, 8, 7, 9, 6, 10, 5, 11, 4, 12, 3, 13, 2, 14, 1, 15,
+                ];
                 let mut cl = [0u8; 19];
                 for &o in ORDER.iter().take(hclen) {
                     cl[o] = r.bits(3)? as u8;
@@ -132,7 +153,12 @@ pub fn inflate(data: &[u8]) -> Result<Vec<u8>, String> {
                     let sym = clh.decode(&mut r)?;
                     let (val, rep) = match sym {
                         0..=15 => (sym as u8, 1),
-                        16 => (*lengths.get(i.wrapping_sub(1)).ok_or("repeat with no previous length")?, 3 + r.bits(2)? as usize),
+                        16 => (
+                            *lengths
+                                .get(i.wrapping_sub(1))
+                                .ok_or("repeat with no previous length")?,
+                            3 + r.bits(2)? as usize,
+                        ),
                         17 => (0, 3 + r.bits(3)? as usize),
                         _ => (0, 11 + r.bits(7)? as usize),
                     };
@@ -142,7 +168,12 @@ pub fn inflate(data: &[u8]) -> Result<Vec<u8>, String> {
                     lengths[i..i + rep].fill(val);
                     i += rep;
                 }
-                block(&mut r, &mut out, &Huffman::new(&lengths[..hlit]), &Huffman::new(&lengths[hlit..]))?;
+                block(
+                    &mut r,
+                    &mut out,
+                    &Huffman::new(&lengths[..hlit]),
+                    &Huffman::new(&lengths[hlit..]),
+                )?;
             }
             _ => return Err("invalid deflate block type".into()),
         }
@@ -152,7 +183,12 @@ pub fn inflate(data: &[u8]) -> Result<Vec<u8>, String> {
     }
 }
 
-fn block(r: &mut BitReader, out: &mut Vec<u8>, lit: &Huffman, dist: &Huffman) -> Result<(), String> {
+fn block(
+    r: &mut BitReader,
+    out: &mut Vec<u8>,
+    lit: &Huffman,
+    dist: &Huffman,
+) -> Result<(), String> {
     loop {
         let sym = lit.decode(r)? as usize;
         if sym < 256 {
@@ -193,7 +229,12 @@ mod tests {
             data.extend_from_slice(format!("<w:t>{}</w:t>", i % 97).as_bytes());
             data.push((i * 7919 % 251) as u8);
         }
-        for d in [&data[..], b"", b"a", b"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"] {
+        for d in [
+            &data[..],
+            b"",
+            b"a",
+            b"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        ] {
             let c = deflate(d);
             assert_eq!(inflate(&c).unwrap(), d);
         }

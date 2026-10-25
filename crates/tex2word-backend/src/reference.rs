@@ -56,11 +56,17 @@ pub fn extract_reference(docx_bytes: &[u8]) -> Result<ReferenceParts, String> {
         if !names.contains("word/styles.xml") {
             return Err((true, "reference docx has no word/styles.xml".into()));
         }
-        let styles = merge_styles(&zf.read("word/styles.xml").map_err(|e| (false, e))?, &load_styles_xml())
-            .map_err(|e| (false, e))?;
+        let styles = merge_styles(
+            &zf.read("word/styles.xml").map_err(|e| (false, e))?,
+            &load_styles_xml(),
+        )
+        .map_err(|e| (false, e))?;
         let mut sorted: Vec<&String> = names.iter().collect();
         sorted.sort();
-        let theme = match sorted.iter().find(|n| n.starts_with("word/theme/") && n.ends_with(".xml")) {
+        let theme = match sorted
+            .iter()
+            .find(|n| n.starts_with("word/theme/") && n.ends_with(".xml"))
+        {
             Some(n) => Some(zf.read(n).map_err(|e| (false, e))?),
             None => None,
         };
@@ -102,7 +108,11 @@ pub fn merge_styles(reference_styles: &[u8], our_styles: &[u8]) -> Result<Vec<u8
     let mut have: HashSet<String> = ref_root
         .findall(&style)
         .iter()
-        .filter_map(|s| s.get(&sid_key).filter(|v| !v.is_empty()).map(str::to_string))
+        .filter_map(|s| {
+            s.get(&sid_key)
+                .filter(|v| !v.is_empty())
+                .map(str::to_string)
+        })
         .collect();
     let our_root = fromstring(our_styles).map_err(|e| e.0)?;
     for s in our_root.findall(&style) {
@@ -131,7 +141,10 @@ fn rel_targets(zf: &Archive, names: &HashSet<String>) -> Result<Vec<(String, Str
     let root = fromstring(&zf.read(path)?).map_err(|e| e.0)?;
     let mut out: Vec<(String, String)> = Vec::new();
     for r in root.findall(&format!("{{{PKG_REL}}}Relationship")) {
-        if let (Some(rid), Some(target)) = (r.get("Id").filter(|v| !v.is_empty()), r.get("Target").filter(|v| !v.is_empty())) {
+        if let (Some(rid), Some(target)) = (
+            r.get("Id").filter(|v| !v.is_empty()),
+            r.get("Target").filter(|v| !v.is_empty()),
+        ) {
             match out.iter_mut().find(|(k, _)| k == rid) {
                 Some(slot) => slot.1 = target.to_string(),
                 None => out.push((rid.to_string(), target.to_string())),
@@ -141,7 +154,11 @@ fn rel_targets(zf: &Archive, names: &HashSet<String>) -> Result<Vec<(String, Str
     Ok(out)
 }
 
-fn headers_footers(document_xml: &[u8], zf: &Archive, names: &HashSet<String>) -> Result<(Vec<HeaderFooter>, usize), String> {
+fn headers_footers(
+    document_xml: &[u8],
+    zf: &Archive,
+    names: &HashSet<String>,
+) -> Result<(Vec<HeaderFooter>, usize), String> {
     let root = fromstring(document_xml).map_err(|e| e.0)?;
     let Some(sect) = body_sect(&root) else {
         return Ok((Vec::new(), 0));
@@ -159,7 +176,12 @@ fn headers_footers(document_xml: &[u8], zf: &Archive, names: &HashSet<String>) -
             continue;
         };
         let rid = r.get(&rid_attr).unwrap_or("");
-        let Some(target) = rid_target.iter().find(|(k, _)| k == rid).map(|(_, t)| t.clone()).filter(|t| !t.is_empty()) else {
+        let Some(target) = rid_target
+            .iter()
+            .find(|(k, _)| k == rid)
+            .map(|(_, t)| t.clone())
+            .filter(|t| !t.is_empty())
+        else {
             continue;
         };
         let base = target.rsplit('/').next().unwrap_or(&target).to_string();
@@ -174,10 +196,18 @@ fn headers_footers(document_xml: &[u8], zf: &Archive, names: &HashSet<String>) -
         };
         carried.push(HeaderFooter {
             kind: kind.into(),
-            w_type: r.get(&w("type")).filter(|t| !t.is_empty()).unwrap_or("default").into(),
+            w_type: r
+                .get(&w("type"))
+                .filter(|t| !t.is_empty())
+                .unwrap_or("default")
+                .into(),
             part_name: base,
             content: zf.read(&part)?,
-            rels: if rels_bytes.is_empty() { None } else { Some(rels_bytes) },
+            rels: if rels_bytes.is_empty() {
+                None
+            } else {
+                Some(rels_bytes)
+            },
             media,
         });
     }
@@ -187,19 +217,31 @@ fn headers_footers(document_xml: &[u8], zf: &Archive, names: &HashSet<String>) -
 /// Rewrite a header/footer's `.rels` and collect its image media; `None`
 /// when a sub-resource can't be carried safely.
 #[allow(clippy::type_complexity)]
-fn carry_subresources(zf: &Archive, names: &HashSet<String>, base: &str) -> Result<Option<(Vec<u8>, Vec<(String, Vec<u8>)>)>, String> {
+fn carry_subresources(
+    zf: &Archive,
+    names: &HashSet<String>,
+    base: &str,
+) -> Result<Option<(Vec<u8>, Vec<(String, Vec<u8>)>)>, String> {
     let rels_path = format!("word/_rels/{base}.rels");
     if !names.contains(&rels_path) {
         return Ok(Some((Vec::new(), Vec::new())));
     }
-    let Ok(mut root) = zf.read(&rels_path).and_then(|b| fromstring(&b).map_err(|e| e.0)) else {
+    let Ok(mut root) = zf
+        .read(&rels_path)
+        .and_then(|b| fromstring(&b).map_err(|e| e.0))
+    else {
         return Ok(None);
     };
     let stem = base.rsplit_once('.').map_or(base, |(s, _)| s).to_string();
     let mut media: Vec<(String, Vec<u8>)> = Vec::new();
     let rel_tag = format!("{{{PKG_REL}}}Relationship");
     for rel in root.children.iter_mut().filter(|c| c.is(&rel_tag)) {
-        if rel.get("TargetMode").filter(|v| !v.is_empty()).unwrap_or("Internal") == "External" {
+        if rel
+            .get("TargetMode")
+            .filter(|v| !v.is_empty())
+            .unwrap_or("Internal")
+            == "External"
+        {
             continue; // a URL: keep the relationship as-is
         }
         let rtype = rel.get("Type").unwrap_or("").to_string();
@@ -208,7 +250,10 @@ fn carry_subresources(zf: &Archive, names: &HashSet<String>, base: &str) -> Resu
             Some((_, e)) => e.to_lowercase(),
             None => String::new(),
         };
-        if !rtype.ends_with("/image") || !matches!(ext.as_str(), "png" | "jpg" | "jpeg" | "emf") || target.contains("..") {
+        if !rtype.ends_with("/image")
+            || !matches!(ext.as_str(), "png" | "jpg" | "jpeg" | "emf")
+            || target.contains("..")
+        {
             return Ok(None);
         }
         let src = pyos::normpath(&format!("word/{}", target.trim_start_matches('/')));
@@ -224,13 +269,20 @@ fn carry_subresources(zf: &Archive, names: &HashSet<String>, base: &str) -> Resu
 }
 
 #[allow(clippy::type_complexity)]
-fn page_geometry(document_xml: &[u8]) -> Result<(Option<Vec<(String, String)>>, Option<Vec<(String, String)>>), String> {
+fn page_geometry(
+    document_xml: &[u8],
+) -> Result<(Option<Vec<(String, String)>>, Option<Vec<(String, String)>>), String> {
     let root = fromstring(document_xml).map_err(|e| e.0)?;
     let Some(sect) = body_sect(&root) else {
         return Ok((None, None));
     };
     let attrs = |e: Option<&Element>| -> Option<Vec<(String, String)>> {
-        e.map(|e| e.attrs.iter().map(|a| (format!("w:{}", a.local), a.value.clone())).collect())
+        e.map(|e| {
+            e.attrs
+                .iter()
+                .map(|a| (format!("w:{}", a.local), a.value.clone()))
+                .collect()
+        })
     };
     Ok((attrs(sect.find(&w("pgSz"))), attrs(sect.find(&w("pgMar")))))
 }

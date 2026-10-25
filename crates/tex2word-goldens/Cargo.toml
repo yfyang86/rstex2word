@@ -6,7 +6,7 @@ rust-version.workspace = true
 license.workspace = true
 authors.workspace = true
 description = "Golden parity tests: the Rust port checked against outputs recorded from the Python tex2word 1.0.9 reference"
-# Test fixtures only (~8 MB of recorded goldens) — never packaged.
+# Test fixtures only (~35 MB of recorded goldens) — never packaged.
 publish = false
 
 [dependencies]

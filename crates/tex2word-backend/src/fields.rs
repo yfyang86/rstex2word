@@ -17,7 +17,10 @@ pub fn bookmark_start(name: &str) -> Element {
         c.set(v + 1);
         v
     });
-    el("w:bookmarkStart", &[("w:id", &bid.to_string()), ("w:name", name)])
+    el(
+        "w:bookmarkStart",
+        &[("w:id", &bid.to_string()), ("w:name", name)],
+    )
 }
 
 /// The `w:bookmarkEnd` matching a start element.
@@ -60,7 +63,11 @@ pub fn field(code: &str, cached: &str) -> Vec<Element> {
 
 /// A hidden `{ XE "term" }` index-entry field (no visible result).
 pub fn index_entry(term: &str) -> Vec<Element> {
-    vec![fldchar("begin"), instr_run(&format!("XE \"{term}\"")), fldchar("end")]
+    vec![
+        fldchar("begin"),
+        instr_run(&format!("XE \"{term}\"")),
+        fldchar("end"),
+    ]
 }
 
 pub fn seq_field(counter: &str, cached: &str) -> Vec<Element> {

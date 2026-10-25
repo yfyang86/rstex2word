@@ -18,14 +18,35 @@ use std::fmt;
 
 /// The OOXML namespace map (`ooxml.NS`), in declaration order.
 pub const NS: &[(&str, &str)] = &[
-    ("w", "http://schemas.openxmlformats.org/wordprocessingml/2006/main"),
-    ("m", "http://schemas.openxmlformats.org/officeDocument/2006/math"),
-    ("r", "http://schemas.openxmlformats.org/officeDocument/2006/relationships"),
-    ("wp", "http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing"),
+    (
+        "w",
+        "http://schemas.openxmlformats.org/wordprocessingml/2006/main",
+    ),
+    (
+        "m",
+        "http://schemas.openxmlformats.org/officeDocument/2006/math",
+    ),
+    (
+        "r",
+        "http://schemas.openxmlformats.org/officeDocument/2006/relationships",
+    ),
+    (
+        "wp",
+        "http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing",
+    ),
     ("a", "http://schemas.openxmlformats.org/drawingml/2006/main"),
-    ("pic", "http://schemas.openxmlformats.org/drawingml/2006/picture"),
-    ("ct", "http://schemas.openxmlformats.org/package/2006/content-types"),
-    ("rel", "http://schemas.openxmlformats.org/package/2006/relationships"),
+    (
+        "pic",
+        "http://schemas.openxmlformats.org/drawingml/2006/picture",
+    ),
+    (
+        "ct",
+        "http://schemas.openxmlformats.org/package/2006/content-types",
+    ),
+    (
+        "rel",
+        "http://schemas.openxmlformats.org/package/2006/relationships",
+    ),
 ];
 
 /// The `xml:` namespace.
@@ -135,7 +156,10 @@ impl Element {
     /// without attributes).
     pub fn with_ns(tag: &str) -> Element {
         let mut e = Element::new(tag);
-        e.nsdefs = NS.iter().map(|(p, u)| (Some(p.to_string()), u.to_string())).collect();
+        e.nsdefs = NS
+            .iter()
+            .map(|(p, u)| (Some(p.to_string()), u.to_string()))
+            .collect();
         e
     }
 
@@ -179,7 +203,11 @@ impl Element {
     pub fn set(&mut self, key: &str, value: impl Into<String>) {
         let (ns, local) = split_clark(key);
         let value = value.into();
-        if let Some(a) = self.attrs.iter_mut().find(|a| a.local == local && a.ns.as_deref() == ns) {
+        if let Some(a) = self
+            .attrs
+            .iter_mut()
+            .find(|a| a.local == local && a.ns.as_deref() == ns)
+        {
             a.value = value;
             return;
         }
@@ -208,7 +236,10 @@ impl Element {
     /// Remove an attribute (`del element.attrib[key]`).
     pub fn remove_attr(&mut self, key: &str) -> Option<String> {
         let (ns, local) = split_clark(key);
-        let i = self.attrs.iter().position(|a| a.local == local && a.ns.as_deref() == ns)?;
+        let i = self
+            .attrs
+            .iter()
+            .position(|a| a.local == local && a.ns.as_deref() == ns)?;
         Some(self.attrs.remove(i).value)
     }
 
@@ -273,7 +304,7 @@ impl Element {
     pub fn iter(&self, clark: Option<&str>) -> Vec<&Element> {
         let mut out = Vec::new();
         fn go<'a>(e: &'a Element, clark: Option<&str>, out: &mut Vec<&'a Element>) {
-            if e.is_element() && clark.map_or(true, |c| e.is(c)) {
+            if e.is_element() && clark.is_none_or(|c| e.is(c)) {
                 out.push(e);
             }
             for c in &e.children {
@@ -404,7 +435,9 @@ pub fn tostring(e: &Element, opts: ToString) -> Result<String, XmlError> {
 /// lxml rejects NULs, control characters other than tab/newline/CR, and
 /// U+FFFE/U+FFFF.
 pub fn check_xml_string(s: &str) -> Result<(), XmlError> {
-    if s.chars().any(|c| (c < ' ' && !matches!(c, '\t' | '\n' | '\r')) || c == '\u{fffe}' || c == '\u{ffff}') {
+    if s.chars().any(|c| {
+        (c < ' ' && !matches!(c, '\t' | '\n' | '\r')) || c == '\u{fffe}' || c == '\u{ffff}'
+    }) {
         return Err(XmlError(
             "All strings must be XML compatible: Unicode or ASCII, no NULL bytes or control characters".into(),
         ));
@@ -453,7 +486,11 @@ fn escape_attr(s: &str, out: &mut String, ascii: bool) -> Result<(), XmlError> {
 type Scope = Vec<(Option<String>, String)>;
 
 fn lookup_prefix<'a>(scope: &'a Scope, prefix: Option<&str>) -> Option<&'a str> {
-    scope.iter().rev().find(|(p, _)| p.as_deref() == prefix).map(|(_, u)| u.as_str())
+    scope
+        .iter()
+        .rev()
+        .find(|(p, _)| p.as_deref() == prefix)
+        .map(|(_, u)| u.as_str())
 }
 
 /// The prefix to write for `uri` (element tags may use the default
@@ -480,7 +517,11 @@ fn resolve_prefix(
     let found = scope
         .iter()
         .rev()
-        .find(|(p, u)| u == uri && (p.is_some() || !attribute) && lookup_prefix(scope, p.as_deref()) == Some(uri))
+        .find(|(p, u)| {
+            u == uri
+                && (p.is_some() || !attribute)
+                && lookup_prefix(scope, p.as_deref()) == Some(uri)
+        })
         .map(|(p, _)| p.clone());
     if let Some(p) = found {
         return p;
@@ -499,7 +540,13 @@ fn resolve_prefix(
     Some(p)
 }
 
-fn write_node(e: &Element, out: &mut String, scope: &mut Scope, ascii: bool, with_tail: bool) -> Result<(), XmlError> {
+fn write_node(
+    e: &Element,
+    out: &mut String,
+    scope: &mut Scope,
+    ascii: bool,
+    with_tail: bool,
+) -> Result<(), XmlError> {
     match e.kind {
         Kind::Comment => {
             out.push_str("<!--");
@@ -542,7 +589,12 @@ fn escape_comment_ascii(t: &str, out: &mut String) {
     }
 }
 
-fn write_element(e: &Element, out: &mut String, scope: &mut Scope, ascii: bool) -> Result<(), XmlError> {
+fn write_element(
+    e: &Element,
+    out: &mut String,
+    scope: &mut Scope,
+    ascii: bool,
+) -> Result<(), XmlError> {
     let mark = scope.len();
     // this element's own declarations (redundant ones dropped for built nodes)
     let mut decls: Vec<(Option<String>, String)> = Vec::new();
@@ -649,11 +701,16 @@ mod tests {
         );
         let mut e = el("w:a", &[]);
         e.text = Some(String::new());
-        assert!(String::from_utf8(serialize(&e).unwrap()).unwrap().ends_with("></w:a>"));
+        assert!(String::from_utf8(serialize(&e).unwrap())
+            .unwrap()
+            .ends_with("></w:a>"));
         e.text = Some("\u{c}".into());
         assert!(serialize(&e).is_err());
         let mut x = Element::new("a");
         x.text = Some("é\r".into());
-        assert_eq!(tostring(&x, ToString::default()).unwrap(), "<a>&#233;&#13;</a>");
+        assert_eq!(
+            tostring(&x, ToString::default()).unwrap(),
+            "<a>&#233;&#13;</a>"
+        );
     }
 }

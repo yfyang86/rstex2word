@@ -25,7 +25,11 @@ fn first_diff(a: &str, b: &str) -> String {
         }
         s[start..end].to_string()
     };
-    format!("at byte {i}:\n      python: {:?}\n      rust:   {:?}", ctx(a), ctx(b))
+    format!(
+        "at byte {i}:\n      python: {:?}\n      rust:   {:?}",
+        ctx(a),
+        ctx(b)
+    )
 }
 
 #[test]
@@ -38,7 +42,11 @@ fn frontend_stages_match_python() {
         let st = json::parse(line).unwrap();
         let id = st.get("case").and_then(Value::as_str).unwrap();
         let case = load(id);
-        let source = case.arg("source").and_then(Value::as_str).unwrap().to_string();
+        let source = case
+            .arg("source")
+            .and_then(Value::as_str)
+            .unwrap()
+            .to_string();
         let m = materialize(&case);
         let want = |k: &str| st.get(k).and_then(Value::as_str).map(str::to_string);
 
@@ -60,21 +68,30 @@ fn frontend_stages_match_python() {
         let exp = tex2word_frontend::macros::expand_macros(&pre, &m.base_dir);
         let exp_want = stage("exp", &pre_want);
         if exp != exp_want {
-            failures.push(format!("{id} [expand_macros] {}", first_diff(&exp_want, &exp)));
+            failures.push(format!(
+                "{id} [expand_macros] {}",
+                first_diff(&exp_want, &exp)
+            ));
             continue;
         }
 
         let tikz = tex2word_frontend::preprocess::replace_inline_tikz(&exp);
         let tikz_want = stage("tikz", &exp_want);
         if tikz != tikz_want {
-            failures.push(format!("{id} [replace_inline_tikz] {}", first_diff(&tikz_want, &tikz)));
+            failures.push(format!(
+                "{id} [replace_inline_tikz] {}",
+                first_diff(&tikz_want, &tikz)
+            ));
             continue;
         }
 
         let norm = tex2word_frontend::preprocess::normalize_spacing_and_icons(&tikz);
         let norm_want = stage("norm", &tikz_want);
         if norm != norm_want {
-            failures.push(format!("{id} [normalize_spacing_and_icons] {}", first_diff(&norm_want, &norm)));
+            failures.push(format!(
+                "{id} [normalize_spacing_and_icons] {}",
+                first_diff(&norm_want, &norm)
+            ));
             continue;
         }
     }
@@ -83,6 +100,11 @@ fn frontend_stages_match_python() {
         failures.is_empty(),
         "{} of {n} cases differ:\n{}",
         failures.len(),
-        failures.iter().take(15).cloned().collect::<Vec<_>>().join("\n")
+        failures
+            .iter()
+            .take(15)
+            .cloned()
+            .collect::<Vec<_>>()
+            .join("\n")
     );
 }

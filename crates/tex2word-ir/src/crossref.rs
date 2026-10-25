@@ -25,9 +25,19 @@ fn counter_for(kind: &str) -> &'static str {
 pub fn sanitize_bookmark(key: &str) -> String {
     let mut cleaned: String = key
         .chars()
-        .map(|c| if c.is_ascii_alphanumeric() || c == '_' { c } else { '_' })
+        .map(|c| {
+            if c.is_ascii_alphanumeric() || c == '_' {
+                c
+            } else {
+                '_'
+            }
+        })
         .collect();
-    if !cleaned.chars().next().is_some_and(|c| c.is_ascii_alphabetic()) {
+    if !cleaned
+        .chars()
+        .next()
+        .is_some_and(|c| c.is_ascii_alphabetic())
+    {
         cleaned = format!("ref_{cleaned}");
     }
     pystr::take_chars(&cleaned, 40).to_string()
@@ -60,8 +70,16 @@ fn label_name(block: &Block) -> Option<String> {
             Some(title) if !title.is_empty() => inline_text(title),
             _ => t.kind.clone(),
         }),
-        Block::Figure(f) => f.caption.as_ref().filter(|c| !c.is_empty()).map(|c| inline_text(c)),
-        Block::Table(t) => t.caption.as_ref().filter(|c| !c.is_empty()).map(|c| inline_text(c)),
+        Block::Figure(f) => f
+            .caption
+            .as_ref()
+            .filter(|c| !c.is_empty())
+            .map(|c| inline_text(c)),
+        Block::Table(t) => t
+            .caption
+            .as_ref()
+            .filter(|c| !c.is_empty())
+            .map(|c| inline_text(c)),
         _ => None,
     }
 }
@@ -104,19 +122,31 @@ fn collect(blocks: &[Block], labels: &mut Dict<LabelInfo>) {
         if let Some(label) = block.label().filter(|l| !l.is_empty()) {
             let kind = label_kind(block);
             let counter_name = match block {
-                Block::Theorem(t) => t.counter.clone().filter(|c| !c.is_empty()).unwrap_or_else(|| "Item".into()),
+                Block::Theorem(t) => t
+                    .counter
+                    .clone()
+                    .filter(|c| !c.is_empty())
+                    .unwrap_or_else(|| "Item".into()),
                 _ => counter_for(kind).to_string(),
             };
             labels.insert(
                 label,
-                info(kind, &counter_name, sanitize_bookmark(label), label_name(block)),
+                info(
+                    kind,
+                    &counter_name,
+                    sanitize_bookmark(label),
+                    label_name(block),
+                ),
             );
         }
         // every numbered line of an align/eqnarray that carries a \label is
         // its own referenceable equation (not just the first line).
         if let Block::MathBlock(m) = block {
             for lab in m.line_labels.iter().flatten().filter(|l| !l.is_empty()) {
-                labels.insert(lab.clone(), info("equation", "Equation", sanitize_bookmark(lab), None));
+                labels.insert(
+                    lab.clone(),
+                    info("equation", "Equation", sanitize_bookmark(lab), None),
+                );
             }
         }
         // sub-figure labels resolve to the parent figure's number.
@@ -144,7 +174,10 @@ fn collect(blocks: &[Block], labels: &mut Dict<LabelInfo>) {
                     if let Some(label) = item.label.as_deref().filter(|l| !l.is_empty()) {
                         // \item\label{} -> the item's (Word auto-numbered) list
                         // number; the back-end references it with REF \r.
-                        labels.insert(label, info("listitem", "Item", sanitize_bookmark(label), None));
+                        labels.insert(
+                            label,
+                            info("listitem", "Item", sanitize_bookmark(label), None),
+                        );
                     }
                     collect(&item.blocks, labels);
                 }
@@ -154,7 +187,11 @@ fn collect(blocks: &[Block], labels: &mut Dict<LabelInfo>) {
     }
 }
 
-fn rewrite_inlines(inlines: &mut [Inline], labels: &Dict<LabelInfo>, report: &mut ConversionReport) {
+fn rewrite_inlines(
+    inlines: &mut [Inline],
+    labels: &Dict<LabelInfo>,
+    report: &mut ConversionReport,
+) {
     for node in inlines.iter_mut() {
         match node {
             Inline::Ref(r) => {
@@ -164,7 +201,11 @@ fn rewrite_inlines(inlines: &mut [Inline], labels: &Dict<LabelInfo>, report: &mu
                 };
                 if r.ref_kind == "name" {
                     // \nameref -> the target's title as an internal hyperlink
-                    let text = info.name.clone().filter(|n| !n.is_empty()).unwrap_or_else(|| r.key.clone());
+                    let text = info
+                        .name
+                        .clone()
+                        .filter(|n| !n.is_empty())
+                        .unwrap_or_else(|| r.key.clone());
                     *node = Inline::Link(Link {
                         inlines: vec![Inline::text(text)],
                         url: String::new(),
@@ -181,7 +222,8 @@ fn rewrite_inlines(inlines: &mut [Inline], labels: &Dict<LabelInfo>, report: &mu
                 if let Some(anchor) = link.anchor.clone() {
                     // \hyperref[label] -> sanitized bookmark
                     match labels.get(&anchor) {
-                        None => report.warn("\\hyperref", format!("unresolved \\hyperref to '{anchor}'")),
+                        None => report
+                            .warn("\\hyperref", format!("unresolved \\hyperref to '{anchor}'")),
                         Some(info) => link.anchor = Some(info.bookmark.clone()),
                     }
                 }

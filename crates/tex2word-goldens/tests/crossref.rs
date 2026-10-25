@@ -7,7 +7,10 @@ use tex2word_ir::{ConversionReport, Document, FromJson, ToJson};
 #[test]
 fn resolve_crossrefs_matches_python() {
     let mut n = 0;
-    for case in load_all().into_iter().filter(|c| c.api == "resolve_crossrefs") {
+    for case in load_all()
+        .into_iter()
+        .filter(|c| c.api == "resolve_crossrefs")
+    {
         n += 1;
         let input = case.arg("doc").and_then(|v| v.get("@ir")).expect("doc arg");
         let mut doc = Document::from_json(input).expect("input IR");
@@ -18,5 +21,8 @@ fn resolve_crossrefs_matches_python() {
             panic!("{} ({:?}): {d}", case.id, case.tests());
         }
     }
-    assert!(n >= 5, "expected recorded resolve_crossrefs cases, found {n}");
+    assert!(
+        n >= 5,
+        "expected recorded resolve_crossrefs cases, found {n}"
+    );
 }

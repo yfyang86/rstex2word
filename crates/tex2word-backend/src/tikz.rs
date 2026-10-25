@@ -12,7 +12,14 @@ use tex2word_ir::re::{Flags, Regex};
 const ENGINES: &[&str] = &["xelatex", "lualatex", "pdflatex"];
 
 /// drawing environments we try to compile
-pub const DRAWING_ENVS: &[&str] = &["tikzpicture", "pgfpicture", "circuitikz", "tikzcd", "forest", "pspicture"];
+pub const DRAWING_ENVS: &[&str] = &[
+    "tikzpicture",
+    "pgfpicture",
+    "circuitikz",
+    "tikzcd",
+    "forest",
+    "pspicture",
+];
 
 static KEEP_MACRO: LazyLock<Regex> = LazyLock::new(|| {
     Regex::new(concat!(
@@ -31,8 +38,9 @@ static KEEP_USEPACKAGE: LazyLock<Regex> = LazyLock::new(|| {
         r"natbib|cite)\b"
     ))
 });
-static KEEP_FONT: LazyLock<Regex> =
-    LazyLock::new(|| Regex::new(r"^\s*\\(usepackage\b[^\n]*\{(fontspec|xeCJK)\}|set(main|CJK\w*)font)\b"));
+static KEEP_FONT: LazyLock<Regex> = LazyLock::new(|| {
+    Regex::new(r"^\s*\\(usepackage\b[^\n]*\{(fontspec|xeCJK)\}|set(main|CJK\w*)font)\b")
+});
 static DROP_LAYOUT: LazyLock<Regex> = LazyLock::new(|| {
     Regex::new(concat!(
         r"^\s*\\(?:re|provide)?newcommand\*?\s*\{?\s*\\",
@@ -81,7 +89,11 @@ pub fn find_engine() -> Option<&'static str> {
 
 /// TeX engines on PATH, in preference order.
 pub fn available_engines() -> Vec<&'static str> {
-    ENGINES.iter().copied().filter(|e| which(e).is_some()).collect()
+    ENGINES
+        .iter()
+        .copied()
+        .filter(|e| which(e).is_some())
+        .collect()
 }
 
 /// Pull the `tikzpicture` (etc.) out of a figure's LaTeX source.
@@ -115,7 +127,18 @@ fn splitlines(s: &str) -> Vec<&str> {
     let mut start = 0;
     let mut it = s.char_indices().peekable();
     while let Some((i, c)) = it.next() {
-        if matches!(c, '\n' | '\r' | '\x0b' | '\x0c' | '\x1c' | '\x1d' | '\x1e' | '\u{85}' | '\u{2028}' | '\u{2029}') {
+        if matches!(
+            c,
+            '\n' | '\r'
+                | '\x0b'
+                | '\x0c'
+                | '\x1c'
+                | '\x1d'
+                | '\x1e'
+                | '\u{85}'
+                | '\u{2028}'
+                | '\u{2029}'
+        ) {
             out.push(&s[start..i]);
             let mut end = i + c.len_utf8();
             if c == '\r' && matches!(it.peek(), Some((_, '\n'))) {

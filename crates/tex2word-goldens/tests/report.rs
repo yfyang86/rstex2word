@@ -42,17 +42,29 @@ fn report_helpers_match_python() {
         }
         let id = row.get("case").and_then(Value::as_str).unwrap();
         let rep = rebuild(load(id).out.get("report").unwrap());
-        if sha256_hex(rep.to_json().as_bytes()) != row.get("json").and_then(Value::as_str).unwrap() {
+        if sha256_hex(rep.to_json().as_bytes()) != row.get("json").and_then(Value::as_str).unwrap()
+        {
             failures.push(format!("{id}: to_json"));
         }
         if rep.summary() != row.get("summary").and_then(Value::as_str).unwrap() {
             failures.push(format!("{id}: summary {:?}", rep.summary()));
         }
-        if sha256_hex(rep.to_html().as_bytes()) != row.get("html").and_then(Value::as_str).unwrap() {
+        if sha256_hex(rep.to_html().as_bytes()) != row.get("html").and_then(Value::as_str).unwrap()
+        {
             failures.push(format!("{id}: to_html"));
         }
         reports.push((id.to_string(), rep));
     }
     assert!(reports.len() > 400);
-    assert!(failures.is_empty(), "{} differ:\n{}", failures.len(), failures.iter().take(20).cloned().collect::<Vec<_>>().join("\n"));
+    assert!(
+        failures.is_empty(),
+        "{} differ:\n{}",
+        failures.len(),
+        failures
+            .iter()
+            .take(20)
+            .cloned()
+            .collect::<Vec<_>>()
+            .join("\n")
+    );
 }

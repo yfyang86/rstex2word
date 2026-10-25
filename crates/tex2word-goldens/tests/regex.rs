@@ -25,7 +25,10 @@ fn span_json(m: &Match) -> Value {
     Value::Object(vec![
         (
             "span".into(),
-            Value::Array(vec![Value::Int(m.start() as i64), Value::Int(m.end() as i64)]),
+            Value::Array(vec![
+                Value::Int(m.start() as i64),
+                Value::Int(m.end() as i64),
+            ]),
         ),
         ("groups".into(), Value::Array(groups)),
     ])
@@ -75,12 +78,19 @@ fn regex_engine_matches_python_re() {
             }
             "findall" => {
                 if re.groups() <= 1 {
-                    Value::Array(re.findall(s).into_iter().map(|x| Value::Str(x.into())).collect())
+                    Value::Array(
+                        re.findall(s)
+                            .into_iter()
+                            .map(|x| Value::Str(x.into()))
+                            .collect(),
+                    )
                 } else {
                     Value::Array(
                         re.findall_groups(s)
                             .into_iter()
-                            .map(|t| Value::Array(t.into_iter().map(|x| Value::Str(x.into())).collect()))
+                            .map(|t| {
+                                Value::Array(t.into_iter().map(|x| Value::Str(x.into())).collect())
+                            })
                             .collect(),
                     )
                 }
@@ -108,6 +118,11 @@ fn regex_engine_matches_python_re() {
         failures.is_empty(),
         "{} of {n} regex calls differ from Python:\n{}",
         failures.len(),
-        failures.iter().take(25).cloned().collect::<Vec<_>>().join("\n")
+        failures
+            .iter()
+            .take(25)
+            .cloned()
+            .collect::<Vec<_>>()
+            .join("\n")
     );
 }

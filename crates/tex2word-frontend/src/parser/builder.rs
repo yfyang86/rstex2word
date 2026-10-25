@@ -16,8 +16,8 @@ use tex2word_ir::{
     AlgLine, Algorithm, Bibliography, Block, CSLItem, Cite, CodeBlock, Colored, Comment,
     ConversionReport, Dict, DocumentMeta, Emphasis, Endnote, Figure, FontSize, Footnote, Heading,
     Image, Index, IndexEntry, Inline, ItemList, LineBreak, Link, ListItem, Math, MathBlock,
-    Paragraph, Quote, RawInline, RawPassthrough, Ref, SubFigure, Table, TableCell,
-    TableOfContents, TableRow, Theorem, Value,
+    Paragraph, Quote, RawInline, RawPassthrough, Ref, SubFigure, Table, TableCell, TableOfContents,
+    TableRow, Theorem, Value,
 };
 use tex2word_latexwalker::{ContextDb, LatexWalker, Node, NodeKind, ParsingState, Stop};
 
@@ -106,7 +106,10 @@ impl Builder {
             book_mode: false,
             in_appendix: false,
             pending_footmarks: VecDeque::new(),
-            theorem_envs: THEOREM_ENVS.iter().map(|&(k, v)| (k.to_string(), v.to_string())).collect(),
+            theorem_envs: THEOREM_ENVS
+                .iter()
+                .map(|&(k, v)| (k.to_string(), v.to_string()))
+                .collect(),
             unnumbered_theorems: HashSet::new(),
             theorem_counters: HashMap::new(),
             box_envs: HashSet::new(),
@@ -156,7 +159,10 @@ impl Builder {
     }
 
     fn resolve_label(&self, label: &mut Option<String>) {
-        if let Some(n) = label.as_deref().and_then(|l| self.slot_index(l, LABEL_SLOT)) {
+        if let Some(n) = label
+            .as_deref()
+            .and_then(|l| self.slot_index(l, LABEL_SLOT))
+        {
             *label = self.labels[n].clone();
         }
     }
@@ -268,7 +274,11 @@ impl Builder {
             if let Some(name) = node.macroname() {
                 if name == "color" || name == "normalcolor" {
                     let rest = self.scoped_inlines(&nodes[i + 1..]);
-                    let fg = if name == "color" { self.color_of(node) } else { None };
+                    let fg = if name == "color" {
+                        self.color_of(node)
+                    } else {
+                        None
+                    };
                     match fg.filter(|f| !f.is_empty()) {
                         Some(fg) => out.push(Inline::Colored(Colored {
                             inlines: rest,
@@ -321,7 +331,8 @@ impl Builder {
             }
         }
         let color = color.filter(|c| !c.is_empty())?;
-        self.colors.resolve(&color, model.as_deref().filter(|m| !m.is_empty()))
+        self.colors
+            .resolve(&color, model.as_deref().filter(|m| !m.is_empty()))
     }
 
     fn inline_node(&mut self, node: &Node, out: &mut Vec<Inline>) {
@@ -335,7 +346,11 @@ impl Builder {
             NodeKind::Comment { .. } => {}
             NodeKind::Math { displaytype, .. } => {
                 let latex = strip_math_delims(node.latex_verbatim(), "math");
-                let marker = if displaytype == "inline" { script_marker(&latex) } else { None };
+                let marker = if displaytype == "inline" {
+                    script_marker(&latex)
+                } else {
+                    None
+                };
                 if let Some((kind, text)) = marker {
                     // $^{*1}$ / $^\dagger$ / 1$^{st}$: a base-less script is a
                     // text marker, not math
@@ -416,11 +431,19 @@ impl Builder {
         if let Some(kind) = ref_kind(name) {
             let style = ref_style(name);
             let chars = chars_of(&group_nodes(node));
-            let keys: Vec<&str> = chars.split(',').map(pystr::strip).filter(|k| !k.is_empty()).collect();
+            let keys: Vec<&str> = chars
+                .split(',')
+                .map(pystr::strip)
+                .filter(|k| !k.is_empty())
+                .collect();
             for (idx, key) in keys.iter().enumerate() {
                 if idx > 0 {
                     // cleveref joins multi-labels with ", " / " and "
-                    out.push(Inline::text(if idx == keys.len() - 1 { " and " } else { ", " }));
+                    out.push(Inline::text(if idx == keys.len() - 1 {
+                        " and "
+                    } else {
+                        ", "
+                    }));
                 }
                 // only the first reference carries the cleveref type prefix
                 out.push(make_ref(key, kind, if idx == 0 { style } else { "plain" }));
@@ -432,8 +455,12 @@ impl Builder {
         }
         if let Some(mode) = cite_mode(name) {
             let key = chars_of(&group_nodes(node));
-            let keys: Vec<String> =
-                key.split(',').map(pystr::strip).filter(|k| !k.is_empty()).map(str::to_string).collect();
+            let keys: Vec<String> = key
+                .split(',')
+                .map(pystr::strip)
+                .filter(|k| !k.is_empty())
+                .map(str::to_string)
+                .collect();
             let (prefix, suffix) = cite_locators(node);
             out.push(Inline::Cite(Cite {
                 keys,
@@ -471,7 +498,11 @@ impl Builder {
             match opt {
                 Some(opt) => {
                     let anchor = pystr::strip(&chars_of(opt)).to_string();
-                    let inlines = if text.is_empty() { vec![Inline::text(anchor.clone())] } else { text };
+                    let inlines = if text.is_empty() {
+                        vec![Inline::text(anchor.clone())]
+                    } else {
+                        text
+                    };
                     out.push(Inline::Link(Link {
                         inlines,
                         url: String::new(),
@@ -510,10 +541,17 @@ impl Builder {
             }
             return;
         }
-        if matches!(name, "enquote" | "textquote" | "foreignquote" | "hyphenquote") {
+        if matches!(
+            name,
+            "enquote" | "textquote" | "foreignquote" | "hyphenquote"
+        ) {
             // csquotes inline quotes -> curly quotes around the quoted group
             let inner = self.inlines(&group_nodes(node));
-            let (lq, rq) = if has_star(node) { ("‘", "’") } else { ("“", "”") };
+            let (lq, rq) = if has_star(node) {
+                ("‘", "’")
+            } else {
+                ("“", "”")
+            };
             out.push(Inline::text(lq));
             out.extend(inner);
             out.push(Inline::text(rq));
@@ -561,18 +599,26 @@ impl Builder {
         }
         if name == "SI" || name == "qty" {
             let groups = brace_groups(node);
-            let num = groups.first().map_or(String::new(), |g| siunitx::num_to_text(&chars_of(g)));
-            let unit = groups.get(1).map_or(String::new(), |g| siunitx::units_to_text(g));
+            let num = groups
+                .first()
+                .map_or(String::new(), |g| siunitx::num_to_text(&chars_of(g)));
+            let unit = groups
+                .get(1)
+                .map_or(String::new(), |g| siunitx::units_to_text(g));
             let text = format!("{num}{}{unit}", siunitx::THIN);
             out.push(Inline::text(pystr::strip(&text)));
             return;
         }
         if name == "num" {
-            out.push(Inline::text(siunitx::num_to_text(&chars_of(&group_nodes(node)))));
+            out.push(Inline::text(siunitx::num_to_text(&chars_of(&group_nodes(
+                node,
+            )))));
             return;
         }
         if name == "ang" {
-            out.push(Inline::text(siunitx::ang_to_text(&chars_of(&group_nodes(node)))));
+            out.push(Inline::text(siunitx::ang_to_text(&chars_of(&group_nodes(
+                node,
+            )))));
             return;
         }
         if matches!(name, "numrange" | "SIrange" | "qtyrange") {
@@ -581,8 +627,14 @@ impl Builder {
             if groups.len() >= 2 {
                 let a = siunitx::num_to_text(&chars_of(groups[0]));
                 let b = siunitx::num_to_text(&chars_of(groups[1]));
-                let unit = groups.get(2).map_or(String::new(), |g| siunitx::units_to_text(g));
-                let tail = if unit.is_empty() { String::new() } else { format!("{}{unit}", siunitx::THIN) };
+                let unit = groups
+                    .get(2)
+                    .map_or(String::new(), |g| siunitx::units_to_text(g));
+                let tail = if unit.is_empty() {
+                    String::new()
+                } else {
+                    format!("{}{unit}", siunitx::THIN)
+                };
                 out.push(Inline::text(format!("{a} to {b}{tail}")));
             }
             return;
@@ -596,8 +648,14 @@ impl Builder {
                     .filter(|x| !pystr::strip(x).is_empty())
                     .map(|x| siunitx::num_to_text(pystr::strip(x)))
                     .collect();
-                let unit = groups.get(1).map_or(String::new(), |g| siunitx::units_to_text(g));
-                let tail = if unit.is_empty() { String::new() } else { format!("{}{unit}", siunitx::THIN) };
+                let unit = groups
+                    .get(1)
+                    .map_or(String::new(), |g| siunitx::units_to_text(g));
+                let tail = if unit.is_empty() {
+                    String::new()
+                } else {
+                    format!("{}{unit}", siunitx::THIN)
+                };
                 out.push(Inline::text(format!("{}{tail}", join_and(&items))));
             }
             return;
@@ -654,7 +712,11 @@ impl Builder {
         if let Some(tname) = ac_to_gls(&lower) {
             // acronym package: \ac/\acs/\acl/\acf/...
             let label = pystr::strip(&chars_of(&group_nodes(node))).to_string();
-            let tname = if starts_upper(name) { upper_first(tname) } else { tname.to_string() };
+            let tname = if starts_upper(name) {
+                upper_first(tname)
+            } else {
+                tname.to_string()
+            };
             let text = self.acronym_text(&tname, &label);
             out.push(Inline::text(text));
             return;
@@ -692,7 +754,10 @@ impl Builder {
             return;
         }
         // graceful degradation
-        self.report.warn(&format!("\\{name}"), format!("unsupported inline macro \\{name}"));
+        self.report.warn(
+            &format!("\\{name}"),
+            format!("unsupported inline macro \\{name}"),
+        );
         out.push(Inline::RawInline(RawInline {
             latex: node.latex_verbatim().to_string(),
             reason: format!("unsupported macro \\{name}"),
@@ -715,13 +780,21 @@ impl Builder {
         };
         let low = pystr::lower(name);
         let plural = low.ends_with("pl");
-        let key = if plural { &low[..low.len() - 2] } else { low.as_str() };
+        let key = if plural {
+            &low[..low.len() - 2]
+        } else {
+            low.as_str()
+        };
         let s = format!("{short}{}", if plural { "s" } else { "" });
         let lg = format!("{long}{}", if plural { "s" } else { "" });
         let full = format!("{lg} ({s})");
         let mut text = match key {
             "gls" => {
-                let t = if self.acr_seen.contains(label) { s } else { full };
+                let t = if self.acr_seen.contains(label) {
+                    s
+                } else {
+                    full
+                };
                 self.acr_seen.insert(label.to_string());
                 t
             }
@@ -778,13 +851,17 @@ impl Builder {
             return;
         };
         let inner = self.inlines(last); // last mandatory group is the content
-        // \textcolor{C}{t} / \colorbox{C}{t} -> groups[0]; \fcolorbox{frame}{C}{t}
-        // -> groups[-2] (the background colour)
-        let color_group = if groups.len() >= 2 { Some(groups[groups.len() - 2]) } else { None };
+                                        // \textcolor{C}{t} / \colorbox{C}{t} -> groups[0]; \fcolorbox{frame}{C}{t}
+                                        // -> groups[-2] (the background colour)
+        let color_group = if groups.len() >= 2 {
+            Some(groups[groups.len() - 2])
+        } else {
+            None
+        };
         let hexval = match color_group {
-            Some(g) if !g.is_empty() => {
-                self.colors.resolve(&chars_of(g), model.as_deref().filter(|m| !m.is_empty()))
-            }
+            Some(g) if !g.is_empty() => self
+                .colors
+                .resolve(&chars_of(g), model.as_deref().filter(|m| !m.is_empty())),
             _ => None,
         };
         match hexval {
@@ -803,7 +880,12 @@ impl Builder {
     }
 
     fn inline_link(&mut self, node: &Node, out: &mut Vec<Inline>) {
-        let groups: Vec<&[Node]> = argnlist(node).iter().flatten().filter_map(group_parts).map(|(n, _)| n).collect();
+        let groups: Vec<&[Node]> = argnlist(node)
+            .iter()
+            .flatten()
+            .filter_map(group_parts)
+            .map(|(n, _)| n)
+            .collect();
         if node.macroname() == Some("url") && !groups.is_empty() {
             let url = chars_of(groups[0]);
             out.push(Inline::Link(Link {
@@ -896,14 +978,28 @@ impl Builder {
                 }
                 if let Some(kind) = toc_kind(name) {
                     flush(&mut inline_buf, &mut scope_marks, &mut out);
-                    out.push(Block::TableOfContents(TableOfContents { kind: kind.into() }));
+                    out.push(Block::TableOfContents(TableOfContents {
+                        kind: kind.into(),
+                    }));
                     continue;
                 }
                 if matches!(
                     name,
-                    "title" | "author" | "date" | "keywords" | "IEEEkeywords" | "institute"
-                        | "affiliation" | "affil" | "address" | "email" | "orcid" | "markboth"
-                        | "markright" | "runninghead" | "shorttitle"
+                    "title"
+                        | "author"
+                        | "date"
+                        | "keywords"
+                        | "IEEEkeywords"
+                        | "institute"
+                        | "affiliation"
+                        | "affil"
+                        | "address"
+                        | "email"
+                        | "orcid"
+                        | "markboth"
+                        | "markright"
+                        | "runninghead"
+                        | "shorttitle"
                 ) {
                     self.meta_macro(node);
                     continue;
@@ -1034,7 +1130,11 @@ impl Builder {
                 }
                 // block-level declaration scopes used unbraced
                 if name == "color" || name == "normalcolor" {
-                    let fg = if name == "color" { self.color_of(node) } else { None };
+                    let fg = if name == "color" {
+                        self.color_of(node)
+                    } else {
+                        None
+                    };
                     scope_marks.push((inline_buf.len(), Mark::Color(fg)));
                     continue;
                 }
@@ -1073,7 +1173,10 @@ impl Builder {
             }
             return;
         }
-        if matches!(name, "markboth" | "markright" | "runninghead" | "shorttitle") {
+        if matches!(
+            name,
+            "markboth" | "markright" | "runninghead" | "shorttitle"
+        ) {
             // \markboth{even}{odd} -> the odd (recto) head
             let groups = brace_groups(node);
             let head_nodes: std::borrow::Cow<[Node]> = match groups.last() {
@@ -1111,7 +1214,11 @@ impl Builder {
             "orcid" => {
                 let oid = pystr::strip(&chars_of(&group_nodes(node))).to_string();
                 if !oid.is_empty() {
-                    let url = if oid.starts_with("http") { oid.clone() } else { format!("https://orcid.org/{oid}") };
+                    let url = if oid.starts_with("http") {
+                        oid.clone()
+                    } else {
+                        format!("https://orcid.org/{oid}")
+                    };
                     self.meta.affiliations.push(vec![Inline::Link(Link {
                         inlines: vec![Inline::text(format!("ORCID: {oid}"))],
                         url,
@@ -1149,13 +1256,21 @@ impl Builder {
         let mut line_labels: Vec<Option<String>> = Vec::new();
         if latex.contains("\\label") {
             for seg in tex2word_math::omml::split_top_level(&latex, "\\\\") {
-                let lab = if seg.contains("\\label") { extract_label(&seg) } else { None };
+                let lab = if seg.contains("\\label") {
+                    extract_label(&seg)
+                } else {
+                    None
+                };
                 if !pystr::strip(&LABEL_TAG_RE.sub("", &seg)).is_empty() {
                     line_labels.push(lab);
                 }
             }
         }
-        let label = line_labels.iter().flatten().find(|l| !l.is_empty()).cloned();
+        let label = line_labels
+            .iter()
+            .flatten()
+            .find(|l| !l.is_empty())
+            .cloned();
         let latex = pystr::strip(&LABEL_TAG_RE.sub("", &latex)).to_string();
         let label = self.label_target(label);
         Block::MathBlock(MathBlock {
@@ -1193,7 +1308,13 @@ impl Builder {
         }
         if matches!(
             base,
-            "tabular" | "array" | "tabularx" | "tabulary" | "longtable" | "supertabular" | "xtabular"
+            "tabular"
+                | "array"
+                | "tabularx"
+                | "tabulary"
+                | "longtable"
+                | "supertabular"
+                | "xtabular"
                 | "mpsupertabular"
         ) {
             let t = self.tabular(node);
@@ -1207,13 +1328,26 @@ impl Builder {
         }
         if matches!(
             base,
-            "quote" | "quotation" | "verse" | "displayquote" | "displaycquote" | "framed" | "shaded"
-                | "mdframed" | "tcolorbox" | "boxedminipage" | "leftbar"
+            "quote"
+                | "quotation"
+                | "verse"
+                | "displayquote"
+                | "displaycquote"
+                | "framed"
+                | "shaded"
+                | "mdframed"
+                | "tcolorbox"
+                | "boxedminipage"
+                | "leftbar"
         ) || self.box_envs.contains(base)
         {
             let (bg, line) = self.box_styles.get(base).cloned().unwrap_or((None, None));
-            let shade = bg.filter(|s| !s.is_empty()).and_then(|b| self.colors.resolve(&b, None));
-            let border = line.filter(|s| !s.is_empty()).and_then(|l| self.colors.resolve(&l, None));
+            let shade = bg
+                .filter(|s| !s.is_empty())
+                .and_then(|b| self.colors.resolve(&b, None));
+            let border = line
+                .filter(|s| !s.is_empty())
+                .and_then(|l| self.colors.resolve(&l, None));
             let blocks = self.blocks(nodelist);
             out.push(Block::Quote(Quote {
                 blocks,
@@ -1236,7 +1370,9 @@ impl Builder {
             self.meta.abstract_ = Some(blocks);
             return;
         }
-        if matches!(base, "center" | "flushleft" | "flushright" | "minipage") && has_captionof(nodelist, "figure") {
+        if matches!(base, "center" | "flushleft" | "flushright" | "minipage")
+            && has_captionof(nodelist, "figure")
+        {
             // a non-floating figure: \includegraphics + \captionof{figure}{…}
             self.figure(node, out, false);
             return;
@@ -1279,7 +1415,8 @@ impl Builder {
         }
         if OPAQUE_ENVS.contains(&base) {
             // graphics we cannot translate -> placeholder + warning
-            self.report.warn(name, format!("{name} kept as a graphics placeholder"));
+            self.report
+                .warn(name, format!("{name} kept as a graphics placeholder"));
             out.push(Block::Figure(Figure {
                 image: None,
                 source: node.latex_verbatim().to_string(),
@@ -1289,8 +1426,12 @@ impl Builder {
         }
         // A custom wrapper that contains \item is a list
         if nodelist.iter().any(|c| c.macroname() == Some("item")) {
-            let ordered = base.contains("enum") || base.contains("ordered") || base.contains("number");
-            self.report.info(name, format!("custom list environment {name}: rendered as a list"));
+            let ordered =
+                base.contains("enum") || base.contains("ordered") || base.contains("number");
+            self.report.info(
+                name,
+                format!("custom list environment {name}: rendered as a list"),
+            );
             let l = self.list(node, ordered, false);
             out.push(l);
             return;
@@ -1301,7 +1442,10 @@ impl Builder {
             return;
         }
         // Otherwise treat the unknown environment as a transparent wrapper
-        self.report.warn(name, format!("unknown environment {name}: treated as transparent"));
+        self.report.warn(
+            name,
+            format!("unknown environment {name}: treated as transparent"),
+        );
         let blocks = self.blocks(nodelist);
         out.extend(blocks);
     }
@@ -1311,7 +1455,10 @@ impl Builder {
         let display = if is_proof {
             "Proof".to_string()
         } else {
-            self.theorem_envs.get(base).cloned().unwrap_or_else(|| pystr::capitalize(base))
+            self.theorem_envs
+                .get(base)
+                .cloned()
+                .unwrap_or_else(|| pystr::capitalize(base))
         };
         let title = self.env_optional_title(node);
         // proof is unnumbered; so are starred uses and \newtheorem* envs
@@ -1320,7 +1467,12 @@ impl Builder {
         let counter = if unnumbered {
             None
         } else {
-            Some(self.theorem_counters.get(base).cloned().unwrap_or_else(|| display.clone()))
+            Some(
+                self.theorem_counters
+                    .get(base)
+                    .cloned()
+                    .unwrap_or_else(|| display.clone()),
+            )
         };
         // become the label target *before* parsing the body
         let label = self.label_target(None);
@@ -1345,7 +1497,8 @@ impl Builder {
                 _ => {}
             }
         }
-        let lines: Vec<AlgLine> = crate::algorithms::parse_algorithm_body(nodelist, &mut |ns| self.inlines(ns));
+        let lines: Vec<AlgLine> =
+            crate::algorithms::parse_algorithm_body(nodelist, &mut |ns| self.inlines(ns));
         let label = self.label_target(label);
         Block::Algorithm(Algorithm {
             lines,
@@ -1371,25 +1524,26 @@ impl Builder {
         let mut key: Option<String> = None;
         let mut buf: Vec<Node> = Vec::new();
         let mut order: i64 = 0;
-        let flush_item = |b: &mut Self, key: &Option<String>, buf: &mut Vec<Node>, order: &mut i64| {
-            if let Some(k) = key {
-                let inl = b.inlines(buf);
-                let text = inlines_to_text_with(&inl, &|i| b.footmark_content(i));
-                *order += 1;
-                let mut fields = Dict::new();
-                fields.insert("note", Value::Str(text));
-                fields.insert("_order", Value::Int(*order));
-                b.thebib_items.insert(
-                    k.clone(),
-                    CSLItem {
-                        id: k.clone(),
-                        item_type: "document".into(),
-                        csl_fields: fields,
-                    },
-                );
-            }
-            buf.clear();
-        };
+        let flush_item =
+            |b: &mut Self, key: &Option<String>, buf: &mut Vec<Node>, order: &mut i64| {
+                if let Some(k) = key {
+                    let inl = b.inlines(buf);
+                    let text = inlines_to_text_with(&inl, &|i| b.footmark_content(i));
+                    *order += 1;
+                    let mut fields = Dict::new();
+                    fields.insert("note", Value::Str(text));
+                    fields.insert("_order", Value::Int(*order));
+                    b.thebib_items.insert(
+                        k.clone(),
+                        CSLItem {
+                            id: k.clone(),
+                            item_type: "document".into(),
+                            csl_fields: fields,
+                        },
+                    );
+                }
+                buf.clear();
+            };
         for child in node.nodelist().unwrap_or(&[]) {
             if child.macroname() == Some("bibitem") {
                 flush_item(self, &key, &mut buf, &mut order);
@@ -1407,7 +1561,10 @@ impl Builder {
         let mut current: Vec<Node> = Vec::new();
         let mut term: Option<Vec<Inline>> = None;
         let mut started = false;
-        let flush_item = |b: &mut Self, items: &mut Vec<ListItem>, current: &mut Vec<Node>, term: &mut Option<Vec<Inline>>| {
+        let flush_item = |b: &mut Self,
+                          items: &mut Vec<ListItem>,
+                          current: &mut Vec<Node>,
+                          term: &mut Option<Vec<Inline>>| {
             // become the label target before parsing the body
             let label = b.label_target(None);
             let blocks = b.blocks(current);
@@ -1472,7 +1629,8 @@ impl Builder {
                 fig.blocks = self.figure_body_blocks(nodelist);
             }
             if fig.image.is_none() && fig.subfigures.is_empty() && fig.blocks.is_empty() {
-                self.report.warn("figure", "figure without convertible graphics (e.g. TikZ)");
+                self.report
+                    .warn("figure", "figure without convertible graphics (e.g. TikZ)");
             }
             fig.label = self.label_target(fig.label.take());
             out.push(Block::Figure(fig));
@@ -1580,7 +1738,10 @@ impl Builder {
         }
         let eff = self.tcb_resolve(&texts);
         let colour = |b: &Self, key: &str, default: &str| -> Option<String> {
-            let spec = eff.get(key).filter(|s| !s.is_empty()).map_or(default, String::as_str);
+            let spec = eff
+                .get(key)
+                .filter(|s| !s.is_empty())
+                .map_or(default, String::as_str);
             b.colors.resolve(spec, None)
         };
         let shade = colour(self, "colback", "black!5!white");
@@ -1592,7 +1753,10 @@ impl Builder {
         let mut title_shade = None;
         if let Some(t) = eff.get("title").filter(|t| !t.is_empty()).cloned() {
             let mut inl = self.fragment_inlines(&t);
-            if eff.get("fonttitle").is_some_and(|f| f.contains("\\bfseries")) {
+            if eff
+                .get("fonttitle")
+                .is_some_and(|f| f.contains("\\bfseries"))
+            {
                 inl = vec![Inline::Emphasis(Emphasis {
                     inlines: inl,
                     kind: "bold".into(),
@@ -1603,7 +1767,10 @@ impl Builder {
                 fg: colour(self, "coltitle", "white"),
                 bg: None,
             })]);
-            let frame = eff.get("colframe").filter(|s| !s.is_empty()).map_or("black!75!white", String::as_str);
+            let frame = eff
+                .get("colframe")
+                .filter(|s| !s.is_empty())
+                .map_or("black!75!white", String::as_str);
             title_shade = colour(self, "colbacktitle", frame);
         }
         let blocks = self.blocks(node.nodelist().unwrap_or(&[]));
@@ -1646,7 +1813,10 @@ impl Builder {
 
     /// Parse a LaTeX fragment (e.g. a box title) into inlines.
     pub fn fragment_inlines(&mut self, latex: &str) -> Vec<Inline> {
-        let ctx = self.ctx.clone().unwrap_or_else(|| Arc::new(ContextDb::default_db()));
+        let ctx = self
+            .ctx
+            .clone()
+            .unwrap_or_else(|| Arc::new(ContextDb::default_db()));
         let walker = LatexWalker::new(latex, ctx);
         match walker.get_latex_nodes(0, &Stop::default(), &ParsingState::default()) {
             Ok((nodes, _, _)) => {
@@ -1660,10 +1830,19 @@ impl Builder {
 
     /// Walk a figure body, pulling out the parent image/caption/label and any
     /// subfigures; top-level parts are also recorded into `panels`.
-    fn collect_figure_parts(&mut self, nodes: &[Node], fig: &mut Figure, mut panels: Option<&mut Vec<Panel>>) {
+    fn collect_figure_parts(
+        &mut self,
+        nodes: &[Node],
+        fig: &mut Figure,
+        mut panels: Option<&mut Vec<Panel>>,
+    ) {
         for child in nodes {
             match &child.kind {
-                NodeKind::Environment { environmentname, nodelist, .. } => {
+                NodeKind::Environment {
+                    environmentname,
+                    nodelist,
+                    ..
+                } => {
                     if environmentname.trim_end_matches('*') == "subfigure" {
                         let s = self.subfigure_from_env(child);
                         fig.subfigures.push(s);
@@ -1742,7 +1921,12 @@ impl Builder {
 
     fn subfigure_from_macro(&mut self, node: &Node) -> SubFigure {
         // \subfloat[caption]{content}; content holds the \includegraphics
-        let groups: Vec<&[Node]> = argnlist(node).iter().flatten().filter_map(group_parts).map(|(n, _)| n).collect();
+        let groups: Vec<&[Node]> = argnlist(node)
+            .iter()
+            .flatten()
+            .filter_map(group_parts)
+            .map(|(n, _)| n)
+            .collect();
         let caption = self.env_optional_title(node);
         let mut sub = SubFigure {
             image: None,
@@ -1825,7 +2009,10 @@ impl Builder {
 
     /// Prepare a `longtable` body for the generic row parser: pull out the
     /// caption/label and keep a single header block plus the body rows.
-    fn longtable_prep(&mut self, nodes: &[Node]) -> (Vec<Node>, Option<Vec<Inline>>, Option<String>) {
+    fn longtable_prep(
+        &mut self,
+        nodes: &[Node],
+    ) -> (Vec<Node>, Option<Vec<Inline>>, Option<String>) {
         let marker = |m: &str| -> Option<&'static str> {
             Some(match m {
                 "endfirsthead" => "firsthead",
@@ -1883,7 +2070,7 @@ impl Builder {
         let mut cur_cells: Vec<Vec<Node>> = vec![Vec::new()];
         let mut row_started = false;
         let mut row_shade: Option<String> = None; // \rowcolor
-        // number of leading rows that form the (repeatable) header
+                                                  // number of leading rows that form the (repeatable) header
         let mut header_end: Option<usize> = None;
 
         let end_row = |b: &mut Self,
@@ -1914,7 +2101,8 @@ impl Builder {
         };
 
         for child in nodes {
-            if matches!(&child.kind, NodeKind::Specials { specials_chars, .. } if specials_chars == "&") {
+            if matches!(&child.kind, NodeKind::Specials { specials_chars, .. } if specials_chars == "&")
+            {
                 cur_cells.push(Vec::new());
                 row_started = true;
                 continue;
@@ -1926,11 +2114,23 @@ impl Builder {
                         continue;
                     }
                     "\\" | "tabularnewline" => {
-                        end_row(self, &mut rows, &mut cur_cells, &mut row_started, &mut row_shade);
+                        end_row(
+                            self,
+                            &mut rows,
+                            &mut cur_cells,
+                            &mut row_started,
+                            &mut row_shade,
+                        );
                         continue;
                     }
                     "midrule" | "endhead" | "endfirsthead" => {
-                        end_row(self, &mut rows, &mut cur_cells, &mut row_started, &mut row_shade);
+                        end_row(
+                            self,
+                            &mut rows,
+                            &mut cur_cells,
+                            &mut row_started,
+                            &mut row_shade,
+                        );
                         if header_end.is_none() {
                             header_end = Some(rows.len());
                         }
@@ -1942,8 +2142,8 @@ impl Builder {
                         }
                         continue;
                     }
-                    "hline" | "toprule" | "bottomrule" | "endfoot" | "endlastfoot" | "morecmidrules"
-                    | "addlinespace" => continue,
+                    "hline" | "toprule" | "bottomrule" | "endfoot" | "endlastfoot"
+                    | "morecmidrules" | "addlinespace" => continue,
                     _ => {}
                 }
             }
@@ -1954,7 +2154,13 @@ impl Builder {
             cur_cells.last_mut().unwrap().push(child.clone());
             row_started = true;
         }
-        end_row(self, &mut rows, &mut cur_cells, &mut row_started, &mut row_shade);
+        end_row(
+            self,
+            &mut rows,
+            &mut cur_cells,
+            &mut row_started,
+            &mut row_shade,
+        );
 
         if let Some(h) = header_end.filter(|&h| h > 0) {
             for row in rows.iter_mut().take(h) {
@@ -1991,8 +2197,12 @@ impl Builder {
                 let Some(name) = m.macroname() else {
                     continue;
                 };
-                let groups: Vec<&[Node]> =
-                    argnlist(m).iter().flatten().filter_map(group_parts).map(|(n, _)| n).collect();
+                let groups: Vec<&[Node]> = argnlist(m)
+                    .iter()
+                    .flatten()
+                    .filter_map(group_parts)
+                    .map(|(n, _)| n)
+                    .collect();
                 if name == "multicolumn" && groups.len() >= 3 {
                     colspan = int_or_default(&chars_of(groups[0]), 1);
                     let (cspec, _) = parse_colspec(&chars_of(groups[1]));
@@ -2146,16 +2356,20 @@ fn env_arg_texts(node: &Node, env: &TcbEnv) -> Vec<String> {
             continue;
         };
         let v = pystr::strip(a.latex_verbatim());
-        let first_ok = v.chars().next().map_or(true, |c| c == '{' || c == '[');
-        let last_ok = v.chars().last().map_or(true, |c| c == '}' || c == ']');
+        let first_ok = v.chars().next().is_none_or(|c| c == '{' || c == '[');
+        let last_ok = v.chars().last().is_none_or(|c| c == '}' || c == ']');
         if first_ok && last_ok {
-            texts.push(v.get(1..v.len().saturating_sub(1)).unwrap_or("").to_string());
+            texts.push(
+                v.get(1..v.len().saturating_sub(1))
+                    .unwrap_or("")
+                    .to_string(),
+            );
         } else {
             texts.push(v.to_string());
         }
     }
     if let Some(d) = &env.default {
-        if texts.first().map_or(true, String::is_empty) {
+        if texts.first().is_none_or(String::is_empty) {
             if texts.is_empty() {
                 texts.push(d.clone());
             } else {

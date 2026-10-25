@@ -6,7 +6,9 @@ use std::sync::Arc;
 
 use tex2word_goldens::{json_diff, root};
 use tex2word_ir::json::{self, Value};
-use tex2word_latexwalker::{ContextDb, EnvironmentSpec, LatexWalker, MacroSpec, Node, NodeKind, ParsedArgs};
+use tex2word_latexwalker::{
+    ContextDb, EnvironmentSpec, LatexWalker, MacroSpec, Node, NodeKind, ParsedArgs,
+};
 
 fn args_json(a: &Option<ParsedArgs>) -> Value {
     match a {
@@ -47,8 +49,14 @@ fn node_json(n: &Node) -> Value {
             o.push(("c".into(), s(chars)));
             "C"
         }
-        NodeKind::Group { nodelist, delimiters } => {
-            o.push(("d".into(), Value::Array(vec![s(&delimiters.0), s(&delimiters.1)])));
+        NodeKind::Group {
+            nodelist,
+            delimiters,
+        } => {
+            o.push((
+                "d".into(),
+                Value::Array(vec![s(&delimiters.0), s(&delimiters.1)]),
+            ));
             o.push(("n".into(), list(nodelist)));
             "G"
         }
@@ -95,7 +103,10 @@ fn node_json(n: &Node) -> Value {
             delimiters,
         } => {
             o.push(("d".into(), s(displaytype)));
-            o.push(("de".into(), Value::Array(vec![s(&delimiters.0), s(&delimiters.1)])));
+            o.push((
+                "de".into(),
+                Value::Array(vec![s(&delimiters.0), s(&delimiters.1)]),
+            ));
             o.push(("n".into(), list(nodelist)));
             "X"
         }
@@ -111,7 +122,10 @@ fn context(cat: &Value) -> ContextDb {
             .iter()
             .map(|p| {
                 let p = p.as_array().unwrap();
-                (p[0].as_str().unwrap().to_string(), p[1].as_str().unwrap().to_string())
+                (
+                    p[0].as_str().unwrap().to_string(),
+                    p[1].as_str().unwrap().to_string(),
+                )
             })
             .collect()
     };
@@ -119,8 +133,12 @@ fn context(cat: &Value) -> ContextDb {
     let mut db = ContextDb::default_db();
     db.add_context_category(
         "tex2word",
-        pairs(&cat[0]).into_iter().map(|(n, a)| MacroSpec::new(n, a)),
-        pairs(&cat[1]).into_iter().map(|(n, a)| EnvironmentSpec::new(n, a)),
+        pairs(&cat[0])
+            .into_iter()
+            .map(|(n, a)| MacroSpec::new(n, a)),
+        pairs(&cat[1])
+            .into_iter()
+            .map(|(n, a)| EnvironmentSpec::new(n, a)),
         [],
         true,
     );
@@ -156,6 +174,11 @@ fn walker_matches_pylatexenc() {
         failures.is_empty(),
         "{} of {n} inputs differ from pylatexenc:\n{}",
         failures.len(),
-        failures.iter().take(15).cloned().collect::<Vec<_>>().join("\n")
+        failures
+            .iter()
+            .take(15)
+            .cloned()
+            .collect::<Vec<_>>()
+            .join("\n")
     );
 }

@@ -2,8 +2,6 @@
 
 //! LaTeX-math command tables: symbols, operators, accents, delimiters.
 
-
-
 /// Greek + symbols rendered as a single Unicode glyph.
 pub static SYMBOLS: &[(&str, &str)] = &[
     ("alpha", "α"),
@@ -246,8 +244,11 @@ pub static ACCENTS: &[(&str, &str)] = &[
 ];
 
 /// Upright multi-letter function names.
-
-pub static FUNCTIONS: &[&str] = &["Pr", "arccos", "arcsin", "arctan", "arg", "cos", "cosh", "cot", "coth", "csc", "deg", "det", "dim", "exp", "gcd", "hom", "inf", "ker", "lg", "lim", "liminf", "limsup", "ln", "log", "max", "min", "mod", "sec", "sin", "sinh", "sup", "tan", "tanh"];
+pub static FUNCTIONS: &[&str] = &[
+    "Pr", "arccos", "arcsin", "arctan", "arg", "cos", "cosh", "cot", "coth", "csc", "deg", "det",
+    "dim", "exp", "gcd", "hom", "inf", "ker", "lg", "lim", "liminf", "limsup", "ln", "log", "max",
+    "min", "mod", "sec", "sin", "sinh", "sup", "tan", "tanh",
+];
 
 /// Delimiter commands -> the literal delimiter character.
 pub static DELIMITERS: &[(&str, &str)] = &[
@@ -315,22 +316,12 @@ pub static SPACING: &[(&str, &str)] = &[
     ("qquad", "\u{2003}\u{2003}"),
 ];
 
-
-
 /// Look up a key in a table.
-
 pub fn get(table: &'static [(&'static str, &'static str)], key: &str) -> Option<&'static str> {
-
     table.iter().find(|(k, _)| *k == key).map(|(_, v)| *v)
-
 }
 
-
-
 /// Membership in [`FUNCTIONS`].
-
 pub fn is_function(name: &str) -> bool {
-
     FUNCTIONS.contains(&name)
-
 }

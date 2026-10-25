@@ -201,8 +201,18 @@ pub fn today_text() -> String {
         });
     let (y, m, d) = civil_from_days(secs.div_euclid(86400));
     const MONTHS: [&str; 12] = [
-        "January", "February", "March", "April", "May", "June", "July", "August", "September",
-        "October", "November", "December",
+        "January",
+        "February",
+        "March",
+        "April",
+        "May",
+        "June",
+        "July",
+        "August",
+        "September",
+        "October",
+        "November",
+        "December",
     ];
     format!("{} {}, {}", MONTHS[(m - 1) as usize], d, y)
 }
@@ -212,7 +222,12 @@ pub fn today_text() -> String {
 pub fn utc_isoformat(secs: i64) -> String {
     let (y, m, d) = civil_from_days(secs.div_euclid(86400));
     let t = secs.rem_euclid(86400);
-    format!("{y:04}-{m:02}-{d:02}T{:02}:{:02}:{:02}+00:00", t / 3600, t / 60 % 60, t % 60)
+    format!(
+        "{y:04}-{m:02}-{d:02}T{:02}:{:02}:{:02}+00:00",
+        t / 3600,
+        t / 60 % 60,
+        t % 60
+    )
 }
 
 /// The current Unix time in whole seconds.
@@ -273,7 +288,10 @@ mod tests {
         assert_eq!(civil_from_days(0), (1970, 1, 1));
         assert_eq!(civil_from_days(-1), (1969, 12, 31));
         assert_eq!(utc_isoformat(1767312000), "2026-01-02T00:00:00+00:00");
-        assert_eq!(utc_isoformat(1767312000 + 3723), "2026-01-02T01:02:03+00:00");
+        assert_eq!(
+            utc_isoformat(1767312000 + 3723),
+            "2026-01-02T01:02:03+00:00"
+        );
     }
 
     #[test]

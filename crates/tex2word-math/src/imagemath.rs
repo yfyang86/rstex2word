@@ -12,19 +12,21 @@ pub const DEFAULT_DPI: u32 = 200;
 /// `shutil.which(name)`.
 pub fn which(name: &str) -> Option<PathBuf> {
     let path = std::env::var_os("PATH")?;
-    std::env::split_paths(&path).map(|d| d.join(name)).find(|p| {
-        std::fs::metadata(p).is_ok_and(|m| {
-            #[cfg(unix)]
-            {
-                use std::os::unix::fs::PermissionsExt;
-                m.is_file() && m.permissions().mode() & 0o111 != 0
-            }
-            #[cfg(not(unix))]
-            {
-                m.is_file()
-            }
+    std::env::split_paths(&path)
+        .map(|d| d.join(name))
+        .find(|p| {
+            std::fs::metadata(p).is_ok_and(|m| {
+                #[cfg(unix)]
+                {
+                    use std::os::unix::fs::PermissionsExt;
+                    m.is_file() && m.permissions().mode() & 0o111 != 0
+                }
+                #[cfg(not(unix))]
+                {
+                    m.is_file()
+                }
+            })
         })
-    })
 }
 
 /// A scratch directory removed on drop (`tempfile.TemporaryDirectory`).
@@ -63,7 +65,11 @@ impl DvipngMathRenderer {
     }
 
     fn try_render(&self, latex: &str, display: bool) -> Option<(Vec<u8>, String)> {
-        let body = if display { format!("\\[{latex}\\]") } else { format!("${latex}$") };
+        let body = if display {
+            format!("\\[{latex}\\]")
+        } else {
+            format!("${latex}$")
+        };
         let doc = format!("{PREAMBLE}{body}\n\\end{{document}}\n");
         let td = TempDir::new().ok()?;
         std::fs::write(td.0.join("m.tex"), doc).ok()?;
@@ -78,7 +84,15 @@ impl DvipngMathRenderer {
         }
         let png = td.0.join("m.png");
         let out = Command::new("dvipng")
-            .args(["-D", &self.dpi.to_string(), "-T", "tight", "-bg", "Transparent", "-o"])
+            .args([
+                "-D",
+                &self.dpi.to_string(),
+                "-T",
+                "tight",
+                "-bg",
+                "Transparent",
+                "-o",
+            ])
             .arg(&png)
             .arg(&dvi)
             .current_dir(&td.0)

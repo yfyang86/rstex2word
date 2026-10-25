@@ -28,8 +28,24 @@ const FIG_SDT_TAG: &str = "tex2word:figure";
 const TOC_TITLES: [&str; 3] = ["Contents", "List of Figures", "List of Tables"];
 
 const THEOREM_KINDS: [&str; 18] = [
-    "Theorem", "Lemma", "Corollary", "Proposition", "Definition", "Remark", "Example", "Conjecture", "Claim",
-    "Fact", "Observation", "Notation", "Assumption", "Axiom", "Exercise", "Problem", "Question", "Proof",
+    "Theorem",
+    "Lemma",
+    "Corollary",
+    "Proposition",
+    "Definition",
+    "Remark",
+    "Example",
+    "Conjecture",
+    "Claim",
+    "Fact",
+    "Observation",
+    "Notation",
+    "Assumption",
+    "Axiom",
+    "Exercise",
+    "Problem",
+    "Question",
+    "Proof",
 ];
 
 /// (rPr child local name, emphasis kind)
@@ -44,9 +60,9 @@ const EMPH_FROM_RPR: [(&str, &str); 6] = [
 
 /// Common LaTeX cross-reference label prefixes (the no-manifest heuristic).
 const REF_PREFIXES: [&str; 31] = [
-    "eq", "fig", "tab", "tbl", "sec", "subsec", "thm", "lem", "cor", "def", "defn", "prop", "rem", "ex", "exa",
-    "alg", "app", "ch", "chap", "chapter", "part", "line", "item", "lst", "list", "claim", "assum", "fact", "obs",
-    "note", "step",
+    "eq", "fig", "tab", "tbl", "sec", "subsec", "thm", "lem", "cor", "def", "defn", "prop", "rem",
+    "ex", "exa", "alg", "app", "ch", "chap", "chapter", "part", "line", "item", "lst", "list",
+    "claim", "assum", "fact", "obs", "note", "step",
 ];
 
 const QED_CHARS: &str = "\u{2003} □";
@@ -54,7 +70,8 @@ const QED_CHARS: &str = "\u{2003} □";
 static RE_REF: LazyLock<Regex> = LazyLock::new(|| Regex::new(r"REF\s+(\S+)"));
 static RE_PAGEREF: LazyLock<Regex> = LazyLock::new(|| Regex::new(r"PAGEREF\s+(\S+)"));
 static RE_HYPERLINK: LazyLock<Regex> = LazyLock::new(|| Regex::new(r#"HYPERLINK\s+"([^"]*)""#));
-static RE_REC_NUMBER: LazyLock<Regex> = LazyLock::new(|| Regex::new(r"<rec-number>([^<]+)</rec-number>"));
+static RE_REC_NUMBER: LazyLock<Regex> =
+    LazyLock::new(|| Regex::new(r"<rec-number>([^<]+)</rec-number>"));
 static RE_EN_KEY: LazyLock<Regex> = LazyLock::new(|| Regex::new(r"<key[^>]*>([^<]+)</key>"));
 static RE_ALG_NUMBER: LazyLock<Regex> = LazyLock::new(|| Regex::new(r"\s*\d+\s+"));
 static RE_BIB_NUMBER: LazyLock<Regex> = LazyLock::new(|| Regex::new(r"^\[\d+\]\s*"));
@@ -96,8 +113,12 @@ fn omath(e: &Element) -> R<String> {
 
 /// Python `int(s)`.
 fn py_int(s: &str) -> R<i64> {
-    pystr::parse_int(s)
-        .ok_or_else(|| value_error(format!("invalid literal for int() with base 10: {}", json::py_str_repr(s))))
+    pystr::parse_int(s).ok_or_else(|| {
+        value_error(format!(
+            "invalid literal for int() with base 10: {}",
+            json::py_str_repr(s)
+        ))
+    })
 }
 
 fn w(name: &str) -> String {
@@ -117,7 +138,10 @@ fn text_inline(s: impl Into<String>) -> Inline {
 }
 
 fn paragraph(inlines: Vec<Inline>) -> Block {
-    Block::Paragraph(Paragraph { inlines, align: None })
+    Block::Paragraph(Paragraph {
+        inlines,
+        align: None,
+    })
 }
 
 /// Top-level `Text` only, stripped.
@@ -161,7 +185,8 @@ fn theorem_block(inlines: &[Inline]) -> Option<Block> {
     }
     // the lead runs end at the bold/italic ". " separator
     let sep = (1..inlines.len()).find(|&i| {
-        matches!(&inlines[i], Inline::Emphasis(_)) && pystr::strip(&all_text(&inlines[i..i + 1])) == "."
+        matches!(&inlines[i], Inline::Emphasis(_))
+            && pystr::strip(&all_text(&inlines[i..i + 1])) == "."
     })?;
     let lead = &inlines[1..sep];
     let mut content = inlines[sep + 1..].to_vec();
@@ -184,7 +209,11 @@ fn paren_title(lead: &[Inline]) -> Option<Vec<Inline>> {
     if let (Some(s), Some(e)) = (start, end) {
         if s < e {
             let inner = pystr::strip(&text[s + 1..e]);
-            return if inner.is_empty() { None } else { Some(vec![text_inline(inner)]) };
+            return if inner.is_empty() {
+                None
+            } else {
+                Some(vec![text_inline(inner)])
+            };
         }
     }
     None
@@ -192,7 +221,8 @@ fn paren_title(lead: &[Inline]) -> Option<Vec<Inline>> {
 
 /// Drop a trailing QED mark from a proof body.
 fn strip_qed(mut out: Vec<Inline>) -> Vec<Inline> {
-    while matches!(out.last(), Some(Inline::Text(t)) if pystr::strip_chars(&t.value, QED_CHARS).is_empty()) {
+    while matches!(out.last(), Some(Inline::Text(t)) if pystr::strip_chars(&t.value, QED_CHARS).is_empty())
+    {
         out.pop();
     }
     if let Some(Inline::Text(t)) = out.last() {
@@ -252,8 +282,15 @@ fn read_comments(comments_xml: &[u8]) -> Vec<(String, (String, String))> {
         let Some(cid) = c.get(&w("id")) else {
             continue;
         };
-        let text: String = c.iter(Some(&w("t"))).iter().map(|t| t.text.as_deref().unwrap_or("")).collect();
-        let entry = (c.get(&w("author")).unwrap_or("").to_string(), pystr::strip(&text).to_string());
+        let text: String = c
+            .iter(Some(&w("t")))
+            .iter()
+            .map(|t| t.text.as_deref().unwrap_or(""))
+            .collect();
+        let entry = (
+            c.get(&w("author")).unwrap_or("").to_string(),
+            pystr::strip(&text).to_string(),
+        );
         match out.iter_mut().find(|(k, _)| k == cid) {
             Some(slot) => slot.1 = entry,
             None => out.push((cid.to_string(), entry)),
@@ -481,7 +518,10 @@ impl Reader {
                 }
             }
             // a drawing-only paragraph is a Figure
-            if child.iter(Some(&w("drawing"))).iter().any(|d| !std::ptr::eq(*d, child))
+            if child
+                .iter(Some(&w("drawing")))
+                .iter()
+                .any(|d| !std::ptr::eq(*d, child))
                 && plain_text(&self.inlines(child)?).is_empty()
             {
                 let fig = self.figure(child)?;
@@ -523,7 +563,11 @@ impl Reader {
         }
         let rest = text.split_once(':').map(|(_, r)| r).unwrap_or("");
         let rest = pystr::strip(rest);
-        Ok(if rest.is_empty() { None } else { Some(vec![text_inline(rest)]) })
+        Ok(if rest.is_empty() {
+            None
+        } else {
+            Some(vec![text_inline(rest)])
+        })
     }
 
     fn alignment(p: &Element) -> Option<String> {
@@ -561,7 +605,10 @@ impl Reader {
                 return Ok(None);
             }
             "Abstract" => {
-                self.meta.abstract_.get_or_insert_with(Vec::new).push(paragraph(inlines));
+                self.meta
+                    .abstract_
+                    .get_or_insert_with(Vec::new)
+                    .push(paragraph(inlines));
                 return Ok(None);
             }
             _ => {}
@@ -590,7 +637,10 @@ impl Reader {
     }
 
     fn math_block(&self, p: &Element) -> R<Block> {
-        let latex = match p.find(&m("oMathPara")).and_then(|para| para.find(&m("oMath"))) {
+        let latex = match p
+            .find(&m("oMathPara"))
+            .and_then(|para| para.find(&m("oMath")))
+        {
             Some(o) => omath(o)?,
             None => String::new(),
         };
@@ -638,7 +688,12 @@ impl Reader {
 
     /// Walk run-level children, accepting tracked changes (`w:ins`/`w:moveTo`
     /// kept, `w:del`/`w:moveFrom` dropped).
-    fn runs(&self, parent: &Element, out: &mut Vec<Inline>, mut field: Option<Field>) -> R<Option<Field>> {
+    fn runs(
+        &self,
+        parent: &Element,
+        out: &mut Vec<Inline>,
+        mut field: Option<Field>,
+    ) -> R<Option<Field>> {
         for el in &parent.children {
             match local(el)? {
                 "bookmarkStart" | "bookmarkEnd" | "proofErr" | "del" | "moveFrom" => {}
@@ -699,7 +754,11 @@ impl Reader {
             }));
             return Ok(field);
         }
-        let text: String = r.findall(&w("t")).iter().map(|t| t.text.as_deref().unwrap_or("")).collect();
+        let text: String = r
+            .findall(&w("t"))
+            .iter()
+            .map(|t| t.text.as_deref().unwrap_or(""))
+            .collect();
         if let Some(f) = field.as_mut() {
             if f.phase == "result" {
                 f.result.push(text);
@@ -733,7 +792,11 @@ impl Reader {
         }
         if let Some(mt) = RE_HYPERLINK.match_start(instr) {
             let url = mt.group_str(1).to_string();
-            let shown = if result.is_empty() { url.clone() } else { result };
+            let shown = if result.is_empty() {
+                url.clone()
+            } else {
+                result
+            };
             out.push(Inline::Link(Link {
                 inlines: vec![text_inline(shown)],
                 url,
@@ -766,8 +829,18 @@ impl Reader {
         let mut stack: Vec<(i64, Vec<usize>)> = Vec::new();
         for p in paras {
             let np = numpr(p).expect("selected for having numPr");
-            let ilvl = py_int(np.find(&w("ilvl")).and_then(wval).filter(|v| !v.is_empty()).unwrap_or("0"))?;
-            let numid = np.find(&w("numId")).and_then(wval).filter(|v| !v.is_empty()).unwrap_or("1").to_string();
+            let ilvl = py_int(
+                np.find(&w("ilvl"))
+                    .and_then(wval)
+                    .filter(|v| !v.is_empty())
+                    .unwrap_or("0"),
+            )?;
+            let numid = np
+                .find(&w("numId"))
+                .and_then(wval)
+                .filter(|v| !v.is_empty())
+                .unwrap_or("1")
+                .to_string();
             let item = ListItem {
                 blocks: vec![paragraph(self.inlines(p)?)],
                 ..ListItem::default()
@@ -820,7 +893,10 @@ impl Reader {
             return Ok(None);
         }
         let paras = tcs[0].findall(&w("p"));
-        if !paras.iter().any(|p| style(p).as_deref() == Some("SourceCode")) {
+        if !paras
+            .iter()
+            .any(|p| style(p).as_deref() == Some("SourceCode"))
+        {
             return Ok(None);
         }
         let mut caption = None;
@@ -832,7 +908,11 @@ impl Reader {
                 let text = pystr::strip(&all_text(&self.inlines(p)?)).to_string();
                 if text.starts_with("Algorithm") {
                     let rest = pystr::strip(text.split_once(':').map(|(_, r)| r).unwrap_or(""));
-                    caption = if rest.is_empty() { None } else { Some(vec![text_inline(rest)]) };
+                    caption = if rest.is_empty() {
+                        None
+                    } else {
+                        Some(vec![text_inline(rest)])
+                    };
                     label = self.bookmark(p);
                 }
                 continue;
@@ -852,7 +932,10 @@ impl Reader {
 
     /// One pseudocode paragraph -> an AlgLine (indent and number peeled).
     fn alg_line(&self, p: &Element) -> R<AlgLine> {
-        let left_attr = p.find(&w("pPr")).and_then(|ppr| ppr.find(&w("ind"))).and_then(|ind| ind.get(&w("left")));
+        let left_attr = p
+            .find(&w("pPr"))
+            .and_then(|ppr| ppr.find(&w("ind")))
+            .and_then(|ind| ind.get(&w("left")));
         let left = match left_attr {
             Some(a) if !a.is_empty() && a.chars().all(pystr::is_digit) => py_int(a)?,
             _ => 360,
@@ -902,7 +985,11 @@ impl Reader {
         let Some(rest) = sep.value.strip_prefix("  ") else {
             return Ok(None);
         };
-        let mut definition = if rest.is_empty() { Vec::new() } else { vec![text_inline(rest)] };
+        let mut definition = if rest.is_empty() {
+            Vec::new()
+        } else {
+            vec![text_inline(rest)]
+        };
         definition.extend(inlines[i + 1..].iter().cloned());
         Ok(Some((term, definition)))
     }
@@ -913,7 +1000,10 @@ impl Reader {
         let Some(content) = sdt.find(&w("sdtContent")) else {
             return Ok(Vec::new());
         };
-        let tag = sdt.find(&w("sdtPr")).and_then(|pr| pr.find(&w("tag"))).and_then(wval);
+        let tag = sdt
+            .find(&w("sdtPr"))
+            .and_then(|pr| pr.find(&w("tag")))
+            .and_then(wval);
         match tag {
             Some(BIB_SDT_TAG) => Ok(vec![self.bibliography_from_sdt(content)?]),
             Some(FIG_SDT_TAG) => Ok(vec![self.figure_from_sdt(content)?]),
@@ -1054,11 +1144,16 @@ fn list_at<'a>(roots: &'a mut [ItemList], path: &[usize]) -> &'a mut ItemList {
 }
 
 fn style(p: &Element) -> Option<String> {
-    p.find(&w("pPr"))?.find(&w("pStyle")).and_then(wval).map(str::to_string)
+    p.find(&w("pPr"))?
+        .find(&w("pStyle"))
+        .and_then(wval)
+        .map(str::to_string)
 }
 
 fn style_or_normal(p: &Element) -> String {
-    style(p).filter(|s| !s.is_empty()).unwrap_or_else(|| "Normal".into())
+    style(p)
+        .filter(|s| !s.is_empty())
+        .unwrap_or_else(|| "Normal".into())
 }
 
 fn heading_level(style: &str) -> Option<i64> {
@@ -1081,7 +1176,10 @@ fn numpr(p: &Element) -> Option<&Element> {
 }
 
 fn instr_text(p: &Element) -> String {
-    p.iter(Some(&w("instrText"))).iter().map(|t| t.text.as_deref().unwrap_or("")).collect()
+    p.iter(Some(&w("instrText")))
+        .iter()
+        .map(|t| t.text.as_deref().unwrap_or(""))
+        .collect()
 }
 
 fn toc_block(p: &Element) -> Option<Block> {
@@ -1096,7 +1194,9 @@ fn toc_block(p: &Element) -> Option<Block> {
     } else {
         "contents"
     };
-    Some(Block::TableOfContents(TableOfContents { kind: kind.into() }))
+    Some(Block::TableOfContents(TableOfContents {
+        kind: kind.into(),
+    }))
 }
 
 fn styled_text(r: &Element, text: String) -> R<Inline> {
@@ -1131,8 +1231,14 @@ fn styled_text(r: &Element, text: String) -> R<Inline> {
             });
         }
     }
-    let fg = rpr.find(&w("color")).and_then(wval).filter(|v| !v.is_empty() && *v != "auto");
-    let bg = rpr.find(&w("shd")).and_then(|s| s.get(&w("fill"))).filter(|v| !v.is_empty() && *v != "auto");
+    let fg = rpr
+        .find(&w("color"))
+        .and_then(wval)
+        .filter(|v| !v.is_empty() && *v != "auto");
+    let bg = rpr
+        .find(&w("shd"))
+        .and_then(|s| s.get(&w("fill")))
+        .filter(|v| !v.is_empty() && *v != "auto");
     if fg.is_some() || bg.is_some() {
         node = Inline::Colored(Colored {
             inlines: vec![node],
@@ -1180,8 +1286,11 @@ fn csl_cite(instr: &str, result: &str) -> Inline {
                     Some(d) => Some(d.as_object()?),
                     None => None,
                 };
-                let data_id = item_data.and_then(|d| d.iter().find(|(k, _)| k == "id").map(|(_, v)| v));
-                let v = data_id.filter(|v| v.py_truthy()).or_else(|| get("id").filter(|v| v.py_truthy()));
+                let data_id =
+                    item_data.and_then(|d| d.iter().find(|(k, _)| k == "id").map(|(_, v)| v));
+                let v = data_id
+                    .filter(|v| v.py_truthy())
+                    .or_else(|| get("id").filter(|v| v.py_truthy()));
                 key = v.map(Value::py_str).unwrap_or_default();
             }
             if !key.is_empty() {
@@ -1193,7 +1302,11 @@ fn csl_cite(instr: &str, result: &str) -> Inline {
     Inline::Cite(Cite {
         keys,
         mode: "paren".into(),
-        rendered: if result.is_empty() { None } else { Some(result.to_string()) },
+        rendered: if result.is_empty() {
+            None
+        } else {
+            Some(result.to_string())
+        },
         ..Cite::default()
     })
 }
@@ -1231,7 +1344,11 @@ fn endnote_cite(instr: &str, result: &str) -> Inline {
             .map(str::to_string)
             .collect(),
         mode: "paren".into(),
-        rendered: if result.is_empty() { None } else { Some(result.to_string()) },
+        rendered: if result.is_empty() {
+            None
+        } else {
+            Some(result.to_string())
+        },
         ..Cite::default()
     })
 }

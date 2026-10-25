@@ -14,7 +14,7 @@ const WINDOW_SIZE: usize = 2 * W_SIZE;
 const HASH_BITS: u32 = 8 + 7;
 const HASH_SIZE: usize = 1 << HASH_BITS;
 const HASH_MASK: u32 = (HASH_SIZE - 1) as u32;
-const HASH_SHIFT: u32 = (HASH_BITS + MIN_MATCH as u32 - 1) / MIN_MATCH as u32;
+const HASH_SHIFT: u32 = HASH_BITS.div_ceil(MIN_MATCH as u32);
 const LIT_BUFSIZE: usize = 1 << (8 + 6);
 const SYM_END: usize = (LIT_BUFSIZE - 1) * 3;
 
@@ -50,10 +50,17 @@ const STORED_BLOCK: u32 = 0;
 const STATIC_TREES: u32 = 1;
 const DYN_TREES: u32 = 2;
 
-const EXTRA_LBITS: [u32; LENGTH_CODES] = [0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3, 4, 4, 4, 4, 5, 5, 5, 5, 0];
-const EXTRA_DBITS: [u32; D_CODES] = [0, 0, 0, 0, 1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 6, 6, 7, 7, 8, 8, 9, 9, 10, 10, 11, 11, 12, 12, 13, 13];
+const EXTRA_LBITS: [u32; LENGTH_CODES] = [
+    0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3, 4, 4, 4, 4, 5, 5, 5, 5, 0,
+];
+const EXTRA_DBITS: [u32; D_CODES] = [
+    0, 0, 0, 0, 1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 6, 6, 7, 7, 8, 8, 9, 9, 10, 10, 11, 11, 12, 12, 13,
+    13,
+];
 const EXTRA_BLBITS: [u32; BL_CODES] = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 3, 7];
-const BL_ORDER: [usize; BL_CODES] = [16, 17, 18, 0, 8, 7, 9, 6, 10, 5, 11, 4, 12, 3, 13, 2, 14, 1, 15];
+const BL_ORDER: [usize; BL_CODES] = [
+    16, 17, 18, 0, 8, 7, 9, 6, 10, 5, 11, 4, 12, 3, 13, 2, 14, 1, 15,
+];
 
 /// zlib's static tables (`tr_static_init`).
 struct Static {
@@ -180,7 +187,11 @@ struct Tree {
 
 impl Tree {
     fn new(size: usize) -> Tree {
-        Tree { fc: vec![0; size], dl: vec![0; size], max_code: 0 }
+        Tree {
+            fc: vec![0; size],
+            dl: vec![0; size],
+            max_code: 0,
+        }
     }
 }
 
@@ -337,7 +348,8 @@ impl<'a> State<'a> {
                 Kind::Dist => &self.dtree,
                 Kind::Bl => &self.bltree,
             };
-            if j < self.heap_len && Self::smaller(tree, &self.depth, self.heap[j + 1], self.heap[j]) {
+            if j < self.heap_len && Self::smaller(tree, &self.depth, self.heap[j + 1], self.heap[j])
+            {
                 j += 1;
             }
             if Self::smaller(tree, &self.depth, v, self.heap[j]) {
@@ -427,7 +439,9 @@ impl<'a> State<'a> {
                 if self.tree(k).dl[m] as usize != bits {
                     let len = self.tree(k).dl[m] as u64;
                     let f = self.tree(k).fc[m] as u64;
-                    self.opt_len = self.opt_len.wrapping_add((bits as u64).wrapping_sub(len).wrapping_mul(f));
+                    self.opt_len = self
+                        .opt_len
+                        .wrapping_add((bits as u64).wrapping_sub(len).wrapping_mul(f));
                     self.tree(k).dl[m] = bits as u16;
                 }
                 n -= 1;
@@ -619,7 +633,9 @@ impl<'a> State<'a> {
             }
             max_blindex -= 1;
         }
-        self.opt_len = self.opt_len.wrapping_add(3 * (max_blindex as u64 + 1) + 5 + 5 + 4);
+        self.opt_len = self
+            .opt_len
+            .wrapping_add(3 * (max_blindex as u64 + 1) + 5 + 5 + 4);
         max_blindex
     }
 
@@ -627,8 +643,8 @@ impl<'a> State<'a> {
         self.send_bits((lcodes - 257) as u32, 5);
         self.send_bits((dcodes - 1) as u32, 5);
         self.send_bits((blcodes - 4) as u32, 4);
-        for rank in 0..blcodes {
-            let l = self.bltree.dl[BL_ORDER[rank]];
+        for &sym in &BL_ORDER[..blcodes] {
+            let l = self.bltree.dl[sym];
             self.send_bits(l as u32, 3);
         }
         self.send_tree(Kind::Lit, lcodes - 1);
@@ -706,7 +722,9 @@ impl<'a> State<'a> {
             opt_lenb = static_lenb;
         }
         match buf {
-            Some(start) if stored_len as u64 + 4 <= opt_lenb => self.stored_block(start, stored_len, last),
+            Some(start) if stored_len as u64 + 4 <= opt_lenb => {
+                self.stored_block(start, stored_len, last)
+            }
             _ if static_lenb == opt_lenb => {
                 self.send_bits((STATIC_TREES << 1) + last as u32, 3);
                 self.compress_block(false);
@@ -726,7 +744,11 @@ impl<'a> State<'a> {
 
     /// `FLUSH_BLOCK_ONLY`.
     fn flush_block_only(&mut self, last: bool) {
-        let buf = if self.block_start >= 0 { Some(self.block_start as usize) } else { None };
+        let buf = if self.block_start >= 0 {
+            Some(self.block_start as usize)
+        } else {
+            None
+        };
         let len = (self.strstart as i64 - self.block_start) as usize;
         self.flush_block(buf, len, last);
         self.block_start = self.strstart as i64;
@@ -771,7 +793,11 @@ impl<'a> State<'a> {
     fn slide_hash(&mut self) {
         for p in self.head.iter_mut().chain(self.prev.iter_mut()) {
             let m = *p as usize;
-            *p = if m >= W_SIZE { (m - W_SIZE) as u16 } else { NIL as u16 };
+            *p = if m >= W_SIZE {
+                (m - W_SIZE) as u16
+            } else {
+                NIL as u16
+            };
         }
     }
 
@@ -837,7 +863,11 @@ impl<'a> State<'a> {
         let scan0 = self.strstart;
         let mut best_len = self.prev_length;
         let mut nice_match = NICE_MATCH;
-        let limit = if self.strstart > MAX_DIST { self.strstart - MAX_DIST } else { NIL };
+        let limit = if self.strstart > MAX_DIST {
+            self.strstart - MAX_DIST
+        } else {
+            NIL
+        };
         let strend = self.strstart + MAX_MATCH;
         let w = &self.window;
         let mut scan_end1 = w[scan0 + best_len - 1];
@@ -850,7 +880,11 @@ impl<'a> State<'a> {
         }
         loop {
             let m = cur_match;
-            if !(w[m + best_len] != scan_end || w[m + best_len - 1] != scan_end1 || w[m] != w[scan0] || w[m + 1] != w[scan0 + 1]) {
+            if !(w[m + best_len] != scan_end
+                || w[m + best_len - 1] != scan_end1
+                || w[m] != w[scan0]
+                || w[m + 1] != w[scan0 + 1])
+            {
                 let mut scan = scan0 + 2;
                 let mut mm = m + 2;
                 'cmp: loop {
@@ -908,7 +942,10 @@ impl<'a> State<'a> {
             self.prev_length = self.match_length;
             self.prev_match = self.match_start;
             self.match_length = MIN_MATCH - 1;
-            if hash_head != NIL && self.prev_length < MAX_LAZY && self.strstart - hash_head <= MAX_DIST {
+            if hash_head != NIL
+                && self.prev_length < MAX_LAZY
+                && self.strstart - hash_head <= MAX_DIST
+            {
                 self.match_length = self.longest_match(hash_head);
                 if self.match_length <= 5
                     && self.match_length == MIN_MATCH
@@ -919,7 +956,10 @@ impl<'a> State<'a> {
             }
             if self.prev_length >= MIN_MATCH && self.match_length <= self.prev_length {
                 let max_insert = self.strstart + self.lookahead - MIN_MATCH;
-                let bflush = self.tally_dist(self.strstart - 1 - self.prev_match, self.prev_length - MIN_MATCH);
+                let bflush = self.tally_dist(
+                    self.strstart - 1 - self.prev_match,
+                    self.prev_length - MIN_MATCH,
+                );
                 self.lookahead -= self.prev_length - 1;
                 self.prev_length -= 2;
                 loop {
@@ -991,7 +1031,10 @@ mod tests {
         let got = deflate(&b"hello hello hello world\n".repeat(3));
         assert_eq!(
             got,
-            [203, 72, 205, 201, 201, 87, 200, 64, 34, 203, 243, 139, 114, 82, 184, 50, 72, 20, 7, 0]
+            [
+                203, 72, 205, 201, 201, 87, 200, 64, 34, 203, 243, 139, 114, 82, 184, 50, 72, 20,
+                7, 0
+            ]
         );
     }
 }

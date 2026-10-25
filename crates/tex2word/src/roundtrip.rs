@@ -50,7 +50,16 @@ pub fn build_manifest(doc: &Document) -> Vec<u8> {
         ("labels".into(), Value::Object(labels)),
         ("ir".into(), doc.to_json()),
     ]);
-    json::dumps(&payload, DumpOptions { ensure_ascii: false, indent: Some(2), sort_keys: true, compact: false }).into_bytes()
+    json::dumps(
+        &payload,
+        DumpOptions {
+            ensure_ascii: false,
+            indent: Some(2),
+            sort_keys: true,
+            compact: false,
+        },
+    )
+    .into_bytes()
 }
 
 /// The parsed manifest payload from a `.docx`, or `None` if absent.
@@ -155,7 +164,7 @@ fn prose_text(inlines: &[Inline]) -> String {
 
 fn norm(s: &str) -> String {
     let s = CITE_ARTIFACT.sub("", s);
-    pystr::lower(&WS.sub("", &s)).replace(':', "").replace('_', "")
+    pystr::lower(&WS.sub("", &s)).replace([':', '_'], "")
 }
 
 const MATH_SYNONYMS: [(&str, &str); 8] = [
@@ -198,8 +207,13 @@ fn block_signature(block: &Block) -> (String, String) {
             ("list".into(), norm(&text))
         }
         Block::Table(t) => {
-            let text =
-                paragraphs_prose(t.rows.iter().flat_map(|r| r.cells.iter()).flat_map(|c| c.blocks.iter())).join(" ");
+            let text = paragraphs_prose(
+                t.rows
+                    .iter()
+                    .flat_map(|r| r.cells.iter())
+                    .flat_map(|c| c.blocks.iter()),
+            )
+            .join(" ");
             ("table".into(), norm(&text))
         }
         Block::Figure(f) => {
@@ -232,7 +246,12 @@ pub fn reconcile_blocks(original: &[Block], current: &[Block]) -> Vec<Block> {
     for op in difflib::get_opcodes(&osig, &csig) {
         let (orig_run, cur_run) = (&original[op.i1..op.i2], &current[op.j1..op.j2]);
         match op.tag {
-            "equal" => out.extend(orig_run.iter().zip(cur_run).map(|(o, c)| graft_comments(o, c))),
+            "equal" => out.extend(
+                orig_run
+                    .iter()
+                    .zip(cur_run)
+                    .map(|(o, c)| graft_comments(o, c)),
+            ),
             "delete" => out.extend(orig_run.iter().filter(|b| !is_para(b)).cloned()),
             "insert" => {
                 if !cur_run.is_empty() && cur_run.iter().all(is_para) {
@@ -240,7 +259,11 @@ pub fn reconcile_blocks(original: &[Block], current: &[Block]) -> Vec<Block> {
                 }
             }
             _ => {
-                if orig_run.len() == 1 && cur_run.len() == 1 && is_para(&orig_run[0]) && is_para(&cur_run[0]) {
+                if orig_run.len() == 1
+                    && cur_run.len() == 1
+                    && is_para(&orig_run[0])
+                    && is_para(&cur_run[0])
+                {
                     let pure_prose = match &orig_run[0] {
                         Block::Paragraph(p) => !has_unreliable_inline(&p.inlines),
                         _ => false,
@@ -290,7 +313,9 @@ fn wrapper_inlines(n: &Inline) -> Option<&[Inline]> {
 }
 
 fn contains(inlines: &[Inline], pred: fn(&Inline) -> bool) -> bool {
-    inlines.iter().any(|n| pred(n) || wrapper_inlines(n).is_some_and(|inner| contains(inner, pred)))
+    inlines
+        .iter()
+        .any(|n| pred(n) || wrapper_inlines(n).is_some_and(|inner| contains(inner, pred)))
 }
 
 fn has_unreliable_inline(inlines: &[Inline]) -> bool {
@@ -298,7 +323,10 @@ fn has_unreliable_inline(inlines: &[Inline]) -> bool {
 }
 
 fn is_merge_semantic(n: &Inline) -> bool {
-    matches!(n, Inline::Math(_) | Inline::Footnote(_) | Inline::Endnote(_) | Inline::Image(_))
+    matches!(
+        n,
+        Inline::Math(_) | Inline::Footnote(_) | Inline::Endnote(_) | Inline::Image(_)
+    )
 }
 
 /// Prose segments around the top-level semantic nodes.
@@ -340,7 +368,11 @@ fn reconcile_inline(original: &Block, current: &Block) -> Block {
     if o_sem.len() != c_sem.len() || o_prose.len() != c_prose.len() {
         return original.clone();
     }
-    if o_sem.iter().zip(&c_sem).any(|(a, b)| sem_key(a) != sem_key(b)) {
+    if o_sem
+        .iter()
+        .zip(&c_sem)
+        .any(|(a, b)| sem_key(a) != sem_key(b))
+    {
         return original.clone();
     }
     let mut merged = Vec::new();

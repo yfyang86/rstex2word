@@ -52,17 +52,26 @@ impl ConversionReport {
     }
 
     pub fn warnings(&self) -> Vec<&ReportEntry> {
-        self.entries.iter().filter(|e| e.severity == "warning").collect()
+        self.entries
+            .iter()
+            .filter(|e| e.severity == "warning")
+            .collect()
     }
 
     pub fn errors(&self) -> Vec<&ReportEntry> {
-        self.entries.iter().filter(|e| e.severity == "error").collect()
+        self.entries
+            .iter()
+            .filter(|e| e.severity == "error")
+            .collect()
     }
 
     /// `coverage()`: `math_total`, `math_omml`, `math_image`, `math_raw`.
     pub fn coverage(&self) -> Dict<i64> {
         let mut d = Dict::new();
-        d.insert("math_total", self.math_omml + self.math_image + self.math_raw);
+        d.insert(
+            "math_total",
+            self.math_omml + self.math_image + self.math_raw,
+        );
         d.insert("math_omml", self.math_omml);
         d.insert("math_image", self.math_image);
         d.insert("math_raw", self.math_raw);
@@ -80,9 +89,8 @@ impl ConversionReport {
 
     /// The report as a JSON value (the payload of `to_json`).
     pub fn to_value(&self) -> Value {
-        let to_obj = |d: Dict<i64>| {
-            Value::Object(d.into_iter().map(|(k, v)| (k, Value::Int(v))).collect())
-        };
+        let to_obj =
+            |d: Dict<i64>| Value::Object(d.into_iter().map(|(k, v)| (k, Value::Int(v))).collect());
         Value::Object(vec![
             ("coverage".into(), to_obj(self.coverage())),
             ("constructs".into(), to_obj(self.construct_counts())),
@@ -191,7 +199,9 @@ impl ConversionReport {
 }
 
 fn esc(text: &str) -> String {
-    text.replace('&', "&amp;").replace('<', "&lt;").replace('>', "&gt;")
+    text.replace('&', "&amp;")
+        .replace('<', "&lt;")
+        .replace('>', "&gt;")
 }
 
 /// `aggregate_html(results)` — a coverage dashboard across a corpus of
@@ -226,7 +236,7 @@ pub fn aggregate_html(results: &[(String, ConversionReport)]) -> String {
     let grand_pct = 100.0 * get("math_omml") as f64 / get("math_total").max(1) as f64;
     // Counter.most_common: by count, descending; ties keep first-seen order.
     let mut common: Vec<(String, i64)> = construct_totals.into_iter().collect();
-    common.sort_by(|a, b| b.1.cmp(&a.1));
+    common.sort_by_key(|c| std::cmp::Reverse(c.1));
     let constructs: String = common
         .iter()
         .take(40)
@@ -280,6 +290,9 @@ mod tests {
             r.to_json(),
             "{\n  \"coverage\": {\n    \"math_total\": 2,\n    \"math_omml\": 2,\n    \"math_image\": 0,\n    \"math_raw\": 0\n  },\n  \"constructs\": {\n    \"\\\\ref\": 1\n  },\n  \"entries\": [\n    {\n      \"severity\": \"warning\",\n      \"construct\": \"\\\\ref\",\n      \"message\": \"unresolved reference to 'x'\"\n    }\n  ]\n}"
         );
-        assert_eq!(r.summary(), "math: 2 OMML / 0 image / 0 raw; 1 warning(s), 0 error(s)");
+        assert_eq!(
+            r.summary(),
+            "math: 2 OMML / 0 image / 0 raw; 1 warning(s), 0 error(s)"
+        );
     }
 }

@@ -203,7 +203,11 @@ fn emit_single(node: &MNode) -> Element {
             let gpr = sub(&mut g, "m:groupChrPr", &[]);
             sub(gpr, "m:chr", &[("m:val", ch)]);
             sub(gpr, "m:pos", &[("m:val", pos)]);
-            sub(gpr, "m:vertJc", &[("m:val", if pos == "top" { "bot" } else { "top" })]);
+            sub(
+                gpr,
+                "m:vertJc",
+                &[("m:val", if pos == "top" { "bot" } else { "top" })],
+            );
             g.append(fill_row("m:e", body));
             g
         }
@@ -365,7 +369,11 @@ fn add_alignment_mcs(m: &mut Element, ncols: usize) {
         let mc = sub(mcs, "m:mc", &[]);
         let mcpr = sub(mc, "m:mcPr", &[]);
         sub(mcpr, "m:count", &[("m:val", "1")]);
-        sub(mcpr, "m:mcJc", &[("m:val", if i % 2 == 0 { "right" } else { "left" })]);
+        sub(
+            mcpr,
+            "m:mcJc",
+            &[("m:val", if i % 2 == 0 { "right" } else { "left" })],
+        );
     }
 }
 
@@ -373,7 +381,12 @@ fn add_alignment_mcs(m: &mut Element, ncols: usize) {
 fn aligned_matrix(lines: &[String]) -> Result<Element, MathError> {
     let rows: Vec<Vec<String>> = lines
         .iter()
-        .map(|line| split_top_level(line, "&").iter().map(|c| pystr::strip(c).to_string()).collect())
+        .map(|line| {
+            split_top_level(line, "&")
+                .iter()
+                .map(|c| pystr::strip(c).to_string())
+                .collect()
+        })
         .collect();
     let ncols = rows.iter().map(Vec::len).max().unwrap_or(0);
     let mut m = el("m:m", &[]);

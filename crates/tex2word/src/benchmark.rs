@@ -97,7 +97,10 @@ impl BenchmarkResult {
     pub fn to_value(&self) -> Value {
         let a = &self.aggregate;
         Value::Object(vec![
-            ("documents".into(), Value::Array(self.documents.iter().map(DocMetrics::to_value).collect())),
+            (
+                "documents".into(),
+                Value::Array(self.documents.iter().map(DocMetrics::to_value).collect()),
+            ),
             (
                 "aggregate".into(),
                 Value::Object(vec![
@@ -238,9 +241,15 @@ fn aggregate(docs: &[DocMetrics]) -> Aggregate {
 /// Convert every `.tex` under `directory`; per-document and aggregate
 /// metrics.
 pub fn benchmark_dir(directory: &str) -> BenchmarkResult {
-    let documents: Vec<DocMetrics> = glob_tex(directory).iter().map(|p| one(p, directory)).collect();
+    let documents: Vec<DocMetrics> = glob_tex(directory)
+        .iter()
+        .map(|p| one(p, directory))
+        .collect();
     let aggregate = aggregate(&documents);
-    BenchmarkResult { documents, aggregate }
+    BenchmarkResult {
+        documents,
+        aggregate,
+    }
 }
 
 /// A compact text table of the benchmark result.

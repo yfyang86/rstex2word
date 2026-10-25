@@ -91,10 +91,16 @@ pub struct ConversionResult {
     pub docx: Vec<u8>,
 }
 
-const HF_HEADER: &str = "http://schemas.openxmlformats.org/officeDocument/2006/relationships/header";
-const HF_FOOTER: &str = "http://schemas.openxmlformats.org/officeDocument/2006/relationships/footer";
+const HF_HEADER: &str =
+    "http://schemas.openxmlformats.org/officeDocument/2006/relationships/header";
+const HF_FOOTER: &str =
+    "http://schemas.openxmlformats.org/officeDocument/2006/relationships/footer";
 
 type Parts = Vec<(String, Vec<u8>)>;
+
+/// `(sectPr refs, .xml parts, document rels, extra parts)` for headers and
+/// footers.
+type HeaderFooterWiring = (Vec<(String, String, String)>, Parts, Vec<String>, Parts);
 
 fn put(parts: &mut Parts, key: String, value: Vec<u8>) {
     match parts.iter_mut().find(|(k, _)| *k == key) {
@@ -104,7 +110,11 @@ fn put(parts: &mut Parts, key: String, value: Vec<u8>) {
 }
 
 /// Convert a LaTeX string to a `.docx` + IR + report.
-pub fn convert_source(source: &str, base_dir: &str, opts: &ConvertOptions) -> Result<ConversionResult, Error> {
+pub fn convert_source(
+    source: &str,
+    base_dir: &str,
+    opts: &ConvertOptions,
+) -> Result<ConversionResult, Error> {
     let (mut doc, mut report) = if opts.frontend == "latexml" {
         tex2word_frontend::latexml::parse_document(source, base_dir)?
     } else {
@@ -120,14 +130,19 @@ pub fn convert_source(source: &str, base_dir: &str, opts: &ConvertOptions) -> Re
 
     let mut image_renderer = None;
     if opts.math_image_fallback {
-        image_renderer = tex2word_math::imagemath::default_renderer(tex2word_math::imagemath::DEFAULT_DPI);
+        image_renderer =
+            tex2word_math::imagemath::default_renderer(tex2word_math::imagemath::DEFAULT_DPI);
         if image_renderer.is_none() {
-            report.warn("math", "no math-image backend (install tex2word[mathimg] or TeX)");
+            report.warn(
+                "math",
+                "no math-image backend (install tex2word[mathimg] or TeX)",
+            );
         }
     }
 
     let reference = load_reference(opts.reference_doc.as_deref(), &mut report);
-    let (mut hf_refs, mut hf_parts, mut hf_rels, hf_extra) = header_footer_wiring(reference.as_ref(), &mut report);
+    let (mut hf_refs, mut hf_parts, mut hf_rels, hf_extra) =
+        header_footer_wiring(reference.as_ref(), &mut report);
     if hf_refs.is_empty() {
         if let Some(rh) = doc.meta.running_head.clone().filter(|r| !r.is_empty()) {
             // no template headers -> synthesise a running-head header + page footer
@@ -136,7 +151,11 @@ pub fn convert_source(source: &str, base_dir: &str, opts: &ConvertOptions) -> Re
     }
 
     // explicit columns>1 wins; otherwise the detected column count
-    let effective_columns = if opts.columns > 1 { opts.columns } else { doc.meta.columns.max(1) };
+    let effective_columns = if opts.columns > 1 {
+        opts.columns
+    } else {
+        doc.meta.columns.max(1)
+    };
 
     let (document_xml, rels, media, footnotes, endnotes, comments) = {
         let mut writer = DocumentWriter::new(
@@ -157,7 +176,14 @@ pub fn convert_source(source: &str, base_dir: &str, opts: &ConvertOptions) -> Re
         let footnotes = writer.footnotes_xml()?;
         let endnotes = writer.endnotes_xml()?;
         let comments = writer.comments_xml()?;
-        (document_xml, writer.document_rels.clone(), writer.media.clone(), footnotes, endnotes, comments)
+        (
+            document_xml,
+            writer.document_rels.clone(),
+            writer.media.clone(),
+            footnotes,
+            endnotes,
+            comments,
+        )
     };
     if let Some(lang) = &opts.language {
         doc.meta.language = Some(lang.clone()); // CLI/API override
@@ -171,12 +197,17 @@ pub fn convert_source(source: &str, base_dir: &str, opts: &ConvertOptions) -> Re
     let nonempty = |x: &Option<String>| x.as_deref().is_some_and(|s| !s.is_empty());
     let mut east_asia: Option<String> = None;
     if let Some(l) = &lang {
-        if matches!(l.split('-').next().unwrap_or("").to_lowercase().as_str(), "zh" | "ja" | "ko") {
+        if matches!(
+            l.split('-').next().unwrap_or("").to_lowercase().as_str(),
+            "zh" | "ja" | "ko"
+        ) {
             east_asia = Some(l.clone());
         }
     }
     if east_asia.is_none()
-        && (nonempty(&doc.meta.cjk_main_font) || nonempty(&doc.meta.cjk_sans_font) || nonempty(&doc.meta.cjk_mono_font))
+        && (nonempty(&doc.meta.cjk_main_font)
+            || nonempty(&doc.meta.cjk_sans_font)
+            || nonempty(&doc.meta.cjk_mono_font))
     {
         east_asia = Some("zh-CN".into());
     }
@@ -207,13 +238,21 @@ pub fn convert_source(source: &str, base_dir: &str, opts: &ConvertOptions) -> Re
         footnotes,
         endnotes,
         comments,
-        manifest: if opts.embed_manifest { Some(build_manifest(&doc)) } else { None },
+        manifest: if opts.embed_manifest {
+            Some(build_manifest(&doc))
+        } else {
+            None
+        },
         theme: reference.as_ref().and_then(|r| r.theme_xml.clone()),
         header_footer_parts: hf_parts,
         extra_parts: hf_extra,
     };
     let docx = package.to_bytes();
-    Ok(ConversionResult { document: doc, report, docx })
+    Ok(ConversionResult {
+        document: doc,
+        report,
+        docx,
+    })
 }
 
 /// Turn carried headers/footers into (sectPr refs, .xml parts, doc rels,
@@ -221,7 +260,7 @@ pub fn convert_source(source: &str, base_dir: &str, opts: &ConvertOptions) -> Re
 fn header_footer_wiring(
     reference: Option<&ReferenceParts>,
     report: &mut ConversionReport,
-) -> (Vec<(String, String, String)>, Parts, Vec<String>, Parts) {
+) -> HeaderFooterWiring {
     let mut refs = Vec::new();
     let mut parts: Parts = Vec::new();
     let mut rels = Vec::new();
@@ -229,12 +268,31 @@ fn header_footer_wiring(
     if let Some(r) = reference {
         for (i, hf) in r.headers_footers.iter().enumerate() {
             let rid = format!("rIdHF{}", i + 1);
-            put(&mut parts, format!("word/{}", hf.part_name), hf.content.clone());
-            refs.push((format!("{}Reference", hf.kind), hf.w_type.clone(), rid.clone()));
-            let ty = if hf.kind == "header" { HF_HEADER } else { HF_FOOTER };
-            rels.push(format!("<Relationship Id=\"{rid}\" Type=\"{ty}\" Target=\"{}\"/>", hf.part_name));
+            put(
+                &mut parts,
+                format!("word/{}", hf.part_name),
+                hf.content.clone(),
+            );
+            refs.push((
+                format!("{}Reference", hf.kind),
+                hf.w_type.clone(),
+                rid.clone(),
+            ));
+            let ty = if hf.kind == "header" {
+                HF_HEADER
+            } else {
+                HF_FOOTER
+            };
+            rels.push(format!(
+                "<Relationship Id=\"{rid}\" Type=\"{ty}\" Target=\"{}\"/>",
+                hf.part_name
+            ));
             if let Some(hr) = &hf.rels {
-                put(&mut extra, format!("word/_rels/{}.rels", hf.part_name), hr.clone());
+                put(
+                    &mut extra,
+                    format!("word/_rels/{}.rels", hf.part_name),
+                    hr.clone(),
+                );
             }
             for (k, v) in &hf.media {
                 put(&mut extra, k.clone(), v.clone());
@@ -243,7 +301,10 @@ fn header_footer_wiring(
         if r.skipped_header_footers > 0 {
             report.info(
                 "reference-doc",
-                format!("skipped {} header/footer(s) with unsupported sub-resources", r.skipped_header_footers),
+                format!(
+                    "skipped {} header/footer(s) with unsupported sub-resources",
+                    r.skipped_header_footers
+                ),
             );
         }
     }
@@ -251,34 +312,72 @@ fn header_footer_wiring(
 }
 
 /// Synthesise a default running-head header + page-number footer.
-fn add_running_head(running_head: &str, refs: &mut Vec<(String, String, String)>, parts: &mut Parts, rels: &mut Vec<String>) {
-    put(parts, "word/header_rh.xml".into(), runninghead::header_xml(running_head));
-    put(parts, "word/footer_rh.xml".into(), runninghead::footer_xml());
-    refs.push(("headerReference".into(), "default".into(), "rIdRunHead".into()));
-    refs.push(("footerReference".into(), "default".into(), "rIdRunFoot".into()));
-    rels.push(format!("<Relationship Id=\"rIdRunHead\" Type=\"{HF_HEADER}\" Target=\"header_rh.xml\"/>"));
-    rels.push(format!("<Relationship Id=\"rIdRunFoot\" Type=\"{HF_FOOTER}\" Target=\"footer_rh.xml\"/>"));
+fn add_running_head(
+    running_head: &str,
+    refs: &mut Vec<(String, String, String)>,
+    parts: &mut Parts,
+    rels: &mut Vec<String>,
+) {
+    put(
+        parts,
+        "word/header_rh.xml".into(),
+        runninghead::header_xml(running_head),
+    );
+    put(
+        parts,
+        "word/footer_rh.xml".into(),
+        runninghead::footer_xml(),
+    );
+    refs.push((
+        "headerReference".into(),
+        "default".into(),
+        "rIdRunHead".into(),
+    ));
+    refs.push((
+        "footerReference".into(),
+        "default".into(),
+        "rIdRunFoot".into(),
+    ));
+    rels.push(format!(
+        "<Relationship Id=\"rIdRunHead\" Type=\"{HF_HEADER}\" Target=\"header_rh.xml\"/>"
+    ));
+    rels.push(format!(
+        "<Relationship Id=\"rIdRunFoot\" Type=\"{HF_FOOTER}\" Target=\"footer_rh.xml\"/>"
+    ));
 }
 
 /// Load a `--reference-doc` template, or warn and use the bundled styles.
-fn load_reference(reference_doc: Option<&str>, report: &mut ConversionReport) -> Option<ReferenceParts> {
+fn load_reference(
+    reference_doc: Option<&str>,
+    report: &mut ConversionReport,
+) -> Option<ReferenceParts> {
     let path = reference_doc.filter(|p| !p.is_empty())?;
     let exc = match std::fs::read(path) {
         Err(e) => pyos::os_error_str(&e, path),
         Ok(bytes) => match extract_reference(&bytes) {
             Ok(r) => {
-                report.info("reference-doc", format!("using template styles from {path}"));
+                report.info(
+                    "reference-doc",
+                    format!("using template styles from {path}"),
+                );
                 return Some(r);
             }
             Err(msg) => msg,
         },
     };
-    report.warn("reference-doc", format!("ignored ({exc}); used the built-in styles"));
+    report.warn(
+        "reference-doc",
+        format!("ignored ({exc}); used the built-in styles"),
+    );
     None
 }
 
 /// Convert a `.tex` file to `.docx` on disk; returns the output path.
-pub fn convert_file(input_path: &str, output_path: Option<&str>, opts: &ConvertOptions) -> Result<(String, ConversionResult), Error> {
+pub fn convert_file(
+    input_path: &str,
+    output_path: Option<&str>,
+    opts: &ConvertOptions,
+) -> Result<(String, ConversionResult), Error> {
     let source = pyos::read_text(input_path, pyos::Errors::Strict)?;
     let base_dir = pyos::dirname(&pyos::abspath(input_path));
     let result = convert_source(&source, &base_dir, opts)?;

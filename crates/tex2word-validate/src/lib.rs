@@ -27,7 +27,12 @@ const CT_NS: &str = "http://schemas.openxmlformats.org/package/2006/content-type
 const REL_NS: &str = "http://schemas.openxmlformats.org/package/2006/relationships";
 const W: &str = "http://schemas.openxmlformats.org/wordprocessingml/2006/main";
 
-const REQUIRED: [&str; 4] = ["[Content_Types].xml", "_rels/.rels", "word/document.xml", "word/styles.xml"];
+const REQUIRED: [&str; 4] = [
+    "[Content_Types].xml",
+    "_rels/.rels",
+    "word/document.xml",
+    "word/styles.xml",
+];
 
 /// ECMA-376 child order for the property complex types we emit (a subset:
 /// children not listed carry no ordering constraint).
@@ -35,50 +40,173 @@ const CHILD_ORDER: [(&str, &[&str]); 5] = [
     (
         "rPr",
         &[
-            "rStyle", "rFonts", "b", "bCs", "i", "iCs", "caps", "smallCaps", "strike", "dstrike", "outline",
-            "shadow", "emboss", "imprint", "noProof", "snapToGrid", "vanish", "webHidden", "color", "spacing",
-            "w", "kern", "position", "sz", "szCs", "highlight", "u", "effect", "bdr", "shd", "fitText",
-            "vertAlign", "rtl", "cs", "em", "lang", "eastAsianLayout", "specVanish", "oMath",
+            "rStyle",
+            "rFonts",
+            "b",
+            "bCs",
+            "i",
+            "iCs",
+            "caps",
+            "smallCaps",
+            "strike",
+            "dstrike",
+            "outline",
+            "shadow",
+            "emboss",
+            "imprint",
+            "noProof",
+            "snapToGrid",
+            "vanish",
+            "webHidden",
+            "color",
+            "spacing",
+            "w",
+            "kern",
+            "position",
+            "sz",
+            "szCs",
+            "highlight",
+            "u",
+            "effect",
+            "bdr",
+            "shd",
+            "fitText",
+            "vertAlign",
+            "rtl",
+            "cs",
+            "em",
+            "lang",
+            "eastAsianLayout",
+            "specVanish",
+            "oMath",
         ],
     ),
     (
         "pPr",
         &[
-            "pStyle", "keepNext", "keepLines", "pageBreakBefore", "framePr", "widowControl", "numPr",
-            "suppressLineNumbers", "pBdr", "shd", "tabs", "suppressAutoHyphens", "kinsoku", "wordWrap",
-            "overflowPunct", "topLinePunct", "autoSpaceDE", "autoSpaceDN", "bidi", "adjustRightInd",
-            "snapToGrid", "spacing", "ind", "contextualSpacing", "mirrorIndents", "suppressOverlap", "jc",
-            "textDirection", "textAlignment", "textboxTightWrap", "outlineLvl", "divId", "cnfStyle", "rPr",
-            "sectPr", "pPrChange",
+            "pStyle",
+            "keepNext",
+            "keepLines",
+            "pageBreakBefore",
+            "framePr",
+            "widowControl",
+            "numPr",
+            "suppressLineNumbers",
+            "pBdr",
+            "shd",
+            "tabs",
+            "suppressAutoHyphens",
+            "kinsoku",
+            "wordWrap",
+            "overflowPunct",
+            "topLinePunct",
+            "autoSpaceDE",
+            "autoSpaceDN",
+            "bidi",
+            "adjustRightInd",
+            "snapToGrid",
+            "spacing",
+            "ind",
+            "contextualSpacing",
+            "mirrorIndents",
+            "suppressOverlap",
+            "jc",
+            "textDirection",
+            "textAlignment",
+            "textboxTightWrap",
+            "outlineLvl",
+            "divId",
+            "cnfStyle",
+            "rPr",
+            "sectPr",
+            "pPrChange",
         ],
     ),
     (
         "tblPr",
         &[
-            "tblStyle", "tblpPr", "tblOverlap", "bidiVisual", "tblStyleRowBandSize", "tblStyleColBandSize",
-            "tblW", "jc", "tblCellSpacing", "tblInd", "tblBorders", "shd", "tblLayout", "tblCellMar", "tblLook",
-            "tblCaption", "tblDescription", "tblPrChange",
+            "tblStyle",
+            "tblpPr",
+            "tblOverlap",
+            "bidiVisual",
+            "tblStyleRowBandSize",
+            "tblStyleColBandSize",
+            "tblW",
+            "jc",
+            "tblCellSpacing",
+            "tblInd",
+            "tblBorders",
+            "shd",
+            "tblLayout",
+            "tblCellMar",
+            "tblLook",
+            "tblCaption",
+            "tblDescription",
+            "tblPrChange",
         ],
     ),
     (
         "trPr",
         &[
-            "cnfStyle", "divId", "gridBefore", "gridAfter", "wBefore", "wAfter", "cantSplit", "trHeight",
-            "tblHeader", "tblCellSpacing", "jc", "hidden", "ins", "del", "trPrChange",
+            "cnfStyle",
+            "divId",
+            "gridBefore",
+            "gridAfter",
+            "wBefore",
+            "wAfter",
+            "cantSplit",
+            "trHeight",
+            "tblHeader",
+            "tblCellSpacing",
+            "jc",
+            "hidden",
+            "ins",
+            "del",
+            "trPrChange",
         ],
     ),
     (
         "tcPr",
         &[
-            "cnfStyle", "tcW", "gridSpan", "hMerge", "vMerge", "tcBorders", "shd", "noWrap", "tcMar",
-            "textDirection", "tcFitText", "vAlign", "hideMark", "cellIns", "cellDel", "cellMerge", "tcPrChange",
+            "cnfStyle",
+            "tcW",
+            "gridSpan",
+            "hMerge",
+            "vMerge",
+            "tcBorders",
+            "shd",
+            "noWrap",
+            "tcMar",
+            "textDirection",
+            "tcFitText",
+            "vAlign",
+            "hideMark",
+            "cellIns",
+            "cellDel",
+            "cellMerge",
+            "tcPrChange",
         ],
     ),
 ];
 
 const ST_HIGHLIGHT: [&str; 17] = [
-    "black", "blue", "cyan", "darkBlue", "darkCyan", "darkGray", "darkGreen", "darkMagenta", "darkRed",
-    "darkYellow", "green", "lightGray", "magenta", "none", "red", "white", "yellow",
+    "black",
+    "blue",
+    "cyan",
+    "darkBlue",
+    "darkCyan",
+    "darkGray",
+    "darkGreen",
+    "darkMagenta",
+    "darkRed",
+    "darkYellow",
+    "green",
+    "lightGray",
+    "magenta",
+    "none",
+    "red",
+    "white",
+    "yellow",
 ];
 const ST_VERTALIGN: [&str; 3] = ["baseline", "superscript", "subscript"];
 
@@ -178,7 +306,10 @@ fn check_content_model(part: &str, root: &Element, problems: &mut Vec<String>) {
         } else if local == "sz" || local == "szCs" {
             if let Some(val) = el.get(&format!("{{{W}}}val")) {
                 if val.is_empty() || !val.chars().all(pystr::is_digit) {
-                    problems.push(format!("{part}: w:{local}@w:val must be an integer, got {}", py_repr(val)));
+                    problems.push(format!(
+                        "{part}: w:{local}@w:val must be an integer, got {}",
+                        py_repr(val)
+                    ));
                 }
             }
         }
@@ -190,7 +321,12 @@ fn check_order(part: &str, parent: &str, el: &Element, order: &[&str], problems:
         .children
         .iter()
         .filter(|c| c.is_element() && c.ns.as_deref() == Some(W))
-        .filter_map(|c| order.iter().position(|o| *o == c.local).map(|r| (r, c.local.as_str())))
+        .filter_map(|c| {
+            order
+                .iter()
+                .position(|o| *o == c.local)
+                .map(|r| (r, c.local.as_str()))
+        })
         .collect();
     for w in seen.windows(2) {
         let ((a_rank, a_name), (b_rank, b_name)) = (w[0], w[1]);
@@ -206,12 +342,19 @@ fn check_order(part: &str, parent: &str, el: &Element, order: &[&str], problems:
 fn check_enum(part: &str, el: &Element, allowed: &[&str], name: &str, problems: &mut Vec<String>) {
     if let Some(val) = el.get(&format!("{{{W}}}val")) {
         if !allowed.contains(&val) {
-            problems.push(format!("{part}: w:{name}@w:val={} is not a valid ST value", py_repr(val)));
+            problems.push(format!(
+                "{part}: w:{name}@w:val={} is not a valid ST value",
+                py_repr(val)
+            ));
         }
     }
 }
 
-fn check_content_types(zf: &Archive, names: &[&str], problems: &mut Vec<String>) -> Result<(), ValidateError> {
+fn check_content_types(
+    zf: &Archive,
+    names: &[&str],
+    problems: &mut Vec<String>,
+) -> Result<(), ValidateError> {
     if !names.contains(&"[Content_Types].xml") {
         return Ok(());
     }
@@ -222,7 +365,11 @@ fn check_content_types(zf: &Archive, names: &[&str], problems: &mut Vec<String>)
         .into_iter()
         .map(|e| pystr::lower(e.get("Extension").unwrap_or("")))
         .collect();
-    let overrides: Vec<Option<&str>> = root.findall(&tag("Override")).into_iter().map(|e| e.get("PartName")).collect();
+    let overrides: Vec<Option<&str>> = root
+        .findall(&tag("Override"))
+        .into_iter()
+        .map(|e| e.get("PartName"))
+        .collect();
     for name in names {
         if *name == "[Content_Types].xml" || name.ends_with('/') {
             continue;
@@ -239,7 +386,11 @@ fn check_content_types(zf: &Archive, names: &[&str], problems: &mut Vec<String>)
     Ok(())
 }
 
-fn check_relationships(zf: &Archive, names: &[&str], problems: &mut Vec<String>) -> Result<(), ValidateError> {
+fn check_relationships(
+    zf: &Archive,
+    names: &[&str],
+    problems: &mut Vec<String>,
+) -> Result<(), ValidateError> {
     for name in names {
         if !name.ends_with(".rels") {
             continue;
@@ -247,7 +398,10 @@ fn check_relationships(zf: &Archive, names: &[&str], problems: &mut Vec<String>)
         let base = pyos::dirname(&pyos::dirname(name)); // strip "_rels/x.rels"
         let root = parse_xml(&read(zf, name)?)?;
         for rel in root.findall(&format!("{{{REL_NS}}}Relationship")) {
-            let mode = rel.get("TargetMode").filter(|m| !m.is_empty()).unwrap_or("Internal");
+            let mode = rel
+                .get("TargetMode")
+                .filter(|m| !m.is_empty())
+                .unwrap_or("Internal");
             if mode == "External" {
                 continue;
             }

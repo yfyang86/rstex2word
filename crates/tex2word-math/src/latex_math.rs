@@ -32,7 +32,11 @@ impl fmt::Display for MathError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             MathError::Unsupported { construct, detail } => {
-                write!(f, "{}", format!("unsupported math construct: {construct} {detail}").trim())
+                write!(
+                    f,
+                    "{}",
+                    format!("unsupported math construct: {construct} {detail}").trim()
+                )
             }
             MathError::Other { message, .. } => f.write_str(message),
         }
@@ -55,11 +59,18 @@ pub struct Lit {
 
 impl Lit {
     pub fn new(text: impl Into<String>) -> Self {
-        Lit { text: text.into(), ..Lit::default() }
+        Lit {
+            text: text.into(),
+            ..Lit::default()
+        }
     }
 
     pub fn upright(text: impl Into<String>) -> Self {
-        Lit { text: text.into(), upright: true, ..Lit::default() }
+        Lit {
+            text: text.into(),
+            upright: true,
+            ..Lit::default()
+        }
     }
 }
 
@@ -106,14 +117,18 @@ pub enum MNode {
 
 /// Functions whose subscript is rendered as an underscript limit.
 fn is_limit_func(s: &str) -> bool {
-    matches!(s, "lim" | "limsup" | "liminf" | "max" | "min" | "sup" | "inf" | "gcd" | "det")
+    matches!(
+        s,
+        "lim" | "limsup" | "liminf" | "max" | "min" | "sup" | "inf" | "gcd" | "det"
+    )
 }
 
 /// \big \Big \bigg \Bigg (+ l/r/m variants): manual delimiter sizing.
 fn is_big_delim(name: &str) -> bool {
-    ["bigg", "Bigg", "big", "Big"]
-        .iter()
-        .any(|size| name.strip_prefix(size).is_some_and(|rest| matches!(rest, "" | "l" | "r" | "m")))
+    ["bigg", "Bigg", "big", "Big"].iter().any(|size| {
+        name.strip_prefix(size)
+            .is_some_and(|rest| matches!(rest, "" | "l" | "r" | "m"))
+    })
 }
 
 /// Escaped literals inside math: \{ \} \% \# \& \$ \_ and \| (norm bar).
@@ -178,8 +193,8 @@ fn xarrow(name: &str) -> Option<&'static str> {
 
 fn matrix_delims(env: &str) -> Option<(&'static str, &'static str)> {
     Some(match env {
-        "matrix" | "aligned" | "array" | "smallmatrix" | "align" | "alignat" | "flalign" | "gather"
-        | "gathered" | "split" | "multlined" | "eqnarray" => ("", ""),
+        "matrix" | "aligned" | "array" | "smallmatrix" | "align" | "alignat" | "flalign"
+        | "gather" | "gathered" | "split" | "multlined" | "eqnarray" => ("", ""),
         "pmatrix" => ("(", ")"),
         "bmatrix" => ("[", "]"),
         "Bmatrix" => ("{", "}"),
@@ -192,7 +207,10 @@ fn matrix_delims(env: &str) -> Option<(&'static str, &'static str)> {
 
 /// Environments whose `&` is an alignment marker.
 fn is_aligned_env(env: &str) -> bool {
-    matches!(env, "aligned" | "align" | "alignat" | "flalign" | "split" | "eqnarray")
+    matches!(
+        env,
+        "aligned" | "align" | "alignat" | "flalign" | "split" | "eqnarray"
+    )
 }
 
 // --------------------------------------------------------------------------- //
@@ -392,8 +410,10 @@ impl Parser {
             return Ok(MNode::Nary(n));
         }
         if let MNode::Lit(l) = &base {
-            if l.upright && is_limit_func(&l.text) && sub.is_some() && sup.is_none() {
-                return Ok(MNode::LimLow(Box::new(base), Box::new(sub.unwrap())));
+            if l.upright && is_limit_func(&l.text) && sup.is_none() {
+                if let Some(sub) = sub {
+                    return Ok(MNode::LimLow(Box::new(base), Box::new(sub)));
+                }
             }
         }
         Ok(match (sub, sup) {
@@ -423,7 +443,9 @@ impl Parser {
                 self.i -= 1;
                 Some(MNode::Lit(Lit::new("")))
             }
-            Tok::Newline | Tok::Amp => return Err(MathError::unsupported("alignment", "stray & or \\\\")),
+            Tok::Newline | Tok::Amp => {
+                return Err(MathError::unsupported("alignment", "stray & or \\\\"))
+            }
             _ => None,
         };
         self.depth -= 1;
@@ -440,10 +462,18 @@ impl Parser {
             return Ok(MNode::Frac(num, den));
         }
         if name == "overbrace" || name == "overbracket" {
-            return Ok(MNode::GroupChr(self.parse_group()?, "⏞".into(), "top".into()));
+            return Ok(MNode::GroupChr(
+                self.parse_group()?,
+                "⏞".into(),
+                "top".into(),
+            ));
         }
         if name == "underbrace" || name == "underbracket" {
-            return Ok(MNode::GroupChr(self.parse_group()?, "⏟".into(), "bot".into()));
+            return Ok(MNode::GroupChr(
+                self.parse_group()?,
+                "⏟".into(),
+                "bot".into(),
+            ));
         }
         if name == "binom" {
             let a = self.parse_group()?;
@@ -459,7 +489,11 @@ impl Parser {
             return Ok(MNode::Sqrt(self.parse_group()?));
         }
         if let Some(op) = S::get(S::NARY, name) {
-            let limloc = if matches!(name, "int" | "iint" | "iiint" | "oint") { "subSup" } else { "undOvr" };
+            let limloc = if matches!(name, "int" | "iint" | "iiint" | "oint") {
+                "subSup"
+            } else {
+                "undOvr"
+            };
             return Ok(MNode::Nary(Nary {
                 op: op.into(),
                 body: None,
@@ -479,7 +513,11 @@ impl Parser {
             if self.peek() == Tok::Char('*') {
                 self.next(); // \abs*{x} auto-size form
             }
-            return Ok(MNode::Fenced(open.into(), close.into(), self.parse_group()?));
+            return Ok(MNode::Fenced(
+                open.into(),
+                close.into(),
+                self.parse_group()?,
+            ));
         }
         if matches!(name, "dv" | "odv" | "pdv" | "dd") {
             return self.parse_derivative(name);
@@ -499,8 +537,18 @@ impl Parser {
         }
         if matches!(
             name,
-            "text" | "mathrm" | "operatorname" | "operatorname*" | "mathsf" | "mathtt" | "mbox" | "textrm"
-                | "textnormal" | "textsf" | "texttt" | "textsc"
+            "text"
+                | "mathrm"
+                | "operatorname"
+                | "operatorname*"
+                | "mathsf"
+                | "mathtt"
+                | "mbox"
+                | "textrm"
+                | "textnormal"
+                | "textsf"
+                | "texttt"
+                | "textsc"
         ) {
             let row = self.parse_group()?;
             return Ok(styled(row, true, false, None));
@@ -515,7 +563,12 @@ impl Parser {
             return Ok(styled(self.parse_group()?, false, true, None));
         }
         if name == "mathbb" {
-            return Ok(styled(self.parse_group()?, true, false, Some("double-struck")));
+            return Ok(styled(
+                self.parse_group()?,
+                true,
+                false,
+                Some("double-struck"),
+            ));
         }
         if name == "mathcal" || name == "mathscr" {
             return Ok(styled(self.parse_group()?, false, false, Some("script")));
@@ -528,7 +581,14 @@ impl Parser {
         }
         if matches!(
             name,
-            "mathbin" | "mathrel" | "mathop" | "mathord" | "mathopen" | "mathclose" | "mathpunct" | "mathinner"
+            "mathbin"
+                | "mathrel"
+                | "mathop"
+                | "mathord"
+                | "mathopen"
+                | "mathclose"
+                | "mathpunct"
+                | "mathinner"
         ) {
             // math-class wrappers only affect spacing -> render their content
             return Ok(MNode::Group(self.parse_group()?));
@@ -574,13 +634,19 @@ impl Parser {
         if name == "end" {
             return Err(MathError::unsupported("environment", "stray \\end"));
         }
-        if matches!(name, "displaystyle" | "textstyle" | "scriptstyle" | "limits" | "nolimits") {
+        if matches!(
+            name,
+            "displaystyle" | "textstyle" | "scriptstyle" | "limits" | "nolimits"
+        ) {
             return Ok(MNode::Lit(Lit::new(""))); // styling hints we ignore
         }
         if matches!(name, "nonumber" | "notag" | "qedhere") {
             return Ok(MNode::Lit(Lit::new("")));
         }
-        if matches!(name, "hline" | "toprule" | "midrule" | "bottomrule" | "hdashline") {
+        if matches!(
+            name,
+            "hline" | "toprule" | "midrule" | "bottomrule" | "hdashline"
+        ) {
             return Ok(MNode::Lit(Lit::new(""))); // array rules: no OMML equivalent
         }
         if matches!(name, "cline" | "cmidrule" | "noalign") {
@@ -612,7 +678,11 @@ impl Parser {
             return Ok(MNode::Group(Row(lead)));
         }
         let first = self.parse_group()?;
-        let second = if self.peek() == Tok::LBrace { Some(self.parse_group()?) } else { None };
+        let second = if self.peek() == Tok::LBrace {
+            Some(self.parse_group()?)
+        } else {
+            None
+        };
         let (num, den) = match second {
             Some(second) => {
                 let mut num = vec![MNode::Lit(Lit::upright(d))];
@@ -632,11 +702,19 @@ impl Parser {
 
     /// `\xrightarrow[under]{over}` -> a labelled arrow.
     fn parse_xarrow(&mut self, arrow: &str) -> R<MNode> {
-        let under = if self.peek() == Tok::Char('[') { Some(self.parse_optional()?) } else { None };
+        let under = if self.peek() == Tok::Char('[') {
+            Some(self.parse_optional()?)
+        } else {
+            None
+        };
         let over = self.parse_group()?;
         let base = MNode::Lit(Lit::upright(arrow));
         if let Some(under) = under.filter(|u| !u.0.is_empty()) {
-            return Ok(MNode::SubSup(Box::new(base), Box::new(flatten(under)), Box::new(flatten(over))));
+            return Ok(MNode::SubSup(
+                Box::new(base),
+                Box::new(flatten(under)),
+                Box::new(flatten(over)),
+            ));
         }
         Ok(MNode::Sup(Box::new(base), Box::new(flatten(over))))
     }
@@ -705,7 +783,9 @@ impl Parser {
                 Tok::RBrace | Tok::Eof => break,
                 Tok::Newline => {
                     self.next();
-                    rows.last_mut().unwrap().push(Row(std::mem::take(&mut current)));
+                    rows.last_mut()
+                        .unwrap()
+                        .push(Row(std::mem::take(&mut current)));
                     rows.push(Vec::new());
                     continue;
                 }
@@ -719,7 +799,10 @@ impl Parser {
         if self.peek() == Tok::RBrace {
             self.next();
         }
-        if rows.last().is_some_and(|r| r.iter().all(|c| c.0.is_empty())) {
+        if rows
+            .last()
+            .is_some_and(|r| r.iter().all(|c| c.0.is_empty()))
+        {
             rows.pop();
         }
         Ok(MNode::Matrix(rows, false))
@@ -739,28 +822,41 @@ impl Parser {
         let mut current: Vec<MNode> = Vec::new();
         loop {
             match self.peek() {
-                Tok::Eof => return Err(MathError::unsupported("environment", format!("unclosed {env}"))),
+                Tok::Eof => {
+                    return Err(MathError::unsupported(
+                        "environment",
+                        format!("unclosed {env}"),
+                    ))
+                }
                 Tok::Cmd(v) if v == "end" => {
                     self.next();
                     self.parse_group()?; // {env}
-                    rows.last_mut().unwrap().push(Row(std::mem::take(&mut current)));
+                    rows.last_mut()
+                        .unwrap()
+                        .push(Row(std::mem::take(&mut current)));
                     break;
                 }
                 Tok::Amp => {
                     self.next();
-                    rows.last_mut().unwrap().push(Row(std::mem::take(&mut current)));
+                    rows.last_mut()
+                        .unwrap()
+                        .push(Row(std::mem::take(&mut current)));
                     continue;
                 }
                 Tok::Newline => {
                     self.next();
-                    rows.last_mut().unwrap().push(Row(std::mem::take(&mut current)));
+                    rows.last_mut()
+                        .unwrap()
+                        .push(Row(std::mem::take(&mut current)));
                     rows.push(Vec::new());
                     continue;
                 }
                 Tok::Cmd(v) if v == "cr" => {
                     // plain-TeX \cr ends a row too
                     self.next();
-                    rows.last_mut().unwrap().push(Row(std::mem::take(&mut current)));
+                    rows.last_mut()
+                        .unwrap()
+                        .push(Row(std::mem::take(&mut current)));
                     rows.push(Vec::new());
                     continue;
                 }
@@ -771,7 +867,10 @@ impl Parser {
             }
         }
         // drop a trailing empty row (from a final \\)
-        if rows.last().is_some_and(|r| r.iter().all(|c| c.0.is_empty())) {
+        if rows
+            .last()
+            .is_some_and(|r| r.iter().all(|c| c.0.is_empty()))
+        {
             rows.pop();
         }
         let matrix = MNode::Matrix(rows, is_aligned_env(&env));
@@ -842,7 +941,11 @@ fn row_text(row: &Row) -> String {
 
 /// Parse a LaTeX math string into a math AST row.
 pub fn parse(latex: &str) -> Result<Row, MathError> {
-    let mut p = Parser { toks: tokenize(latex), i: 0, depth: 0 };
+    let mut p = Parser {
+        toks: tokenize(latex),
+        i: 0,
+        depth: 0,
+    };
     let row = p.parse_row(STOP_NONE)?;
     if p.peek() != Tok::Eof {
         return Err(MathError::unsupported("syntax", "trailing tokens"));

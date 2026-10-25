@@ -74,7 +74,12 @@ pub fn strip_braces(value: &str) -> String {
 lazy_re!(AND_RE, r"\s+and\s+");
 
 fn name(parts: &[(&str, String)]) -> Value {
-    Value::Object(parts.iter().map(|(k, v)| (k.to_string(), Value::Str(v.clone()))).collect())
+    Value::Object(
+        parts
+            .iter()
+            .map(|(k, v)| (k.to_string(), Value::Str(v.clone())))
+            .collect(),
+    )
 }
 
 /// Parse a bibtex `author`/`editor` field into CSL name parts.
@@ -167,11 +172,17 @@ lazy_re!(DATE_YEAR_RE, r"\s*(\d{4})");
 lazy_re!(YEAR_RE, r"\d{4}");
 
 fn issued(year: Value) -> Value {
-    Value::Object(vec![("date-parts".into(), Value::Array(vec![Value::Array(vec![year])]))])
+    Value::Object(vec![(
+        "date-parts".into(),
+        Value::Array(vec![Value::Array(vec![year])]),
+    )])
 }
 
 fn int_or(value: &str) -> Value {
-    match YEAR_RE.search(value).and_then(|m| pystr::parse_int(m.as_str())) {
+    match YEAR_RE
+        .search(value)
+        .and_then(|m| pystr::parse_int(m.as_str()))
+    {
         Some(y) => Value::Int(y),
         None => Value::Str(strip_braces(value)),
     }
@@ -189,7 +200,10 @@ fn to_csl(entry_type: &str, key: &str, raw_fields: &Dict<String>) -> CSLItem {
             }
             "month" => {}
             "date" => {
-                if let Some(y) = DATE_YEAR_RE.match_start(value).and_then(|m| pystr::parse_int(m.group_str(1))) {
+                if let Some(y) = DATE_YEAR_RE
+                    .match_start(value)
+                    .and_then(|m| pystr::parse_int(m.group_str(1)))
+                {
                     out.insert("issued", issued(Value::Int(y)));
                 }
             }
@@ -224,7 +238,11 @@ fn apply_eprint(out: &mut Dict<Value>, raw_fields: &Dict<String>) {
     if !out.contains_key("URL") && !out.contains_key("DOI") && is_arxiv {
         out.insert("URL", Value::Str(format!("https://arxiv.org/abs/{eprint}")));
     }
-    let label = if is_arxiv { format!("arXiv:{eprint}") } else { eprint.to_string() };
+    let label = if is_arxiv {
+        format!("arXiv:{eprint}")
+    } else {
+        eprint.to_string()
+    };
     if !out.contains_key("note") {
         out.insert("note", Value::Str(label));
     }
@@ -270,7 +288,11 @@ pub fn parse_bibtex(source: &str) -> Dict<CSLItem> {
                 stop -= 1;
             }
         }
-        let inner = if stop > start { &source[start..stop] } else { "" };
+        let inner = if stop > start {
+            &source[start..stop]
+        } else {
+            ""
+        };
         let (key, body) = inner.split_once(',').unwrap_or((inner, ""));
         let key = pystr::strip(key);
         if key.is_empty() {

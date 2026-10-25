@@ -88,7 +88,9 @@ pub fn is_option_like(arg: &str) -> bool {
     let negative_number = !rest.is_empty()
         && (rest.chars().all(|c| c.is_ascii_digit())
             || rest.split_once('.').is_some_and(|(a, b)| {
-                a.chars().all(|c| c.is_ascii_digit()) && !b.is_empty() && b.chars().all(|c| c.is_ascii_digit())
+                a.chars().all(|c| c.is_ascii_digit())
+                    && !b.is_empty()
+                    && b.chars().all(|c| c.is_ascii_digit())
             }));
     !negative_number
 }
@@ -111,14 +113,22 @@ impl Parser {
         let matches: Vec<(&Opt, &str)> = self
             .opts
             .iter()
-            .flat_map(|o| o.flags.iter().filter(|f| f.starts_with("--") && f.starts_with(name)).map(move |f| (o, *f)))
+            .flat_map(|o| {
+                o.flags
+                    .iter()
+                    .filter(|f| f.starts_with("--") && f.starts_with(name))
+                    .map(move |f| (o, *f))
+            })
             .collect();
         match matches.len() {
             0 => Ok(None),
             1 => Ok(Some(matches[0].0)),
             _ => {
                 let names: Vec<&str> = matches.iter().map(|(_, f)| *f).collect();
-                Err(Exit::error(self, &format!("ambiguous option: {name} could match {}", names.join(", "))))
+                Err(Exit::error(
+                    self,
+                    &format!("ambiguous option: {name} could match {}", names.join(", ")),
+                ))
             }
         }
     }
@@ -144,7 +154,11 @@ impl Parser {
                 if o.kind == Kind::Int && tex2word::ir::pystr::parse_int(&v).is_none() {
                     return Err(Exit::error(
                         self,
-                        &format!("argument {}: invalid int value: {}", Self::display_name(o), repr(&v)),
+                        &format!(
+                            "argument {}: invalid int value: {}",
+                            Self::display_name(o),
+                            repr(&v)
+                        ),
                     ));
                 }
                 if !o.choices.is_empty() && !o.choices.contains(&v.as_str()) {
@@ -192,7 +206,9 @@ impl Parser {
                 (Some(o), None)
             } else {
                 match self.find_exact(&arg[..2]) {
-                    Some(o) if o.kind == Kind::Value || o.kind == Kind::Int => (Some(o), Some(arg[2..].to_string())),
+                    Some(o) if o.kind == Kind::Value || o.kind == Kind::Int => {
+                        (Some(o), Some(arg[2..].to_string()))
+                    }
                     Some(o) => {
                         // a flag cluster (-qo ...): this flag, then the rest
                         self.store(o, None, &mut out)?;
@@ -211,7 +227,11 @@ impl Parser {
                     if let Some(a) = attached {
                         return Err(Exit::error(
                             self,
-                            &format!("argument {}: ignored explicit argument {}", Self::display_name(opt), repr(&a)),
+                            &format!(
+                                "argument {}: ignored explicit argument {}",
+                                Self::display_name(opt),
+                                repr(&a)
+                            ),
                         ));
                     }
                     None
@@ -223,7 +243,10 @@ impl Parser {
                         _ => {
                             return Err(Exit::error(
                                 self,
-                                &format!("argument {}: expected one argument", Self::display_name(opt)),
+                                &format!(
+                                    "argument {}: expected one argument",
+                                    Self::display_name(opt)
+                                ),
                             ))
                         }
                     },
@@ -249,10 +272,12 @@ impl Parser {
         if !missing.is_empty() {
             return Err(Exit::error(
                 self,
-                &format!("the following arguments are required: {}", missing.join(", ")),
+                &format!(
+                    "the following arguments are required: {}",
+                    missing.join(", ")
+                ),
             ));
         }
         Ok(out)
     }
 }
-

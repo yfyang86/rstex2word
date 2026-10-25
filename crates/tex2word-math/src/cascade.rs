@@ -33,10 +33,13 @@ pub enum MathResult {
     Raw(String),
 }
 
+/// A memoised image rendering: `(bytes, format)`, or `None` on failure.
+type Rendered = Option<(Vec<u8>, String)>;
+
 /// Drives the per-node cascade and updates the report.
 pub struct MathCascade {
     pub image_renderer: Option<Box<dyn ImageMathRenderer>>,
-    image_cache: HashMap<(String, bool), Option<(Vec<u8>, String)>>,
+    image_cache: HashMap<(String, bool), Rendered>,
     /// East-Asian font for CJK glyphs inside math (`None` leaves runs untagged)
     pub cjk_font: Option<String>,
 }
@@ -65,7 +68,10 @@ fn check_tree(e: &Element) -> Result<(), MathError> {
     }
     walk(e, &mut visit);
     match bad {
-        Some(message) => Err(MathError::Other { type_name: "ValueError".into(), message }),
+        Some(message) => Err(MathError::Other {
+            type_name: "ValueError".into(),
+            message,
+        }),
         None => Ok(()),
     }
 }
@@ -89,7 +95,12 @@ impl MathCascade {
         self.run(latex, false, true, report)
     }
 
-    pub fn block(&mut self, latex: &str, collapse_align: bool, report: &mut ConversionReport) -> MathResult {
+    pub fn block(
+        &mut self,
+        latex: &str,
+        collapse_align: bool,
+        report: &mut ConversionReport,
+    ) -> MathResult {
         self.run(latex, true, collapse_align, report)
     }
 
@@ -104,7 +115,13 @@ impl MathCascade {
         MathResult::Omml(omath)
     }
 
-    fn run(&mut self, latex: &str, display: bool, collapse_align: bool, report: &mut ConversionReport) -> MathResult {
+    fn run(
+        &mut self,
+        latex: &str,
+        display: bool,
+        collapse_align: bool,
+        report: &mut ConversionReport,
+    ) -> MathResult {
         // 1. direct OMML
         let direct = if display {
             omml::render_block_lines(latex, collapse_align)
@@ -122,7 +139,10 @@ impl MathCascade {
             Err(MathError::Unsupported { construct, .. }) => construct,
             Err(MathError::Other { type_name, message }) => {
                 // never let a parser bug abort the conversion
-                report.warn("math", format!("direct math parse failed ({message}); falling back"));
+                report.warn(
+                    "math",
+                    format!("direct math parse failed ({message}); falling back"),
+                );
                 type_name
             }
         };
@@ -130,12 +150,12 @@ impl MathCascade {
         // 2. presentation MathML: the latex2mathml extra isn't available
 
         // 3. image fallback, memoised by (latex, display)
-        if self.image_renderer.is_some() {
+        if let Some(renderer) = self.image_renderer.as_mut() {
             let key = (latex.to_string(), display);
             let rendered = match self.image_cache.get(&key) {
                 Some(r) => r.clone(),
                 None => {
-                    let r = self.image_renderer.as_mut().unwrap().render(latex, display);
+                    let r = renderer.render(latex, display);
                     self.image_cache.insert(key, r.clone());
                     r
                 }
@@ -149,7 +169,10 @@ impl MathCascade {
 
         // 4. raw
         report.math_raw += 1;
-        report.warn("math", format!("fell back to raw LaTeX for construct {construct}"));
+        report.warn(
+            "math",
+            format!("fell back to raw LaTeX for construct {construct}"),
+        );
         MathResult::Raw(latex.to_string())
     }
 }

@@ -7,7 +7,9 @@
 //! back to this formatter, as the reference does without the extra.
 
 use tex2word_ir::pystr;
-use tex2word_ir::{Bibliography, Block, CSLItem, Cite, ConversionReport, Dict, Document, Inline, Value};
+use tex2word_ir::{
+    Bibliography, Block, CSLItem, Cite, ConversionReport, Dict, Document, Inline, Value,
+};
 
 /// bibliographystyle -> one of the two supported style families.
 pub fn style_family(bibstyle: &str) -> String {
@@ -16,7 +18,9 @@ pub fn style_family(bibstyle: &str) -> String {
         return name; // already a family (idempotent)
     }
     match name.as_str() {
-        "plainnat" | "apalike" | "abbrvnat" | "agsm" | "harvard" | "chicago" | "apa" => "author-year",
+        "plainnat" | "apalike" | "abbrvnat" | "agsm" | "harvard" | "chicago" | "apa" => {
+            "author-year"
+        }
         _ => "numeric",
     }
     .into()
@@ -38,13 +42,24 @@ pub struct Biblio {
 // --------------------------------------------------------------------------- //
 
 fn names<'a>(item: &'a CSLItem, role: &str) -> &'a [Value] {
-    item.csl_fields.get(role).and_then(Value::as_array).unwrap_or(&[])
+    item.csl_fields
+        .get(role)
+        .and_then(Value::as_array)
+        .unwrap_or(&[])
 }
 
 pub(crate) fn year(item: &CSLItem) -> String {
-    if let Some(issued) = item.csl_fields.get("issued").filter(|v| v.as_object().is_some()) {
+    if let Some(issued) = item
+        .csl_fields
+        .get("issued")
+        .filter(|v| v.as_object().is_some())
+    {
         if let Some(parts) = issued.get("date-parts").filter(|p| p.py_truthy()) {
-            if let Some(first) = parts.as_array().and_then(|a| a.first()).filter(|f| f.py_truthy()) {
+            if let Some(first) = parts
+                .as_array()
+                .and_then(|a| a.first())
+                .filter(|f| f.py_truthy())
+            {
                 if let Some(v) = first.as_array().and_then(|a| a.first()) {
                     return v.py_str();
                 }
@@ -149,7 +164,11 @@ pub fn format_reference(item: &CSLItem) -> String {
     } else if let Some(url) = get("URL") {
         parts.push(url.py_str());
     }
-    let joined: Vec<&str> = parts.iter().map(String::as_str).filter(|p| !p.is_empty()).collect();
+    let joined: Vec<&str> = parts
+        .iter()
+        .map(String::as_str)
+        .filter(|p| !p.is_empty())
+        .collect();
     pystr::strip(&joined.join(" ")).to_string()
 }
 
@@ -158,7 +177,11 @@ pub fn format_reference(item: &CSLItem) -> String {
 // --------------------------------------------------------------------------- //
 
 fn cite_one(key: &str, biblio: &Biblio) -> String {
-    biblio.labels.get(key).cloned().unwrap_or_else(|| key.to_string())
+    biblio
+        .labels
+        .get(key)
+        .cloned()
+        .unwrap_or_else(|| key.to_string())
 }
 
 /// Render an in-text marker for a `Cite` node against the bibliography.
@@ -167,21 +190,46 @@ pub fn render_citation(cite: &Cite, biblio: &Biblio) -> String {
     // author-/year-only modes are style-independent
     match cite.mode.as_str() {
         "author" => {
-            return cite.keys.iter().map(|k| index(k).map_or_else(|| k.clone(), author_label)).collect::<Vec<_>>().join(", ")
+            return cite
+                .keys
+                .iter()
+                .map(|k| index(k).map_or_else(|| k.clone(), author_label))
+                .collect::<Vec<_>>()
+                .join(", ")
         }
-        "year" => return cite.keys.iter().map(|k| index(k).map_or_else(|| k.clone(), year)).collect::<Vec<_>>().join(", "),
+        "year" => {
+            return cite
+                .keys
+                .iter()
+                .map(|k| index(k).map_or_else(|| k.clone(), year))
+                .collect::<Vec<_>>()
+                .join(", ")
+        }
         "num" => {
             return cite
                 .keys
                 .iter()
-                .map(|k| biblio.numbers.get(k).map_or_else(|| "?".to_string(), i64::to_string))
+                .map(|k| {
+                    biblio
+                        .numbers
+                        .get(k)
+                        .map_or_else(|| "?".to_string(), i64::to_string)
+                })
                 .collect::<Vec<_>>()
                 .join(", ")
         }
         _ => {}
     }
-    let pre = cite.prefix.as_deref().filter(|p| !p.is_empty()).map_or(String::new(), |p| format!("{p} "));
-    let post = cite.suffix.as_deref().filter(|s| !s.is_empty()).map_or(String::new(), |s| format!(", {s}"));
+    let pre = cite
+        .prefix
+        .as_deref()
+        .filter(|p| !p.is_empty())
+        .map_or(String::new(), |p| format!("{p} "));
+    let post = cite
+        .suffix
+        .as_deref()
+        .filter(|s| !s.is_empty())
+        .map_or(String::new(), |s| format!(", {s}"));
     if biblio.style == "numeric" {
         let inner: Vec<String> = cite.keys.iter().map(|k| cite_one(k, biblio)).collect();
         return format!("[{pre}{}{post}]", inner.join(", "));
@@ -211,13 +259,28 @@ pub fn render_citation(cite: &Cite, biblio: &Biblio) -> String {
 /// the computed in-text label.
 pub fn build_bibliography(items: &Dict<CSLItem>, cited_keys: &[String], style: &str) -> Biblio {
     let numeric = style == "numeric";
-    let known: Vec<&String> = cited_keys.iter().filter(|k| items.contains_key(k)).collect();
+    let known: Vec<&String> = cited_keys
+        .iter()
+        .filter(|k| items.contains_key(k))
+        .collect();
     let item = |k: &str| items.get(k).unwrap();
-    let has_order = known.iter().any(|k| item(k).csl_fields.contains_key("_order"));
+    let has_order = known
+        .iter()
+        .any(|k| item(k).csl_fields.contains_key("_order"));
     let mut ordered: Vec<&String> = known.clone();
     if has_order {
-        let order_of = |k: &str| item(k).csl_fields.get("_order").and_then(Value::as_f64).unwrap_or((1u64 << 30) as f64);
-        ordered.sort_by(|a, b| order_of(a).partial_cmp(&order_of(b)).unwrap_or(std::cmp::Ordering::Equal));
+        let order_of = |k: &str| {
+            item(k)
+                .csl_fields
+                .get("_order")
+                .and_then(Value::as_f64)
+                .unwrap_or((1u64 << 30) as f64)
+        };
+        ordered.sort_by(|a, b| {
+            order_of(a)
+                .partial_cmp(&order_of(b))
+                .unwrap_or(std::cmp::Ordering::Equal)
+        });
     } else if !numeric {
         ordered.sort_by_key(|k| (pystr::lower(&author_label(item(k))), year(item(k))));
     }
@@ -296,7 +359,11 @@ pub fn resolve_citations(
     }
     // \nocite{key} / \nocite{*}: in the reference list, no in-text cite
     for key in nocite_keys {
-        let targets: Vec<String> = if key == "*" { items.keys().cloned().collect() } else { vec![key.clone()] };
+        let targets: Vec<String> = if key == "*" {
+            items.keys().cloned().collect()
+        } else {
+            vec![key.clone()]
+        };
         for k in targets {
             if items.contains_key(&k) && !cited_order.contains(&k) {
                 cited_order.push(k);
@@ -305,17 +372,26 @@ pub fn resolve_citations(
     }
     if csl_path.is_some_and(|p| !p.is_empty()) {
         // the citeproc engine is an optional extra the core install lacks
-        report.warn("--csl", "citeproc-py not installed; run `uv sync --extra csl`");
+        report.warn(
+            "--csl",
+            "citeproc-py not installed; run `uv sync --extra csl`",
+        );
     }
     let biblio = build_bibliography(items, &cited_order, &style);
-    walk_cites(&mut doc.blocks, &mut |c| c.rendered = Some(render_citation(c, &biblio)));
+    walk_cites(&mut doc.blocks, &mut |c| {
+        c.rendered = Some(render_citation(c, &biblio))
+    });
     fill_biblio_block(doc, &biblio.entries, &style);
     biblio
 }
 
 /// Fill a `\bibliography` placeholder block, else append one at the end.
 fn fill_biblio_block(doc: &mut Document, entries: &[CSLItem], style: &str) {
-    if let Some(Block::Bibliography(b)) = doc.blocks.iter_mut().find(|b| matches!(b, Block::Bibliography(_))) {
+    if let Some(Block::Bibliography(b)) = doc
+        .blocks
+        .iter_mut()
+        .find(|b| matches!(b, Block::Bibliography(_)))
+    {
         b.entries = entries.to_vec();
         b.style = style.into();
     } else if !entries.is_empty() {

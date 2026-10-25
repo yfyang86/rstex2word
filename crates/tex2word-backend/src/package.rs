@@ -48,7 +48,11 @@ impl DocxPackage {
         hf.dedup();
         for arc in hf {
             let base = arc.rsplit('/').next().unwrap_or(arc);
-            let kind = if base.starts_with("header") { "header" } else { "footer" };
+            let kind = if base.starts_with("header") {
+                "header"
+            } else {
+                "footer"
+            };
             body.push_str(&format!(
                 "  <Override PartName=\"/{arc}\" ContentType=\"application/vnd.openxmlformats-officedocument.wordprocessingml.{kind}+xml\"/>\n"
             ));
@@ -101,16 +105,27 @@ impl DocxPackage {
     /// Every part (archive path -> bytes), in the reference's dict order.
     pub fn parts(&self) -> Vec<(String, Vec<u8>)> {
         let mut parts: Vec<(String, Vec<u8>)> = vec![
-            ("[Content_Types].xml".into(), self.content_types().into_bytes()),
+            (
+                "[Content_Types].xml".into(),
+                self.content_types().into_bytes(),
+            ),
             ("_rels/.rels".into(), ROOT_RELS.as_bytes().to_vec()),
             ("docProps/core.xml".into(), CORE_PROPS.as_bytes().to_vec()),
             ("word/document.xml".into(), self.document_xml.clone()),
             ("word/styles.xml".into(), self.styles_xml.clone()),
             ("word/numbering.xml".into(), self.numbering_xml.clone()),
             ("word/settings.xml".into(), SETTINGS.as_bytes().to_vec()),
-            ("word/_rels/document.xml.rels".into(), self.document_rels_xml().into_bytes()),
+            (
+                "word/_rels/document.xml.rels".into(),
+                self.document_rels_xml().into_bytes(),
+            ),
         ];
-        for (k, v) in self.media.iter().chain(&self.header_footer_parts).chain(&self.extra_parts) {
+        for (k, v) in self
+            .media
+            .iter()
+            .chain(&self.header_footer_parts)
+            .chain(&self.extra_parts)
+        {
             put(&mut parts, k, v.clone());
         }
         if let Some(t) = &self.theme {

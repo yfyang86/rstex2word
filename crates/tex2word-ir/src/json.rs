@@ -104,7 +104,10 @@ impl Value {
             Value::Int(i) => i.to_string(),
             Value::Float(f) => py_float_repr(*f),
             Value::Str(s) => py_str_repr(s),
-            Value::Array(a) => format!("[{}]", a.iter().map(Value::py_repr).collect::<Vec<_>>().join(", ")),
+            Value::Array(a) => format!(
+                "[{}]",
+                a.iter().map(Value::py_repr).collect::<Vec<_>>().join(", ")
+            ),
             Value::Object(o) => format!(
                 "{{{}}}",
                 o.iter()
@@ -126,7 +129,11 @@ impl Value {
 
 /// Python `repr(str)`: single quotes unless the text holds `'` but no `"`.
 pub fn py_str_repr(s: &str) -> String {
-    let q = if s.contains('\'') && !s.contains('"') { '"' } else { '\'' };
+    let q = if s.contains('\'') && !s.contains('"') {
+        '"'
+    } else {
+        '\''
+    };
     let mut out = String::with_capacity(s.len() + 2);
     out.push(q);
     for c in s.chars() {
@@ -139,7 +146,9 @@ pub fn py_str_repr(s: &str) -> String {
                 out.push('\\');
                 out.push(c);
             }
-            c if (c as u32) < 0x20 || c as u32 == 0x7f => out.push_str(&format!("\\x{:02x}", c as u32)),
+            c if (c as u32) < 0x20 || c as u32 == 0x7f => {
+                out.push_str(&format!("\\x{:02x}", c as u32))
+            }
             c => out.push(c),
         }
     }
@@ -259,7 +268,10 @@ impl Parser<'_> {
             let v = self.value(depth + 1)?;
             // Python dict semantics: a repeated key keeps its first position
             // but takes the last value.
-            if let Some(slot) = out.iter_mut().find(|(k, _): &&mut (String, Value)| *k == key) {
+            if let Some(slot) = out
+                .iter_mut()
+                .find(|(k, _): &&mut (String, Value)| *k == key)
+            {
                 slot.1 = v;
             } else {
                 out.push((key, v));
@@ -330,7 +342,10 @@ impl Parser<'_> {
                 _ => {}
             }
             self.i += 1; // backslash
-            let esc = *self.s.get(self.i).ok_or_else(|| self.err("truncated escape"))?;
+            let esc = *self
+                .s
+                .get(self.i)
+                .ok_or_else(|| self.err("truncated escape"))?;
             self.i += 1;
             match esc {
                 b'"' => out.push('"'),
@@ -343,19 +358,20 @@ impl Parser<'_> {
                 b't' => out.push('\t'),
                 b'u' => {
                     let hi = self.hex4()?;
-                    let cp = if (0xD800..0xDC00).contains(&hi) && self.s[self.i..].starts_with(b"\\u") {
-                        let save = self.i;
-                        self.i += 2;
-                        let lo = self.hex4()?;
-                        if (0xDC00..0xE000).contains(&lo) {
-                            0x10000 + ((hi - 0xD800) << 10) + (lo - 0xDC00)
+                    let cp =
+                        if (0xD800..0xDC00).contains(&hi) && self.s[self.i..].starts_with(b"\\u") {
+                            let save = self.i;
+                            self.i += 2;
+                            let lo = self.hex4()?;
+                            if (0xDC00..0xE000).contains(&lo) {
+                                0x10000 + ((hi - 0xD800) << 10) + (lo - 0xDC00)
+                            } else {
+                                self.i = save;
+                                hi
+                            }
                         } else {
-                            self.i = save;
                             hi
-                        }
-                    } else {
-                        hi
-                    };
+                        };
                     // Lone surrogates can't live in a Rust String; Python would
                     // keep them, but they never occur in tex2word output.
                     out.push(char::from_u32(cp).unwrap_or('\u{FFFD}'));
@@ -444,7 +460,11 @@ fn newline_indent(out: &mut String, opts: &DumpOptions, level: usize) {
 }
 
 fn write_value(out: &mut String, v: &Value, opts: &DumpOptions, level: usize) {
-    let item_sep = if opts.compact || opts.indent.is_some() { "," } else { ", " };
+    let item_sep = if opts.compact || opts.indent.is_some() {
+        ","
+    } else {
+        ", "
+    };
     let key_sep = if opts.compact { ":" } else { ": " };
     match v {
         Value::Null => out.push_str("null"),
@@ -534,11 +554,17 @@ pub fn py_float_repr(f: f64) -> String {
         return "NaN".into();
     }
     if f.is_infinite() {
-        return if f > 0.0 { "Infinity".into() } else { "-Infinity".into() };
+        return if f > 0.0 {
+            "Infinity".into()
+        } else {
+            "-Infinity".into()
+        };
     }
     // Rust's `{:e}` yields the shortest round-trip digits, e.g. "1.5e16".
     let sci = format!("{:e}", f.abs());
-    let (mant, exp) = sci.split_once('e').expect("LowerExp always has an exponent");
+    let (mant, exp) = sci
+        .split_once('e')
+        .expect("LowerExp always has an exponent");
     let exp: i32 = exp.parse().expect("integral exponent");
     let digits: String = mant.chars().filter(|c| *c != '.').collect();
     let decpt = exp + 1; // position of the decimal point within `digits`
@@ -653,7 +679,8 @@ impl ToJson for f64 {
 
 impl FromJson for f64 {
     fn from_json(v: &Value) -> Result<Self, JsonError> {
-        v.as_f64().ok_or_else(|| JsonError::new("expected a number"))
+        v.as_f64()
+            .ok_or_else(|| JsonError::new("expected a number"))
     }
 }
 
@@ -771,8 +798,14 @@ mod tests {
     #[test]
     fn astral_chars_escape_as_surrogate_pairs() {
         let v = Value::Str("𝔤\u{7f}".into());
-        assert_eq!(dumps(&v, DumpOptions::default()), esc(r#""@ud835@udd24@u007f""#));
-        assert_eq!(parse(&esc(r#""@ud835@udd24""#)).unwrap(), Value::Str("𝔤".into()));
+        assert_eq!(
+            dumps(&v, DumpOptions::default()),
+            esc(r#""@ud835@udd24@u007f""#)
+        );
+        assert_eq!(
+            parse(&esc(r#""@ud835@udd24""#)).unwrap(),
+            Value::Str("𝔤".into())
+        );
     }
 
     #[test]

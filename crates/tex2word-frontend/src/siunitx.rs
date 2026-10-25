@@ -16,10 +16,26 @@ pub const THIN: &str = "\u{2009}";
 /// SI prefixes (`\kilo`, `\milli`, …) -> symbols.
 fn prefix(name: &str) -> Option<&'static str> {
     Some(match name {
-        "yocto" => "y", "zepto" => "z", "atto" => "a", "femto" => "f", "pico" => "p",
-        "nano" => "n", "micro" => "µ", "milli" => "m", "centi" => "c", "deci" => "d",
-        "deca" => "da", "deka" => "da", "hecto" => "h", "kilo" => "k", "mega" => "M",
-        "giga" => "G", "tera" => "T", "peta" => "P", "exa" => "E", "zetta" => "Z",
+        "yocto" => "y",
+        "zepto" => "z",
+        "atto" => "a",
+        "femto" => "f",
+        "pico" => "p",
+        "nano" => "n",
+        "micro" => "µ",
+        "milli" => "m",
+        "centi" => "c",
+        "deci" => "d",
+        "deca" => "da",
+        "deka" => "da",
+        "hecto" => "h",
+        "kilo" => "k",
+        "mega" => "M",
+        "giga" => "G",
+        "tera" => "T",
+        "peta" => "P",
+        "exa" => "E",
+        "zetta" => "Z",
         "yotta" => "Y",
         _ => return None,
     })
@@ -28,16 +44,52 @@ fn prefix(name: &str) -> Option<&'static str> {
 /// SI units (`\metre`, `\joule`, …) -> symbols.
 fn unit(name: &str) -> Option<&'static str> {
     Some(match name {
-        "metre" => "m", "meter" => "m", "gram" => "g", "second" => "s", "kilogram" => "kg",
-        "kelvin" => "K", "ampere" => "A", "mole" => "mol", "candela" => "cd", "newton" => "N",
-        "pascal" => "Pa", "joule" => "J", "watt" => "W", "coulomb" => "C", "volt" => "V",
-        "farad" => "F", "ohm" => "Ω", "siemens" => "S", "weber" => "Wb", "tesla" => "T",
-        "henry" => "H", "hertz" => "Hz", "lumen" => "lm", "lux" => "lx", "becquerel" => "Bq",
-        "gray" => "Gy", "sievert" => "Sv", "katal" => "kat", "litre" => "L", "liter" => "L",
-        "electronvolt" => "eV", "celsius" => "°C", "degreeCelsius" => "°C", "percent" => "%",
-        "degree" => "°", "arcminute" => "′", "arcsecond" => "″", "bar" => "bar",
-        "angstrom" => "Å", "day" => "d", "hour" => "h", "minute" => "min", "tonne" => "t",
-        "dalton" => "Da", "radian" => "rad", "steradian" => "sr",
+        "metre" => "m",
+        "meter" => "m",
+        "gram" => "g",
+        "second" => "s",
+        "kilogram" => "kg",
+        "kelvin" => "K",
+        "ampere" => "A",
+        "mole" => "mol",
+        "candela" => "cd",
+        "newton" => "N",
+        "pascal" => "Pa",
+        "joule" => "J",
+        "watt" => "W",
+        "coulomb" => "C",
+        "volt" => "V",
+        "farad" => "F",
+        "ohm" => "Ω",
+        "siemens" => "S",
+        "weber" => "Wb",
+        "tesla" => "T",
+        "henry" => "H",
+        "hertz" => "Hz",
+        "lumen" => "lm",
+        "lux" => "lx",
+        "becquerel" => "Bq",
+        "gray" => "Gy",
+        "sievert" => "Sv",
+        "katal" => "kat",
+        "litre" => "L",
+        "liter" => "L",
+        "electronvolt" => "eV",
+        "celsius" => "°C",
+        "degreeCelsius" => "°C",
+        "percent" => "%",
+        "degree" => "°",
+        "arcminute" => "′",
+        "arcsecond" => "″",
+        "bar" => "bar",
+        "angstrom" => "Å",
+        "day" => "d",
+        "hour" => "h",
+        "minute" => "min",
+        "tonne" => "t",
+        "dalton" => "Da",
+        "radian" => "rad",
+        "steradian" => "sr",
         _ => return None,
     })
 }
@@ -62,9 +114,18 @@ fn prepower(name: &str) -> Option<&'static str> {
 
 fn sup(c: char) -> char {
     match c {
-        '0' => '⁰', '1' => '¹', '2' => '²', '3' => '³', '4' => '⁴',
-        '5' => '⁵', '6' => '⁶', '7' => '⁷', '8' => '⁸', '9' => '⁹',
-        '+' => '⁺', '-' => '⁻',
+        '0' => '⁰',
+        '1' => '¹',
+        '2' => '²',
+        '3' => '³',
+        '4' => '⁴',
+        '5' => '⁵',
+        '6' => '⁶',
+        '7' => '⁷',
+        '8' => '⁸',
+        '9' => '⁹',
+        '+' => '⁺',
+        '-' => '⁻',
         other => other,
     }
 }
@@ -147,7 +208,11 @@ pub fn ang_to_text(s: &str) -> String {
         if !parts[2].is_empty() && parts[2] != "0" {
             out.push_str(&format!("{}″", parts[2]));
         }
-        return if out.is_empty() { "0°".to_string() } else { out };
+        return if out.is_empty() {
+            "0°".to_string()
+        } else {
+            out
+        };
     }
     format!("{}°", pystr::strip(s))
 }

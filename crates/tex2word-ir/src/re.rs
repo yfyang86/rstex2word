@@ -103,7 +103,9 @@ impl Class {
 
     fn matches(&self, c: char, icase: bool) -> bool {
         let hit = self.matches_raw(c)
-            || (icase && (lower(c).is_some_and(|l| self.matches_raw(l)) || upper(c).is_some_and(|u| self.matches_raw(u))));
+            || (icase
+                && (lower(c).is_some_and(|l| self.matches_raw(l))
+                    || upper(c).is_some_and(|u| self.matches_raw(u))));
         hit != self.negated
     }
 }
@@ -291,7 +293,11 @@ impl PatParser<'_> {
         if self.i == start {
             None
         } else {
-            self.chars[start..self.i].iter().collect::<String>().parse().ok()
+            self.chars[start..self.i]
+                .iter()
+                .collect::<String>()
+                .parse()
+                .ok()
         }
     }
 
@@ -354,7 +360,12 @@ impl PatParser<'_> {
     }
 
     fn parse_hex(&mut self, n: usize) -> Result<char, Error> {
-        let s: String = self.chars.get(self.i..self.i + n).ok_or_else(|| self.err("incomplete escape"))?.iter().collect();
+        let s: String = self
+            .chars
+            .get(self.i..self.i + n)
+            .ok_or_else(|| self.err("incomplete escape"))?
+            .iter()
+            .collect();
         let v = u32::from_str_radix(&s, 16).map_err(|_| self.err("bad hex escape"))?;
         self.i += n;
         char::from_u32(v).ok_or_else(|| self.err("bad codepoint"))
@@ -399,7 +410,9 @@ impl PatParser<'_> {
         };
         let mut first = true;
         loop {
-            let c = self.peek().ok_or_else(|| self.err("unterminated character set"))?;
+            let c = self
+                .peek()
+                .ok_or_else(|| self.err("unterminated character set"))?;
             if c == ']' && !first {
                 self.i += 1;
                 break;
@@ -407,7 +420,9 @@ impl PatParser<'_> {
             first = false;
             self.i += 1;
             let lo = if c == '\\' {
-                let e = self.peek().ok_or_else(|| self.err("bad escape (end of pattern)"))?;
+                let e = self
+                    .peek()
+                    .ok_or_else(|| self.err("bad escape (end of pattern)"))?;
                 self.i += 1;
                 match e {
                     'd' => {
@@ -528,7 +543,9 @@ impl PatParser<'_> {
                                 node: Box::new(inner),
                             }
                         }
-                        Some('<') if matches!(self.chars.get(self.i + 1), Some('=') | Some('!')) => {
+                        Some('<')
+                            if matches!(self.chars.get(self.i + 1), Some('=') | Some('!')) =>
+                        {
                             let negate = self.chars[self.i + 1] == '!';
                             self.i += 2;
                             let inner = self.parse_alt()?;
@@ -594,7 +611,9 @@ impl PatParser<'_> {
                 }
             }
             '\\' => {
-                let e = self.peek().ok_or_else(|| self.err("bad escape (end of pattern)"))?;
+                let e = self
+                    .peek()
+                    .ok_or_else(|| self.err("bad escape (end of pattern)"))?;
                 self.i += 1;
                 match e {
                     'd' => Ast::Class(Class::single(ClassItem::Digit(false))),
@@ -706,7 +725,11 @@ impl Compiler {
                 None => self.emit(inner, out),
             },
             Ast::Backref(i) => out.push(Inst::Backref(*i)),
-            Ast::Look { ahead, negate, node } => {
+            Ast::Look {
+                ahead,
+                negate,
+                node,
+            } => {
                 let width = if *ahead { 0 } else { node.width().unwrap_or(0) };
                 let prog = self.compile_prog(node);
                 out.push(Inst::Look {
@@ -989,7 +1012,13 @@ impl Regex {
     }
 
     /// Try a match anchored at `pos`.
-    fn match_here<'s>(&self, s: &'s str, pos: usize, must_advance: bool, full: bool) -> Option<Match<'s>> {
+    fn match_here<'s>(
+        &self,
+        s: &'s str,
+        pos: usize,
+        must_advance: bool,
+        full: bool,
+    ) -> Option<Match<'s>> {
         let mut slots = vec![None; self.nslots];
         let vm = Vm {
             re: self,
@@ -1008,17 +1037,17 @@ impl Regex {
         let mut at = pos;
         loop {
             if let Some(prefix) = &self.prefix {
-                match s[at..].find(prefix.as_str()) {
-                    Some(off) => at += off,
-                    None => return None,
+                {
+                    let off = s[at..].find(prefix.as_str())?;
+                    at += off
                 }
             }
             if let Some(m) = self.match_here(s, at, must_advance && at == pos, false) {
                 return Some(m);
             }
-            match s[at..].chars().next() {
-                Some(c) => at += c.len_utf8(),
-                None => return None,
+            {
+                let c = s[at..].chars().next()?;
+                at += c.len_utf8()
             }
         }
     }
@@ -1078,7 +1107,13 @@ impl Regex {
     pub fn findall<'s>(&self, s: &'s str) -> Vec<&'s str> {
         self.find_iter(s)
             .iter()
-            .map(|m| if self.ngroups == 0 { m.as_str() } else { m.group_str(1) })
+            .map(|m| {
+                if self.ngroups == 0 {
+                    m.as_str()
+                } else {
+                    m.group_str(1)
+                }
+            })
             .collect()
     }
 
@@ -1122,7 +1157,12 @@ impl Regex {
     }
 
     /// `pattern.subn(func, s, count)`; `count == 0` replaces all.
-    pub fn subn_fn(&self, s: &str, count: usize, mut f: impl FnMut(&Match) -> String) -> (String, usize) {
+    pub fn subn_fn(
+        &self,
+        s: &str,
+        count: usize,
+        mut f: impl FnMut(&Match) -> String,
+    ) -> (String, usize) {
         let mut out = String::with_capacity(s.len());
         let mut last = 0;
         let mut n = 0;
@@ -1148,8 +1188,7 @@ impl Regex {
     pub fn split<'s>(&self, s: &'s str, maxsplit: usize) -> Vec<Option<&'s str>> {
         let mut out = Vec::new();
         let mut last = 0;
-        let mut n = 0;
-        for m in self.find_iter(s) {
+        for (n, m) in self.find_iter(s).into_iter().enumerate() {
             if maxsplit != 0 && n >= maxsplit {
                 break;
             }
@@ -1158,7 +1197,6 @@ impl Regex {
                 out.push(m.group(i));
             }
             last = m.end();
-            n += 1;
         }
         out.push(Some(&s[last..]));
         out
@@ -1166,7 +1204,10 @@ impl Regex {
 
     /// `pattern.split(s)` as strings (no capturing groups expected).
     pub fn split_str<'s>(&self, s: &'s str) -> Vec<&'s str> {
-        self.split(s, 0).into_iter().map(|x| x.unwrap_or("")).collect()
+        self.split(s, 0)
+            .into_iter()
+            .map(|x| x.unwrap_or(""))
+            .collect()
     }
 }
 
@@ -1235,8 +1276,7 @@ impl Vm<'_, '_> {
             AssertKind::EndText => pos == len,
             AssertKind::Start => pos == 0 || (multiline && self.char_before(pos) == Some('\n')),
             AssertKind::End => {
-                pos == len
-                    || (self.char_at(pos) == Some('\n') && (multiline || pos + 1 == len))
+                pos == len || (self.char_at(pos) == Some('\n') && (multiline || pos + 1 == len))
             }
             AssertKind::WordB | AssertKind::NotWordB => {
                 let a = self.char_before(pos).is_some_and(is_word);
@@ -1247,7 +1287,13 @@ impl Vm<'_, '_> {
     }
 
     /// Run program `prog` anchored at `pos`; returns the end position.
-    fn run(&self, prog: usize, pos: usize, slots: &mut [Option<usize>], toplevel: bool) -> Option<usize> {
+    fn run(
+        &self,
+        prog: usize,
+        pos: usize,
+        slots: &mut [Option<usize>],
+        toplevel: bool,
+    ) -> Option<usize> {
         let insts = &self.re.progs[prog].insts;
         let icase = self.re.flags.contains(Flags::I);
         let dotall = self.re.flags.contains(Flags::S);
@@ -1465,7 +1511,11 @@ fn parse_template(t: &str, ngroups: usize, names: &[(String, usize)]) -> Result<
                 if chars.get(i) != Some(&'<') {
                     return Err(Error("missing <".into()));
                 }
-                let Some(end) = chars[i + 1..].iter().position(|&c| c == '>').map(|p| i + 1 + p) else {
+                let Some(end) = chars[i + 1..]
+                    .iter()
+                    .position(|&c| c == '>')
+                    .map(|p| i + 1 + p)
+                else {
                     return Err(Error("missing group name".into()));
                 };
                 let name: String = chars[i + 1..end].iter().collect();
@@ -1474,7 +1524,8 @@ fn parse_template(t: &str, ngroups: usize, names: &[(String, usize)]) -> Result<
                     return Err(Error("missing group name".into()));
                 }
                 let n = if name.chars().all(|c| c.is_ascii_digit()) {
-                    name.parse::<usize>().map_err(|_| Error(format!("invalid group reference {name}")))?
+                    name.parse::<usize>()
+                        .map_err(|_| Error(format!("invalid group reference {name}")))?
                 } else {
                     match names.iter().find(|(k, _)| *k == name) {
                         Some(&(_, n)) => n,
@@ -1498,15 +1549,24 @@ fn parse_template(t: &str, ngroups: usize, names: &[(String, usize)]) -> Result<
                 match chars.get(i).copied() {
                     Some(d2) if d2.is_ascii_digit() => {
                         if is_oct(e) && is_oct(d2) && chars.get(i + 1).is_some_and(|&c| is_oct(c)) {
-                            let v = d * 64 + d2.to_digit(8).unwrap() * 8 + chars[i + 1].to_digit(8).unwrap();
+                            let v = d * 64
+                                + d2.to_digit(8).unwrap() * 8
+                                + chars[i + 1].to_digit(8).unwrap();
                             i += 2;
                             if v > 0o377 {
-                                return Err(Error(format!("octal escape value \\{e}{d2}{} outside of range 0-0o377", chars[i - 1])));
+                                return Err(Error(format!(
+                                    "octal escape value \\{e}{d2}{} outside of range 0-0o377",
+                                    chars[i - 1]
+                                )));
                             }
                             lit.push(char::from_u32(v).unwrap());
                         } else {
                             i += 1;
-                            group_ref((d * 10 + d2.to_digit(10).unwrap()) as usize, &mut lit, &mut out)?;
+                            group_ref(
+                                (d * 10 + d2.to_digit(10).unwrap()) as usize,
+                                &mut lit,
+                                &mut out,
+                            )?;
                         }
                     }
                     _ => group_ref(d as usize, &mut lit, &mut out)?,
@@ -1634,7 +1694,10 @@ mod tests {
 
     #[test]
     fn backreference_and_lazy_dotall() {
-        let r = Regex::with_flags(r"\\begin\{(lstlisting|minted)\}(?P<body>.*?)\\end\{\1\}", Flags::S);
+        let r = Regex::with_flags(
+            r"\\begin\{(lstlisting|minted)\}(?P<body>.*?)\\end\{\1\}",
+            Flags::S,
+        );
         let s = "\\begin{minted}a$\nb\\end{minted} \\begin{lstlisting}x\\end{lstlisting}";
         let ms = r.find_iter(s);
         assert_eq!(ms.len(), 2);
@@ -1647,7 +1710,10 @@ mod tests {
         // re.sub('x*', '-', 'abxd') == '-a-b--d-'
         assert_eq!(Regex::new("x*").sub("-", "abxd"), "-a-b--d-");
         // re.split(r'\b', 'a b') == ['', 'a', ' ', 'b', '']
-        assert_eq!(Regex::new(r"\b").split_str("a b"), vec!["", "a", " ", "b", ""]);
+        assert_eq!(
+            Regex::new(r"\b").split_str("a b"),
+            vec!["", "a", " ", "b", ""]
+        );
         // re.findall(r'\d*', '12a') == ['12', '', '']
         assert_eq!(Regex::new(r"\d*").findall("12a"), vec!["12", "", ""]);
     }
@@ -1658,7 +1724,10 @@ mod tests {
         assert!(!Regex::new(r"\\fi(?![a-zA-Z@])").is_match("x\\fill"));
         assert_eq!(Regex::with_flags("^a", Flags::M).find_iter("a\na").len(), 2);
         assert_eq!(Regex::new("^a").find_iter("a\na").len(), 1);
-        assert!(Regex::new("a$").is_match("xa\n"), "$ before a final newline");
+        assert!(
+            Regex::new("a$").is_match("xa\n"),
+            "$ before a final newline"
+        );
         assert!(Regex::new(r"(?<=ab)c").is_match("abc"));
         assert!(!Regex::new(r"(?<!ab)c").is_match("abc"));
     }
@@ -1670,10 +1739,16 @@ mod tests {
         // unknown escapes of punctuation keep the backslash
         assert_eq!(Regex::new("a").sub(r"\&", "a"), "\\&");
         // r"\\verb" -> backslash + verb
-        assert_eq!(Regex::new(r"\\verb\*").sub(r"\\verb", "\\verb*|x|"), "\\verb|x|");
+        assert_eq!(
+            Regex::new(r"\\verb\*").sub(r"\\verb", "\\verb*|x|"),
+            "\\verb|x|"
+        );
         // Python raises on unknown letter escapes and bad group references
         assert!(Regex::new("a").try_sub(r"{\mathcal}", "a").is_err());
-        assert_eq!(Regex::new("a").try_sub(r"{\alpha}", "a").unwrap(), "{\x07lpha}");
+        assert_eq!(
+            Regex::new("a").try_sub(r"{\alpha}", "a").unwrap(),
+            "{\x07lpha}"
+        );
         assert!(Regex::new("a").try_sub(r"\1", "a").is_err());
         assert_eq!(Regex::new("a").try_sub(r"\101\0x", "a").unwrap(), "A\0x");
     }
@@ -1681,12 +1756,20 @@ mod tests {
     #[test]
     fn counted_repeats_and_classes() {
         let r = Regex::new(r"fil{1,3}");
-        assert_eq!(r.find_iter("fil fill filll fillll").iter().map(|m| m.as_str()).collect::<Vec<_>>(),
-                   vec!["fil", "fill", "filll", "filll"]);
+        assert_eq!(
+            r.find_iter("fil fill filll fillll")
+                .iter()
+                .map(|m| m.as_str())
+                .collect::<Vec<_>>(),
+            vec!["fil", "fill", "filll", "filll"]
+        );
         assert!(Regex::new(r"[\w* ._-]+").fullmatch("my env*-1.x").is_some());
         assert!(Regex::new(r"[]a]").is_match("]"));
         assert!(Regex::new(r"x{,2}y").fullmatch("xxy").is_some());
-        assert!(Regex::new(r"a{x").fullmatch("a{x").is_some(), "literal brace");
+        assert!(
+            Regex::new(r"a{x").fullmatch("a{x").is_some(),
+            "literal brace"
+        );
     }
 
     #[test]

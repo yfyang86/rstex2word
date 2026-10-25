@@ -172,7 +172,8 @@ pub fn latex_escape(text: &str) -> String {
         }
         out.push(c);
     }
-    out.replace('~', "\\textasciitilde{}").replace('^', "\\textasciicircum{}")
+    out.replace('~', "\\textasciitilde{}")
+        .replace('^', "\\textasciicircum{}")
 }
 
 fn truthy<T>(v: &Option<Vec<T>>) -> Option<&Vec<T>> {
@@ -209,8 +210,20 @@ impl LatexWriter {
         let body = self.blocks(&doc.blocks)?;
         let preamble = self.preamble(doc);
         let meta = self.frontmatter(&doc.meta)?;
-        let parts = [preamble.as_str(), "\\begin{document}", &meta, &body, "\\end{document}", ""];
-        Ok(parts.iter().filter(|p| !p.is_empty()).copied().collect::<Vec<_>>().join("\n"))
+        let parts = [
+            preamble.as_str(),
+            "\\begin{document}",
+            &meta,
+            &body,
+            "\\end{document}",
+            "",
+        ];
+        Ok(parts
+            .iter()
+            .filter(|p| !p.is_empty())
+            .copied()
+            .collect::<Vec<_>>()
+            .join("\n"))
     }
 
     // -- preamble ---------------------------------------------------------------
@@ -222,12 +235,18 @@ impl LatexWriter {
             scan(a, &mut feat);
         }
         let cls = if doc.book { "report" } else { "article" };
-        let mut lines = vec![format!("\\documentclass{{{cls}}}"), "\\usepackage[utf8]{inputenc}".to_string()];
+        let mut lines = vec![
+            format!("\\documentclass{{{cls}}}"),
+            "\\usepackage[utf8]{inputenc}".to_string(),
+        ];
         if let Some(b) = babel_name(doc.meta.language.as_deref().unwrap_or("")) {
             lines.push(format!("\\usepackage[{b}]{{babel}}"));
         }
         let m = &doc.meta;
-        if nonempty(&m.cjk_main_font).is_some() || nonempty(&m.cjk_sans_font).is_some() || nonempty(&m.cjk_mono_font).is_some() {
+        if nonempty(&m.cjk_main_font).is_some()
+            || nonempty(&m.cjk_sans_font).is_some()
+            || nonempty(&m.cjk_mono_font).is_some()
+        {
             lines.push("\\usepackage{xeCJK}".into());
         } else if nonempty(&m.main_font).is_some() {
             lines.push("\\usepackage{fontspec}".into());
@@ -249,12 +268,18 @@ impl LatexWriter {
                 lines.extend(pkgs.iter().map(|p| p.to_string()));
             }
         };
-        add(feat.math, &["\\usepackage{amsmath}", "\\usepackage{amssymb}"]);
+        add(
+            feat.math,
+            &["\\usepackage{amsmath}", "\\usepackage{amssymb}"],
+        );
         add(feat.graphics, &["\\usepackage{graphicx}"]);
         add(feat.subfig, &["\\usepackage{subcaption}"]);
         add(feat.booktabs, &["\\usepackage{booktabs}"]);
         add(feat.multirow, &["\\usepackage{multirow}"]);
-        add(feat.algorithm, &["\\usepackage{algorithm}", "\\usepackage{algpseudocode}"]);
+        add(
+            feat.algorithm,
+            &["\\usepackage{algorithm}", "\\usepackage{algpseudocode}"],
+        );
         add(feat.links || feat.refs, &["\\usepackage{hyperref}"]);
         add(feat.cleveref, &["\\usepackage{cleveref}"]);
         add(feat.cites, &["\\usepackage{natbib}"]);
@@ -314,7 +339,11 @@ impl LatexWriter {
     fn block(&mut self, block: &Block) -> R<String> {
         Ok(match block {
             Block::Heading(h) => {
-                let cmd = if h.part { "part" } else { heading_cmd(h.level, self.book) };
+                let cmd = if h.part {
+                    "part"
+                } else {
+                    heading_cmd(h.level, self.book)
+                };
                 let star = if h.numbered { "" } else { "*" };
                 let label = match nonempty(&h.label) {
                     Some(l) => format!("\\label{{{l}}}"),
@@ -325,7 +354,10 @@ impl LatexWriter {
                     prefix = "\\appendix\n";
                     self.appendix_emitted = true;
                 }
-                format!("{prefix}\\{cmd}{star}{{{}}}{label}", self.inlines(&h.inlines))
+                format!(
+                    "{prefix}\\{cmd}{star}{{{}}}{label}",
+                    self.inlines(&h.inlines)
+                )
             }
             Block::Paragraph(p) => {
                 let body = self.inlines(&p.inlines);
@@ -353,7 +385,10 @@ impl LatexWriter {
                     Some(t) => format!("\\textbf{{{}}}\n\n", self.inlines(t)),
                     None => String::new(),
                 };
-                format!("\\begin{{quote}}\n{head}{}\n\\end{{quote}}", self.blocks(&q.blocks)?)
+                format!(
+                    "\\begin{{quote}}\n{head}{}\n\\end{{quote}}",
+                    self.blocks(&q.blocks)?
+                )
             }
             Block::Theorem(t) => {
                 let env = theorem_env(&t.kind);
@@ -365,7 +400,10 @@ impl LatexWriter {
                     Some(l) => format!("\\label{{{l}}}\n"),
                     None => String::new(),
                 };
-                format!("\\begin{{{env}}}{title}\n{label}{}\n\\end{{{env}}}", self.blocks(&t.blocks)?)
+                format!(
+                    "\\begin{{{env}}}{title}\n{label}{}\n\\end{{{env}}}",
+                    self.blocks(&t.blocks)?
+                )
             }
             Block::Algorithm(a) => self.algorithm(a),
             Block::Bibliography(b) => bibliography(b),
@@ -397,13 +435,22 @@ impl LatexWriter {
             let row = format!("\\item{term} {}", self.blocks(&item.blocks)?);
             rows.push(pystr::rstrip(&row).to_string());
         }
-        Ok(format!("\\begin{{{env}}}\n{}\n\\end{{{env}}}", rows.join("\n")))
+        Ok(format!(
+            "\\begin{{{env}}}\n{}\n\\end{{{env}}}",
+            rows.join("\n")
+        ))
     }
 
     fn table(&mut self, block: &Table) -> R<String> {
         let mut colspec = String::new();
         for (i, a) in block.colspec.iter().enumerate() {
-            match block.colwidths.get(i).copied().flatten().filter(|w| *w != 0.0) {
+            match block
+                .colwidths
+                .get(i)
+                .copied()
+                .flatten()
+                .filter(|w| *w != 0.0)
+            {
                 Some(w) => colspec.push_str(&format!("p{{{:.1}pt}}", w * 72.27 / 914400.0)),
                 None => colspec.push_str(align_letter(a)?),
             }
@@ -444,12 +491,17 @@ impl LatexWriter {
             return Ok(table);
         }
         let star = if block.caption_numbered { "" } else { "*" };
-        let cap = format!("\\caption{star}{{{}}}", self.inlines(block.caption.as_deref().unwrap_or(&[])));
+        let cap = format!(
+            "\\caption{star}{{{}}}",
+            self.inlines(block.caption.as_deref().unwrap_or(&[]))
+        );
         let label = match nonempty(&block.label) {
             Some(l) => format!("\\label{{{l}}}"),
             None => String::new(),
         };
-        Ok(format!("\\begin{{table}}\n\\centering\n{table}\n{cap}{label}\n\\end{{table}}"))
+        Ok(format!(
+            "\\begin{{table}}\n\\centering\n{table}\n{cap}{label}\n\\end{{table}}"
+        ))
     }
 
     fn cell(&mut self, cell: &TableCell) -> R<String> {
@@ -486,7 +538,11 @@ impl LatexWriter {
             lines.push("\\end{subfigure}".into());
         }
         if block.image.is_none() && !block.blocks.is_empty() {
-            lines.push(self.blocks(&block.blocks)?.trim_end_matches('\n').to_string());
+            lines.push(
+                self.blocks(&block.blocks)?
+                    .trim_end_matches('\n')
+                    .to_string(),
+            );
         }
         if let Some(c) = truthy(&block.caption) {
             let star = if block.caption_numbered { "" } else { "*" };
@@ -526,7 +582,9 @@ impl LatexWriter {
     fn inline(&self, node: &Inline) -> String {
         match node {
             Inline::Text(t) => latex_escape(&t.value),
-            Inline::Emphasis(e) => format!("\\{}{{{}}}", emph_cmd(&e.kind), self.inlines(&e.inlines)),
+            Inline::Emphasis(e) => {
+                format!("\\{}{{{}}}", emph_cmd(&e.kind), self.inlines(&e.inlines))
+            }
             Inline::Math(m) => format!("${}$", m.latex),
             Inline::Ref(r) => ref_latex(r),
             Inline::Cite(c) => cite_latex(c),
@@ -562,7 +620,11 @@ impl LatexWriter {
             Inline::RawInline(r) => r.latex.clone(),
             Inline::Comment(c) => {
                 let note = pystr::split_ws(&c.text).join(" ");
-                let who = if c.author.is_empty() { String::new() } else { format!("[{}] ", c.author) };
+                let who = if c.author.is_empty() {
+                    String::new()
+                } else {
+                    format!("[{}] ", c.author)
+                };
                 format!("\n% comment: {who}{note}\n")
             }
         }
@@ -578,14 +640,25 @@ fn math_block(block: &MathBlock) -> String {
     if env == "displaymath" || env == "math" {
         return format!("\\[\n{latex}\n\\]");
     }
-    let name = if block.numbered { env.clone() } else { format!("{env}*") };
+    let name = if block.numbered {
+        env.clone()
+    } else {
+        format!("{env}*")
+    };
     format!("\\begin{{{name}}}\n{latex}\n\\end{{{name}}}")
 }
 
 fn bibliography(block: &Bibliography) -> String {
-    let mut lines = vec![format!("\\begin{{thebibliography}}{{{}}}", block.entries.len())];
+    let mut lines = vec![format!(
+        "\\begin{{thebibliography}}{{{}}}",
+        block.entries.len()
+    )];
     for item in &block.entries {
-        let note = item.csl_fields.get("note").map(Value::py_str).unwrap_or_default();
+        let note = item
+            .csl_fields
+            .get("note")
+            .map(Value::py_str)
+            .unwrap_or_default();
         lines.push(format!("\\bibitem{{{}}} {note}", item.id));
     }
     lines.push("\\end{thebibliography}".into());
@@ -608,7 +681,11 @@ fn cite_latex(node: &Cite) -> String {
         (None, Some(s)) => format!("[{s}]"),
         (None, None) => String::new(),
     };
-    format!("\\{}{opts}{{{}}}", cite_cmd(&node.mode), node.keys.join(","))
+    format!(
+        "\\{}{opts}{{{}}}",
+        cite_cmd(&node.mode),
+        node.keys.join(",")
+    )
 }
 
 // --------------------------------------------------------------------------- //
@@ -652,7 +729,8 @@ fn scan(blocks: &[Block], feat: &mut Features) {
             }
             Block::Algorithm(_) => feat.algorithm = true,
             Block::Theorem(t) => {
-                feat.theorem_kinds.insert(theorem_env(&t.kind), t.kind.clone());
+                feat.theorem_kinds
+                    .insert(theorem_env(&t.kind), t.kind.clone());
                 scan(&t.blocks, feat);
             }
             Block::Quote(q) => scan(&q.blocks, feat),

@@ -116,7 +116,9 @@ impl Node {
     /// The name of an environment node.
     pub fn environmentname(&self) -> Option<&str> {
         match &self.kind {
-            NodeKind::Environment { environmentname, .. } => Some(environmentname),
+            NodeKind::Environment {
+                environmentname, ..
+            } => Some(environmentname),
             _ => None,
         }
     }

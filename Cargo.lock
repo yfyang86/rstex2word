@@ -10,8 +10,10 @@ dependencies = [
  "tex2word-bib",
  "tex2word-frontend",
  "tex2word-ir",
+ "tex2word-latex",
  "tex2word-math",
  "tex2word-ooxml",
+ "tex2word-validate",
 ]
 
 [[package]]
@@ -37,7 +39,6 @@ name = "tex2word-cli"
 version = "2.0.0"
 dependencies = [
  "tex2word",
- "tex2word-validate",
 ]
 
 [[package]]
@@ -59,9 +60,11 @@ dependencies = [
  "tex2word-bib",
  "tex2word-frontend",
  "tex2word-ir",
+ "tex2word-latex",
  "tex2word-latexwalker",
  "tex2word-math",
  "tex2word-ooxml",
+ "tex2word-validate",
 ]
 
 [[package]]
@@ -97,3 +100,7 @@ version = "2.0.0"
 [[package]]
 name = "tex2word-validate"
 version = "2.0.0"
+dependencies = [
+ "tex2word-ir",
+ "tex2word-ooxml",
+]

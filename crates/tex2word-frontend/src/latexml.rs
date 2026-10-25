@@ -9,8 +9,9 @@ use std::process::Command;
 
 use tex2word_ir::pystr;
 use tex2word_ir::{
-    Block, Cite, CodeBlock, ConversionReport, Document, DocumentMeta, Emphasis, Figure, Footnote, Heading, Image,
-    Inline, ItemList, LineBreak, Link, ListItem, Math, MathBlock, Paragraph, Quote, Ref, Table, TableCell, TableRow,
+    Block, Cite, CodeBlock, ConversionReport, Document, DocumentMeta, Emphasis, Figure, Footnote,
+    Heading, Image, Inline, ItemList, LineBreak, Link, ListItem, Math, MathBlock, Paragraph, Quote,
+    Ref, Table, TableCell, TableRow,
 };
 use tex2word_ooxml::parse::fromstring;
 use tex2word_ooxml::xml::Element;
@@ -37,19 +38,21 @@ const FONT_EMPH: &[(&str, &str)] = &[
 
 fn which(name: &str) -> Option<PathBuf> {
     let path = std::env::var_os("PATH")?;
-    std::env::split_paths(&path).map(|d| d.join(name)).find(|p| {
-        std::fs::metadata(p).is_ok_and(|m| {
-            #[cfg(unix)]
-            {
-                use std::os::unix::fs::PermissionsExt;
-                m.is_file() && m.permissions().mode() & 0o111 != 0
-            }
-            #[cfg(not(unix))]
-            {
-                m.is_file()
-            }
+    std::env::split_paths(&path)
+        .map(|d| d.join(name))
+        .find(|p| {
+            std::fs::metadata(p).is_ok_and(|m| {
+                #[cfg(unix)]
+                {
+                    use std::os::unix::fs::PermissionsExt;
+                    m.is_file() && m.permissions().mode() & 0o111 != 0
+                }
+                #[cfg(not(unix))]
+                {
+                    m.is_file()
+                }
+            })
         })
-    })
 }
 
 /// True if the `latexml` executable is on the PATH.
@@ -64,7 +67,11 @@ pub fn run_latexml(source: &str, base_dir: &str) -> Result<Vec<u8>, String> {
     }
     use std::sync::atomic::{AtomicUsize, Ordering};
     static N: AtomicUsize = AtomicUsize::new(0);
-    let td = std::env::temp_dir().join(format!("tex2word-latexml-{}-{}", std::process::id(), N.fetch_add(1, Ordering::Relaxed)));
+    let td = std::env::temp_dir().join(format!(
+        "tex2word-latexml-{}-{}",
+        std::process::id(),
+        N.fetch_add(1, Ordering::Relaxed)
+    ));
     std::fs::create_dir_all(&td).map_err(|e| e.to_string())?;
     let result = (|| {
         let inp = td.join("main.tex");
@@ -89,7 +96,11 @@ pub fn run_latexml(source: &str, base_dir: &str) -> Result<Vec<u8>, String> {
             return Err(format!(
                 "latexml rc={rc}, {}B output; {}",
                 data.len(),
-                if tail.is_empty() { "(no stderr)".to_string() } else { tail }
+                if tail.is_empty() {
+                    "(no stderr)".to_string()
+                } else {
+                    tail
+                }
             ));
         }
         Ok(data)
@@ -104,7 +115,10 @@ pub fn parse_document(source: &str, base_dir: &str) -> io::Result<(Document, Con
         Ok(x) => x,
         Err(exc) => {
             let (doc, mut report) = crate::parser::parse_document(source, base_dir, None)?;
-            report.warn("latexml", format!("latexml unavailable/failed ({exc}); used pure front-end"));
+            report.warn(
+                "latexml",
+                format!("latexml unavailable/failed ({exc}); used pure front-end"),
+            );
             return Ok((doc, report));
         }
     };
@@ -113,7 +127,10 @@ pub fn parse_document(source: &str, base_dir: &str) -> io::Result<(Document, Con
         Ok(d) => d,
         Err(e) => {
             let (doc, mut report) = crate::parser::parse_document(source, base_dir, None)?;
-            report.warn("latexml", format!("latexml unavailable/failed ({e}); used pure front-end"));
+            report.warn(
+                "latexml",
+                format!("latexml unavailable/failed ({e}); used pure front-end"),
+            );
             return Ok((doc, report));
         }
     };
@@ -124,7 +141,11 @@ pub fn parse_document(source: &str, base_dir: &str) -> io::Result<(Document, Con
 /// Map a LaTeXML XML document to the IR.
 pub fn parse_latexml_xml(xml: &[u8], report: &mut ConversionReport) -> Result<Document, String> {
     let root = fromstring(xml).map_err(|e| e.0)?;
-    Ok(Mapper { _report: report, meta: DocumentMeta::default() }.document(&root))
+    Ok(Mapper {
+        _report: report,
+        meta: DocumentMeta::default(),
+    }
+    .document(&root))
 }
 
 fn ltx(name: &str) -> String {
@@ -139,11 +160,16 @@ fn label_of(e: &Element) -> Option<String> {
 
 /// The first descendant (not self) with the Clark tag (`.//tag`).
 fn find_desc<'a>(e: &'a Element, clark: &str) -> Option<&'a Element> {
-    e.children.iter().find_map(|c| c.iter(Some(clark)).into_iter().next())
+    e.children
+        .iter()
+        .find_map(|c| c.iter(Some(clark)).into_iter().next())
 }
 
 fn find_all_desc<'a>(e: &'a Element, clark: &str) -> Vec<&'a Element> {
-    e.children.iter().flat_map(|c| c.iter(Some(clark))).collect()
+    e.children
+        .iter()
+        .flat_map(|c| c.iter(Some(clark)))
+        .collect()
 }
 
 struct Mapper<'r> {
@@ -154,9 +180,17 @@ struct Mapper<'r> {
 impl Mapper<'_> {
     fn document(mut self, root: &Element) -> Document {
         // LaTeXML wraps the body in <ltx:document>; find it (root may be it)
-        let doc_el = if root.local == "document" { root } else { root.find(&ltx("document")).unwrap_or(root) };
+        let doc_el = if root.local == "document" {
+            root
+        } else {
+            root.find(&ltx("document")).unwrap_or(root)
+        };
         let blocks = self.blocks(doc_el);
-        Document { blocks, meta: self.meta, ..Document::default() }
+        Document {
+            blocks,
+            meta: self.meta,
+            ..Document::default()
+        }
     }
 
     fn blocks(&mut self, parent: &Element) -> Vec<Block> {
@@ -170,9 +204,17 @@ impl Mapper<'_> {
     fn block(&mut self, e: &Element, parent_tag: &str, out: &mut Vec<Block>) {
         let tag = e.local.as_str();
         if let Some(level) = section_level(tag) {
-            let inlines = e.find(&ltx("title")).map_or_else(Vec::new, |t| self.inlines(Some(t)));
+            let inlines = e
+                .find(&ltx("title"))
+                .map_or_else(Vec::new, |t| self.inlines(Some(t)));
             let numbered = !e.get("class").unwrap_or("").contains("unnumbered");
-            out.push(Block::Heading(Heading { level, inlines, label: label_of(e), numbered, ..Heading::default() }));
+            out.push(Block::Heading(Heading {
+                level,
+                inlines,
+                label: label_of(e),
+                numbered,
+                ..Heading::default()
+            }));
             for child in e.elements() {
                 if child.local != "title" {
                     self.block(child, tag, out);
@@ -194,18 +236,27 @@ impl Mapper<'_> {
             "p" => {
                 let inl = self.inlines(Some(e));
                 if !inl.is_empty() {
-                    out.push(Block::Paragraph(Paragraph { inlines: inl, align: None }));
+                    out.push(Block::Paragraph(Paragraph {
+                        inlines: inl,
+                        align: None,
+                    }));
                 }
             }
             "equation" | "equationgroup" => out.push(self.equation(e)),
             "itemize" | "enumerate" | "description" => out.push(self.list(e, tag)),
             "quote" | "block" => {
                 let b = self.blocks(e);
-                out.push(Block::Quote(Quote { blocks: b, ..Quote::default() }));
+                out.push(Block::Quote(Quote {
+                    blocks: b,
+                    ..Quote::default()
+                }));
             }
             "tabular" => out.push(self.table(e)),
             "figure" | "float" => out.push(self.figure(e)),
-            "verbatim" | "listing" => out.push(Block::CodeBlock(CodeBlock { text: e.itertext(), lang: None })),
+            "verbatim" | "listing" => out.push(Block::CodeBlock(CodeBlock {
+                text: e.itertext(),
+                lang: None,
+            })),
             "note" => {} // footnotes handled inline
             _ => {
                 // unknown container: recurse, preserving whatever blocks it holds
@@ -215,7 +266,10 @@ impl Mapper<'_> {
                 } else {
                     let inl = self.inlines(Some(e));
                     if !inl.is_empty() {
-                        out.push(Block::Paragraph(Paragraph { inlines: inl, align: None }));
+                        out.push(Block::Paragraph(Paragraph {
+                            inlines: inl,
+                            align: None,
+                        }));
                     }
                 }
             }
@@ -223,9 +277,18 @@ impl Mapper<'_> {
     }
 
     fn equation(&mut self, e: &Element) -> Block {
-        let tex = find_desc(e, &ltx("Math")).and_then(|m| m.get("tex")).unwrap_or("").to_string();
+        let tex = find_desc(e, &ltx("Math"))
+            .and_then(|m| m.get("tex"))
+            .unwrap_or("")
+            .to_string();
         let numbered = e.get("refnum").is_some() || label_of(e).is_some();
-        Block::MathBlock(MathBlock { latex: tex, numbered, env: "equation".into(), label: label_of(e), line_labels: Vec::new() })
+        Block::MathBlock(MathBlock {
+            latex: tex,
+            numbered,
+            env: "equation".into(),
+            label: label_of(e),
+            line_labels: Vec::new(),
+        })
     }
 
     fn list(&mut self, e: &Element, tag: &str) -> Block {
@@ -237,9 +300,17 @@ impl Mapper<'_> {
                 _ => None,
             };
             let blocks = self.blocks(item);
-            items.push(ListItem { blocks, term, label: None });
+            items.push(ListItem {
+                blocks,
+                term,
+                label: None,
+            });
         }
-        Block::ItemList(ItemList { ordered: tag == "enumerate", items, description: tag == "description" })
+        Block::ItemList(ItemList {
+            ordered: tag == "enumerate",
+            items,
+            description: tag == "description",
+        })
     }
 
     fn table(&mut self, e: &Element) -> Block {
@@ -247,18 +318,34 @@ impl Mapper<'_> {
         for tr in e.findall(&ltx("tr")) {
             let mut cells = Vec::new();
             for td in tr.findall(&ltx("td")) {
-                let span = pystr::parse_int(td.get("colspan").filter(|v| !v.is_empty()).unwrap_or("1")).unwrap_or(1);
+                let span =
+                    pystr::parse_int(td.get("colspan").filter(|v| !v.is_empty()).unwrap_or("1"))
+                        .unwrap_or(1);
                 let inl = self.inlines(Some(td));
                 cells.push(TableCell {
-                    blocks: vec![Block::Paragraph(Paragraph { inlines: inl, align: None })],
+                    blocks: vec![Block::Paragraph(Paragraph {
+                        inlines: inl,
+                        align: None,
+                    })],
                     colspan: span,
                     ..TableCell::default()
                 });
             }
-            rows.push(TableRow { cells, ..TableRow::default() });
+            rows.push(TableRow {
+                cells,
+                ..TableRow::default()
+            });
         }
-        let ncols = rows.iter().map(|r: &TableRow| r.cells.len()).max().unwrap_or(1);
-        Block::Table(Table { rows, colspec: vec!["left".to_string(); ncols], ..Table::default() })
+        let ncols = rows
+            .iter()
+            .map(|r: &TableRow| r.cells.len())
+            .max()
+            .unwrap_or(1);
+        Block::Table(Table {
+            rows,
+            colspec: vec!["left".to_string(); ncols],
+            ..Table::default()
+        })
     }
 
     fn figure(&mut self, e: &Element) -> Block {
@@ -269,11 +356,22 @@ impl Mapper<'_> {
                 .or_else(|| g.get("candidates").filter(|v| !v.is_empty()))
                 .unwrap_or("")
                 .to_string();
-            let ext = path.rsplit_once('.').map_or(String::new(), |(_, e)| e.to_string());
-            Image { path, original_format: ext, ..Image::default() }
+            let ext = path
+                .rsplit_once('.')
+                .map_or(String::new(), |(_, e)| e.to_string());
+            Image {
+                path,
+                original_format: ext,
+                ..Image::default()
+            }
         });
         let caption = e.find(&ltx("caption")).map(|c| self.inlines(Some(c)));
-        Block::Figure(Figure { image, caption, label: label_of(e), ..Figure::default() })
+        Block::Figure(Figure {
+            image,
+            caption,
+            label: label_of(e),
+            ..Figure::default()
+        })
     }
 
     // -- inline ----------------------------------------------------------- //
@@ -299,19 +397,30 @@ impl Mapper<'_> {
 
     fn inline(&mut self, e: &Element, out: &mut Vec<Inline>) {
         match e.local.as_str() {
-            "Math" => out.push(Inline::Math(Math { latex: e.get("tex").unwrap_or("").to_string() })),
+            "Math" => out.push(Inline::Math(Math {
+                latex: e.get("tex").unwrap_or("").to_string(),
+            })),
             "text" => {
                 let font = e.get("font").unwrap_or("");
-                let kind = FONT_EMPH.iter().find(|(k, _)| font.contains(k)).map(|(_, v)| *v);
+                let kind = FONT_EMPH
+                    .iter()
+                    .find(|(k, _)| font.contains(k))
+                    .map(|(_, v)| *v);
                 let inner = self.inlines(Some(e));
                 match kind {
-                    Some(k) => out.push(Inline::Emphasis(Emphasis { inlines: inner, kind: k.into() })),
+                    Some(k) => out.push(Inline::Emphasis(Emphasis {
+                        inlines: inner,
+                        kind: k.into(),
+                    })),
                     None => out.extend(inner), // unstyled group -> transparent
                 }
             }
             "emph" => {
                 let inner = self.inlines(Some(e));
-                out.push(Inline::Emphasis(Emphasis { inlines: inner, kind: "italic".into() }));
+                out.push(Inline::Emphasis(Emphasis {
+                    inlines: inner,
+                    kind: "italic".into(),
+                }));
             }
             "ref" => {
                 let raw = e
@@ -321,11 +430,23 @@ impl Mapper<'_> {
                     .unwrap_or("");
                 let labelref = raw.strip_prefix("LABEL:").unwrap_or(raw);
                 if !labelref.is_empty() {
-                    out.push(Inline::Ref(Ref { key: labelref.into(), ref_kind: "generic".into(), ..Ref::default() }));
+                    out.push(Inline::Ref(Ref {
+                        key: labelref.into(),
+                        ref_kind: "generic".into(),
+                        ..Ref::default()
+                    }));
                 } else if let Some(href) = e.get("href").filter(|h| !h.is_empty()) {
                     let inner = self.inlines(Some(e));
-                    let inlines = if inner.is_empty() { vec![Inline::text(href)] } else { inner };
-                    out.push(Inline::Link(Link { inlines, url: href.into(), anchor: None }));
+                    let inlines = if inner.is_empty() {
+                        vec![Inline::text(href)]
+                    } else {
+                        inner
+                    };
+                    out.push(Inline::Link(Link {
+                        inlines,
+                        url: href.into(),
+                        anchor: None,
+                    }));
                 } else {
                     let inner = self.inlines(Some(e));
                     out.extend(inner);
@@ -334,10 +455,19 @@ impl Mapper<'_> {
             "cite" => {
                 let mut keys: Vec<String> = Vec::new();
                 for br in find_all_desc(e, &ltx("bibref")) {
-                    keys.extend(br.get("bibrefs").unwrap_or("").split(',').map(str::to_string));
+                    keys.extend(
+                        br.get("bibrefs")
+                            .unwrap_or("")
+                            .split(',')
+                            .map(str::to_string),
+                    );
                 }
                 keys.retain(|k| !k.is_empty());
-                out.push(Inline::Cite(Cite { keys, mode: "paren".into(), ..Cite::default() }));
+                out.push(Inline::Cite(Cite {
+                    keys,
+                    mode: "paren".into(),
+                    ..Cite::default()
+                }));
             }
             "note" => {
                 let inner = self.inlines(Some(e));

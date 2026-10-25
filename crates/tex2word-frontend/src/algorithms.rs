@@ -35,7 +35,10 @@ fn stmt(name: &str) -> Option<&'static str> {
 }
 
 fn is_close(name: &str) -> bool {
-    matches!(name, "endif" | "endfor" | "endwhile" | "endloop" | "endfunction" | "endprocedure")
+    matches!(
+        name,
+        "endif" | "endfor" | "endwhile" | "endloop" | "endfunction" | "endprocedure"
+    )
 }
 
 /// structural commands that flush the current line and emit their own
@@ -45,13 +48,25 @@ fn is_structural(name: &str) -> bool {
         || is_close(name)
         || matches!(
             name,
-            "else" | "elsif" | "elif" | "elseif" | "repeat" | "until" | "loop" | "function"
-                | "procedure" | "eif" | "uif"
+            "else"
+                | "elsif"
+                | "elif"
+                | "elseif"
+                | "repeat"
+                | "until"
+                | "loop"
+                | "function"
+                | "procedure"
+                | "eif"
+                | "uif"
         )
 }
 
 fn is_comment(name: &str) -> bool {
-    matches!(name, "comment" | "tcp" | "tcc" | "tcp*" | "algorithmiccomment")
+    matches!(
+        name,
+        "comment" | "tcp" | "tcc" | "tcp*" | "algorithmiccomment"
+    )
 }
 
 /// handled at the float level, not in the body
@@ -79,7 +94,10 @@ fn find_algorithmic(nodes: &[Node]) -> Option<&Node> {
 
 /// Parse an algorithm body into lines; `inlines` converts a raw node run to
 /// IR inlines (the parser's inline converter).
-pub fn parse_algorithm_body(nodes: &[Node], inlines: &mut dyn FnMut(&[Node]) -> Vec<Inline>) -> Vec<AlgLine> {
+pub fn parse_algorithm_body(
+    nodes: &[Node],
+    inlines: &mut dyn FnMut(&[Node]) -> Vec<Inline>,
+) -> Vec<AlgLine> {
     let body = match find_algorithmic(nodes) {
         Some(inner) => inner.nodelist().unwrap_or(&[]),
         None => nodes,
