@@ -11,3 +11,4 @@ publish = false
 
 [dependencies]
 tex2word-ir.workspace = true
+tex2word-latexwalker.workspace = true
