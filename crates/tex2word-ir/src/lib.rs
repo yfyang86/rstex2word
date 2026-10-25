@@ -13,14 +13,17 @@
 //!   `json.dumps` byte-for-byte;
 //! * [`report`] — the [`ConversionReport`] sink for warnings and coverage;
 //! * [`crossref`] — the cross-reference resolution transform (IR -> IR);
-//! * [`pystr`] — Python `str` semantics the ported code relies on.
+//! * [`pystr`] — Python `str` semantics the ported code relies on;
+//! * [`re`] — a regex engine compatible with Python's `re` module.
 
 pub mod crossref;
 pub mod dict;
 pub mod json;
 mod nodes;
 pub mod pystr;
+pub mod re;
 pub mod report;
+mod unicode_tables;
 
 pub use dict::Dict;
 pub use json::{FromJson, JsonError, ToJson, Value};

@@ -23,7 +23,7 @@ pub mod chars;
 mod default_specs;
 mod node;
 mod spec;
-mod unicode_tables;
+
 mod walker;
 
 pub use node::{Node, NodeKind, ParsedArgs};

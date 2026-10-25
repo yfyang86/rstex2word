@@ -13,3 +13,4 @@ readme = "../../README.md"
 description = "A Rust port of pylatexenc's LaTeX walker (node tree, macro specs, latex2text) for tex2word"
 
 [dependencies]
+tex2word-ir.workspace = true
