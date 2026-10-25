@@ -107,6 +107,27 @@ fn rd32(b: &[u8], i: usize) -> Result<usize, String> {
         .ok_or_else(|| "truncated zip".into())
 }
 
+/// Code page 437 (zipfile's default name encoding), bytes 0x80..=0xFF.
+#[rustfmt::skip]
+const CP437_HIGH: [char; 128] = [
+    'Ç', 'ü', 'é', 'â', 'ä', 'à', 'å', 'ç',
+    'ê', 'ë', 'è', 'ï', 'î', 'ì', 'Ä', 'Å',
+    'É', 'æ', 'Æ', 'ô', 'ö', 'ò', 'û', 'ù',
+    'ÿ', 'Ö', 'Ü', '¢', '£', '¥', '₧', 'ƒ',
+    'á', 'í', 'ó', 'ú', 'ñ', 'Ñ', 'ª', 'º',
+    '¿', '⌐', '¬', '½', '¼', '¡', '«', '»',
+    '░', '▒', '▓', '│', '┤', '╡', '╢', '╖',
+    '╕', '╣', '║', '╗', '╝', '╜', '╛', '┐',
+    '└', '┴', '┬', '├', '─', '┼', '╞', '╟',
+    '╚', '╔', '╩', '╦', '╠', '═', '╬', '╧',
+    '╨', '╤', '╥', '╙', '╘', '╒', '╓', '╫',
+    '╪', '┘', '┌', '█', '▄', '▌', '▐', '▀',
+    'α', 'ß', 'Γ', 'π', 'Σ', 'σ', 'µ', 'τ',
+    'Φ', 'Θ', 'Ω', 'δ', '∞', 'φ', 'ε', '∩',
+    '≡', '±', '≥', '≤', '⌠', '⌡', '÷', '≈',
+    '°', '∙', '·', '√', 'ⁿ', '²', '■', '\u{a0}',
+];
+
 /// A member's central-directory metadata.
 #[derive(Debug, Clone)]
 pub struct Info {
@@ -155,8 +176,9 @@ impl<'a> Archive<'a> {
             let name = if flags & 0x800 != 0 {
                 String::from_utf8_lossy(raw).into_owned()
             } else {
-                // cp437; ASCII names decode identically
-                raw.iter().map(|&b| char::from(b)).collect()
+                raw.iter()
+                    .map(|&b| if b < 0x80 { char::from(b) } else { CP437_HIGH[(b - 0x80) as usize] })
+                    .collect()
             };
             infos.push(Info { name, method, compressed_size, size, crc, offset });
             p += 46 + nlen + elen + clen;

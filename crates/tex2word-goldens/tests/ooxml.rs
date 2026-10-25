@@ -63,3 +63,31 @@ fn reads_python_written_docx() {
     }
     assert!(n > 20, "only {n} archives");
 }
+
+#[test]
+fn xml_errors_match_lxml() {
+    let text = std::fs::read_to_string(root().join("xmlerr.jsonl")).unwrap();
+    let mut failures = Vec::new();
+    let mut n = 0;
+    for line in text.lines() {
+        n += 1;
+        let row = json::parse(line).unwrap();
+        // the input bytes, stored as Latin-1 text
+        let data: Vec<u8> = row.get("in").and_then(Value::as_str).unwrap().chars().map(|c| c as u32 as u8).collect();
+        let want = row.get("err").and_then(Value::as_str);
+        let got = fromstring(&data).err().map(|e| e.0);
+        if got.as_deref() != want {
+            failures.push(format!(
+                "{:?}\n  want {want:?}\n  got  {got:?}",
+                String::from_utf8_lossy(&data[..data.len().min(120)])
+            ));
+        }
+    }
+    assert!(n > 1000, "only {n} rows");
+    assert!(
+        failures.is_empty(),
+        "{} of {n} differ:\n{}",
+        failures.len(),
+        failures.iter().take(25).cloned().collect::<Vec<_>>().join("\n")
+    );
+}
