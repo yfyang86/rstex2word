@@ -8,7 +8,7 @@
 //! be translated literally.
 
 use crate::unicode_norm::{CCC, COMPOSE, DECOMP};
-use crate::unicode_tables::{ALNUM, ALPHA, DECIMAL, SPACE};
+use crate::unicode_tables::{ALNUM, ALPHA, DECIMAL, DIGIT, SPACE};
 
 fn in_ranges(table: &[(u32, u32)], c: char) -> bool {
     let cp = c as u32;
@@ -55,6 +55,14 @@ pub fn is_decimal(c: char) -> bool {
         return c.is_ascii_digit();
     }
     in_ranges(DECIMAL, c)
+}
+
+/// `c.isdigit()` (decimal digits plus other digits such as `²`).
+pub fn is_digit(c: char) -> bool {
+    if c.is_ascii() {
+        return c.is_ascii_digit();
+    }
+    in_ranges(DIGIT, c)
 }
 
 /// Regex `\w` (Unicode): `isalnum()` or `_`.
@@ -396,6 +404,7 @@ mod tests {
         assert!(!is_alpha('\u{0345}'), "COMBINING YPOGEGRAMMENI is a mark");
         assert!(is_alnum('²') && is_alnum('\u{2167}') && is_word('_'));
         assert!(is_decimal('٣') && !is_decimal('²'), "Nd only");
+        assert!(is_digit('²') && is_digit('٣') && !is_digit('½'));
         assert!(!is_word('-'));
     }
 

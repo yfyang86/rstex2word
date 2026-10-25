@@ -68,7 +68,9 @@ def gen_unicode() -> None:
     text += emit_ranges("SPACE", "Python `str.isspace()` code-point ranges.",
                         ranges(str.isspace)) + "\n"
     text += emit_ranges("DECIMAL", "Python `str.isdecimal()` code-point ranges (regex `\\d`).",
-                        ranges(str.isdecimal))
+                        ranges(str.isdecimal)) + "\n"
+    text += emit_ranges("DIGIT", "Python `str.isdigit()` code-point ranges.",
+                        ranges(str.isdigit))
     (IR_OUT / "unicode_tables.rs").write_text(text)
 
 

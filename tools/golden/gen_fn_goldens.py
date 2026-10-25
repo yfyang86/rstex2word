@@ -31,6 +31,8 @@ from tex2word import ir
 from tex2word.bib.bbl import parse_bbl
 from tex2word.bib.bibtex import parse_bibtex
 from tex2word.frontend import macros as M
+from tex2word.mathml import omml as O
+from tex2word.mathml.latex_math import MathUnsupported
 from tex2word.frontend import preprocess as P
 
 OUT = os.path.join(
@@ -44,6 +46,70 @@ def _latex2text(s):
         return LatexNodes2Text(keep_comments=False, strict_latex_spaces=False).latex_to_text(s)
     except Exception as e:  # recorded: Rust must fail too
         return {"error": type(e).__name__}
+
+
+def _omml(fn):
+    def run(s):
+        try:
+            out = fn(s)
+        except MathUnsupported as e:
+            return json.dumps({"unsupported": e.construct, "msg": str(e)}, ensure_ascii=False)
+        except Exception as e:
+            return json.dumps({"error": type(e).__name__}, ensure_ascii=False)
+        els = out if isinstance(out, list) else [out]
+        from lxml import etree
+        from tex2word.backend.ooxml import NS
+        decls = " ".join(f'xmlns:{k}="{v}"' for k, v in NS.items())
+        return json.dumps({"ok": [etree.tostring(x, encoding="unicode").replace(decls, "@NS")
+                                  for x in els]}, ensure_ascii=False)
+    return run
+
+
+MATH_FUNCS = {
+    "omml_inline": _omml(O.render_inline),
+    "omml_block": _omml(lambda s: O.render_block_lines(s, True)),
+    "omml_block_nocollapse": _omml(lambda s: O.render_block_lines(s, False)),
+}
+
+
+def math_inputs() -> list[str]:
+    """Every Math/MathBlock latex in the recorded IRs."""
+    found: list[str] = []
+    seen: set[str] = set()
+
+    def walk(v):
+        if isinstance(v, dict):
+            if v.get("@type") in ("Math", "MathBlock") and isinstance(v.get("latex"), str):
+                if v["latex"] not in seen:
+                    seen.add(v["latex"])
+                    found.append(v["latex"])
+            for x in v.values():
+                walk(x)
+        elif isinstance(v, list):
+            for x in v:
+                walk(x)
+
+    gold = os.path.dirname(OUT)
+    with open(os.path.join(gold, "parse.jsonl"), encoding="utf-8") as fh:
+        for line in fh:
+            walk(json.loads(line)["ir"])
+    for cid in sorted(os.listdir(os.path.join(gold, "cases"))):
+        with open(os.path.join(gold, "cases", cid, "out.json"), encoding="utf-8") as fh:
+            walk(json.load(fh))
+    return found
+
+
+MATH_VOCAB = [
+    "x", "y", "2", "3.14", "+", "-", "=", "<", "(", ")", "[", "]", "|", "^", "_", "{", "}", "&", "\\\\",
+    "\\frac", "\\sqrt", "\\sqrt[3]", "\\sum", "\\int", "\\lim", "\\alpha", "\\mathbb{R}",
+    "\\left(", "\\right)", "\\left.", "\\right|", "\\begin{pmatrix}", "\\end{pmatrix}",
+    "\\begin{aligned}", "\\end{aligned}", "\\begin{cases}", "\\end{cases}", "\\text{ if }",
+    "\\hat", "\\vec", "\\overbrace", "\\underbrace", "\\binom", "\\abs", "\\norm*", "\\dv",
+    "\\pdv", "\\dd", "\\xrightarrow[a]", "\\overset", "\\mathcal", "\\mathbf", "\\rm ",
+    "\\label{e}", "\\tag{1}", "\\nonumber", "\\sin", "\\max", "\\pmod", "\\bmod", "\\big(",
+    "\\substack", "\\cmidrule(lr)", "\\hline", "\\quad", "\\,", "\\unknown", "²", "中",
+    "\\operatorname{tr}", "\\displaystyle", "\\{", "\\}", "\\|", "'", "\\cdots", "\\infty",
+]
 
 
 FUNCS = {
@@ -188,6 +254,8 @@ def main() -> None:
         for name, fn in FUNCS.items():
             kept_noop = kept = 0
             for s in inputs + soups(name, 400, random.Random(name)):
+                if name in MATH_FUNCS:
+                    break  # math functions use their own inputs below
                 out = guarded(fn, s)
                 if out is None:
                     print(f"  {name}: skipped a {len(s)}-char input (blows up)", file=sys.stderr)
@@ -200,6 +268,17 @@ def main() -> None:
                 fh.write(json.dumps({"f": name, "in": s, "out": out}, ensure_ascii=False) + "\n")
                 rows += 1
             print(f"{name}: {kept} rows ({kept_noop} no-op)", file=sys.stderr)
+        minputs = math_inputs()
+        rng2 = random.Random("math")
+        msoups = ["".join(rng2.choice(MATH_VOCAB) for _ in range(rng2.randint(1, 25))) for _ in range(1500)]
+        for name, fn in MATH_FUNCS.items():
+            for s in minputs + msoups:
+                out = guarded(fn, s)
+                if out is None:
+                    continue
+                fh.write(json.dumps({"f": name, "in": s, "out": out}, ensure_ascii=False) + "\n")
+                rows += 1
+            print(f"{name}: {len(minputs)} recorded + {len(msoups)} random inputs", file=sys.stderr)
     print(f"{rows} rows from {len(inputs)} inputs, {len(files)} files", file=sys.stderr)
 
 
