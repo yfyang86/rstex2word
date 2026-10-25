@@ -1,0 +1,17 @@
+usage: tex2word [-h] {convert,coverage,benchmark,to-latex} ...
+
+Convert LaTeX to a native Microsoft Word (.docx) document.
+
+positional arguments:
+  {convert,coverage,benchmark,to-latex}
+    convert             convert a .tex file to .docx
+    coverage            convert every .tex in a directory and emit a coverage
+                        dashboard
+    benchmark           convert every .tex in a directory and report
+                        quantitative metrics (math-OMML %, validity, warnings,
+                        aborts)
+    to-latex            recover LaTeX from a tex2word-produced .docx (round-
+                        trip)
+
+options:
+  -h, --help            show this help message and exit

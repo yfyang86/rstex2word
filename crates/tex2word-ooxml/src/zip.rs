@@ -65,7 +65,9 @@ pub fn write(members: &[(String, Vec<u8>)]) -> Vec<u8> {
         out.extend_from_slice(&comp);
 
         u32le(&mut central, 0x0201_4b50);
-        u16le(&mut central, 20); // version made by
+        // version made by: 2.0 on the host OS (zipfile: 0 on Windows, 3 elsewhere)
+        central.push(20);
+        central.push(if cfg!(windows) { 0 } else { 3 });
         u16le(&mut central, 20);
         u16le(&mut central, flags);
         u16le(&mut central, 8);

@@ -3,6 +3,7 @@
 //! A port of the Python `tex2word` package (core install). The entry points
 //! are [`convert_source`] and [`convert_file`].
 
+pub mod benchmark;
 pub mod difflib;
 pub mod pipeline;
 pub mod roundtrip;

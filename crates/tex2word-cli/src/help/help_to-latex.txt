@@ -1,0 +1,11 @@
+usage: tex2word to-latex [-h] [-o OUTPUT] [--no-reconcile] input
+
+positional arguments:
+  input                 input .docx (must carry the round-trip manifest)
+
+options:
+  -h, --help            show this help message and exit
+  -o OUTPUT, --output OUTPUT
+                        output .tex path (default: stdout)
+  --no-reconcile        emit the embedded manifest verbatim, ignoring any Word
+                        edits to the body

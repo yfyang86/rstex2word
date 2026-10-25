@@ -91,3 +91,21 @@ fn xml_errors_match_lxml() {
         failures.iter().take(25).cloned().collect::<Vec<_>>().join("\n")
     );
 }
+
+#[test]
+fn deflate_matches_zlib() {
+    let text = std::fs::read_to_string(root().join("deflate.jsonl")).unwrap();
+    let mut failures = Vec::new();
+    let mut n = 0;
+    for line in text.lines() {
+        n += 1;
+        let row = json::parse(line).unwrap();
+        let sha = row.get("sha").and_then(Value::as_str).unwrap();
+        let out = tex2word_ooxml::deflate::deflate(&blob(sha));
+        if sha256_hex(&out) != row.get("out").and_then(Value::as_str).unwrap() {
+            failures.push(sha.to_string());
+        }
+    }
+    assert!(n > 1000, "only {n} rows");
+    assert!(failures.is_empty(), "{} of {n} differ:\n{}", failures.len(), failures.join("\n"));
+}

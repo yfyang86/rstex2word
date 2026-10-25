@@ -1,0 +1,11 @@
+usage: tex2word benchmark [-h] [-o OUTPUT] [--fail-on-regression] directory
+
+positional arguments:
+  directory             directory of .tex files (searched recursively)
+
+options:
+  -h, --help            show this help message and exit
+  -o OUTPUT, --output OUTPUT
+                        write the metrics JSON here
+  --fail-on-regression  exit non-zero if any document aborts or produces
+                        invalid OOXML

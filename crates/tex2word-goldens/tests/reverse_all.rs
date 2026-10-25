@@ -89,6 +89,7 @@ fn reverse_path_matches_python() {
             Err(e) => error(&e.0),
         };
         let checks = [
+            ("docx", Value::Str(sha256_hex(&docx))),
             ("read", got_read),
             ("foreign", got_foreign),
             ("latex", latex(true)),

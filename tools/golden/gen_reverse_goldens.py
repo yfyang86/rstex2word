@@ -53,6 +53,17 @@ def build(order, parts) -> bytes:
     return buf.getvalue()
 
 
+def package_zip(order, parts) -> bytes:
+    """The archive exactly as tex2word's DocxPackage writes it."""
+    buf = io.BytesIO()
+    with zipfile.ZipFile(buf, "w", zipfile.ZIP_DEFLATED) as zf:
+        for name in sorted(order):
+            info = zipfile.ZipInfo(name, date_time=(1980, 1, 1, 0, 0, 0))
+            info.compress_type = zipfile.ZIP_DEFLATED
+            zf.writestr(info, parts[name])
+    return buf.getvalue()
+
+
 def attempt(fn):
     try:
         return fn()
@@ -75,6 +86,7 @@ def main() -> None:
         read = attempt(lambda: read_docx(data))
         row = {
             "case": cid,
+            "docx": hashlib.sha256(package_zip(docx["order"], parts)).hexdigest(),
             "read": read if isinstance(read, dict) else sha(canon(read)),
             "latex": attempt(lambda: sha(to_latex(data))),
             "latex_raw": attempt(lambda: sha(to_latex(data, reconcile=False))),
