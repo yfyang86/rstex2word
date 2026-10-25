@@ -7,6 +7,7 @@
 //! Unicode database (`tools/golden/gen_walker_tables.py`), so ported code can
 //! be translated literally.
 
+use crate::unicode_norm::{CCC, COMPOSE, DECOMP};
 use crate::unicode_tables::{ALNUM, ALPHA, DECIMAL, SPACE};
 
 fn in_ranges(table: &[(u32, u32)], c: char) -> bool {
@@ -259,6 +260,118 @@ pub fn capitalize(s: &str) -> String {
     }
 }
 
+// Hangul syllable algorithm constants (Unicode §3.12)
+const S_BASE: u32 = 0xAC00;
+const L_BASE: u32 = 0x1100;
+const V_BASE: u32 = 0x1161;
+const T_BASE: u32 = 0x11A7;
+const L_COUNT: u32 = 19;
+const V_COUNT: u32 = 21;
+const T_COUNT: u32 = 28;
+const N_COUNT: u32 = V_COUNT * T_COUNT;
+const S_COUNT: u32 = L_COUNT * N_COUNT;
+
+/// The canonical combining class of `c` (`unicodedata.combining`).
+pub fn combining(c: char) -> u8 {
+    let cp = c as u32;
+    match CCC.binary_search_by(|&(lo, hi, _)| {
+        if hi < cp {
+            std::cmp::Ordering::Less
+        } else if lo > cp {
+            std::cmp::Ordering::Greater
+        } else {
+            std::cmp::Ordering::Equal
+        }
+    }) {
+        Ok(i) => CCC[i].2,
+        Err(_) => 0,
+    }
+}
+
+fn decompose_into(cp: u32, out: &mut Vec<u32>) {
+    if (S_BASE..S_BASE + S_COUNT).contains(&cp) {
+        let s = cp - S_BASE;
+        out.push(L_BASE + s / N_COUNT);
+        out.push(V_BASE + (s % N_COUNT) / T_COUNT);
+        if s % T_COUNT != 0 {
+            out.push(T_BASE + s % T_COUNT);
+        }
+        return;
+    }
+    match DECOMP.binary_search_by_key(&cp, |&(c, _)| c) {
+        Ok(i) => {
+            for &p in DECOMP[i].1 {
+                decompose_into(p, out);
+            }
+        }
+        Err(_) => out.push(cp),
+    }
+}
+
+fn compose_pair(a: u32, b: u32) -> Option<u32> {
+    if (L_BASE..L_BASE + L_COUNT).contains(&a) && (V_BASE..V_BASE + V_COUNT).contains(&b) {
+        return Some(S_BASE + ((a - L_BASE) * V_COUNT + (b - V_BASE)) * T_COUNT);
+    }
+    if (S_BASE..S_BASE + S_COUNT).contains(&a)
+        && (a - S_BASE) % T_COUNT == 0
+        && (T_BASE + 1..T_BASE + T_COUNT).contains(&b)
+    {
+        return Some(a + (b - T_BASE));
+    }
+    COMPOSE
+        .binary_search_by(|&(x, y, _)| (x, y).cmp(&(a, b)))
+        .ok()
+        .map(|i| COMPOSE[i].2)
+}
+
+/// `unicodedata.normalize("NFC", s)`.
+pub fn nfc(s: &str) -> String {
+    if s.is_ascii() {
+        return s.to_string();
+    }
+    // canonical decomposition
+    let mut d: Vec<u32> = Vec::with_capacity(s.len());
+    for c in s.chars() {
+        decompose_into(c as u32, &mut d);
+    }
+    let ccc = |cp: u32| char::from_u32(cp).map_or(0, combining);
+    // canonical ordering: stable-sort each run of non-starters by class
+    let mut i = 0;
+    while i < d.len() {
+        if ccc(d[i]) == 0 {
+            i += 1;
+            continue;
+        }
+        let start = i;
+        while i < d.len() && ccc(d[i]) != 0 {
+            i += 1;
+        }
+        d[start..i].sort_by_key(|&cp| ccc(cp));
+    }
+    // canonical composition
+    let mut out: Vec<u32> = Vec::with_capacity(d.len());
+    let mut starter: Option<usize> = None;
+    let mut last_ccc = 0u8;
+    for cp in d {
+        let cc = ccc(cp);
+        if let Some(si) = starter {
+            let unblocked = out.len() - 1 == si || (last_ccc != 0 && last_ccc < cc);
+            if unblocked {
+                if let Some(comp) = compose_pair(out[si], cp) {
+                    out[si] = comp;
+                    continue;
+                }
+            }
+        }
+        if cc == 0 {
+            starter = Some(out.len());
+        }
+        last_ccc = cc;
+        out.push(cp);
+    }
+    out.into_iter().filter_map(char::from_u32).collect()
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -284,6 +397,19 @@ mod tests {
         assert!(is_alnum('²') && is_alnum('\u{2167}') && is_word('_'));
         assert!(is_decimal('٣') && !is_decimal('²'), "Nd only");
         assert!(!is_word('-'));
+    }
+
+    #[test]
+    fn nfc_matches_python() {
+        assert_eq!(crate::unicode_norm::UNICODE_VERSION, "15.0.0");
+        assert_eq!(nfc("e\u{301}"), "é");
+        assert_eq!(nfc("a\u{323}\u{302}"), "ậ", "reordered then composed");
+        assert_eq!(nfc("a\u{302}\u{323}"), "ậ");
+        assert_eq!(nfc("\u{1100}\u{1161}\u{11A8}"), "각", "Hangul LVT");
+        assert_eq!(nfc("\u{212B}"), "Å", "singleton decomposes");
+        assert_eq!(nfc("\u{0344}"), "\u{308}\u{301}", "non-starter decomposition");
+        assert_eq!(nfc("\u{301}e"), "\u{301}e", "no starter before the mark");
+        assert_eq!(nfc("i\u{307}\u{301}"), "i\u{307}\u{301}");
     }
 
     #[test]

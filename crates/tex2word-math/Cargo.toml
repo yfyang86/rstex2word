@@ -13,3 +13,4 @@ readme = "../../README.md"
 description = "tex2word math engine: LaTeX math -> OMML (OfficeMath)"
 
 [dependencies]
+tex2word-ir.workspace = true

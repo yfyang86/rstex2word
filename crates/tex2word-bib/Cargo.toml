@@ -1,0 +1,17 @@
+[package]
+name = "tex2word-bib"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+authors.workspace = true
+repository.workspace = true
+homepage.workspace = true
+keywords.workspace = true
+categories.workspace = true
+readme = "../../README.md"
+description = "tex2word bibliography: BibTeX/.bbl parsing and citation rendering"
+
+[dependencies]
+tex2word-ir.workspace = true
+tex2word-latexwalker.workspace = true

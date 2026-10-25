@@ -25,6 +25,7 @@ pub mod pyos;
 pub mod pystr;
 pub mod re;
 pub mod report;
+mod unicode_norm;
 mod unicode_tables;
 
 pub use dict::Dict;

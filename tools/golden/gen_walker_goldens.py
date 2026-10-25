@@ -112,9 +112,11 @@ def materialize(case: dict, tmp: Path) -> str:
 
 
 def main() -> None:
+    P._today_text = lambda: "January 2, 2026"  # as capture_plugin freezes it
     seen: set[str] = set()
     rows = []
     stages = []
+    parses = []
     contexts: list[list] = []
     ctx_index: dict[str, int] = {}
     for case_dir in sorted((GOLDENS / "cases").iterdir()):
@@ -139,6 +141,17 @@ def main() -> None:
                 "norm": None if expanded == tikz else expanded,
                 "body": body, "preamble": _preamble,
             })
+            args = case["args"]
+            if case["api"] == "convert_source" and args.get("frontend", "pure") == "pure" \
+                    and not args.get("csl"):
+                # parse_document as convert_source runs it (pre-crossref)
+                doc, rep = P.parse_document(source, base_dir)
+                row = json.dumps({"case": case_dir.name, "ir": doc.to_dict(),
+                                  "report": json.loads(rep.to_json())},
+                                 ensure_ascii=False, sort_keys=True, separators=(",", ":"))
+                if base_dir != ".":
+                    row = row.replace(base_dir, "{BASE}")
+                parses.append(row)
             theorem_src = expanded + "\n" + local_package_sources(source, base_dir)
             custom, _unnum, _shared = P._collect_newtheorems(theorem_src)
             tcb_envs, _styles = P._collect_tcolorbox_defs(theorem_src)
@@ -166,6 +179,10 @@ def main() -> None:
         for st in stages:
             fh.write(json.dumps(st, ensure_ascii=False, sort_keys=True, separators=(",", ":")) + "\n")
     print(f"wrote {len(stages)} stage goldens -> {GOLDENS / 'stages.jsonl'}")
+    with (GOLDENS / "parse.jsonl").open("w") as fh:
+        for row in parses:
+            fh.write(row + "\n")
+    print(f"wrote {len(parses)} parse goldens -> {GOLDENS / 'parse.jsonl'}")
 
 
 if __name__ == "__main__":

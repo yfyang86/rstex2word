@@ -4,6 +4,7 @@
 pub mod algorithms;
 pub mod colors;
 pub mod macros;
+pub mod parser;
 pub mod preprocess;
 pub mod siunitx;
 

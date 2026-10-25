@@ -22,6 +22,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "tex2word-bib"
+version = "2.0.0"
+dependencies = [
+ "tex2word-ir",
+ "tex2word-latexwalker",
+]
+
+[[package]]
 name = "tex2word-cli"
 version = "2.0.0"
 dependencies = [
@@ -33,8 +41,10 @@ dependencies = [
 name = "tex2word-frontend"
 version = "2.0.0"
 dependencies = [
+ "tex2word-bib",
  "tex2word-ir",
  "tex2word-latexwalker",
+ "tex2word-math",
 ]
 
 [[package]]
@@ -67,6 +77,9 @@ dependencies = [
 [[package]]
 name = "tex2word-math"
 version = "2.0.0"
+dependencies = [
+ "tex2word-ir",
+]
 
 [[package]]
 name = "tex2word-validate"

@@ -15,3 +15,5 @@ description = "tex2word LaTeX front-end: LaTeX -> IR"
 [dependencies]
 tex2word-ir.workspace = true
 tex2word-latexwalker.workspace = true
+tex2word-math.workspace = true
+tex2word-bib.workspace = true
