@@ -11,6 +11,12 @@ context category (which depends on its ``\\newtheorem``/``\\newtcolorbox``
 declarations) is exported alongside, so the Rust test can rebuild the same
 context without the frontend.
 
+Also writes ``stages.jsonl``: per case, the string after each frontend stage
+(``preprocess``, ``expand_macros``, ``replace_inline_tikz``,
+``normalize_spacing_and_icons``, then the ``_split_document`` body/preamble),
+``null`` where a stage left its input unchanged -- a debugging aid that
+localises a divergence to one stage.
+
 Output: ``crates/tex2word-goldens/goldens/walker.jsonl`` -- line 1 is the list of
 distinct context categories ``[[macros, envs], ...]``; every further line is one
 input ``{"src": str, "ctx": <index>, "nodes": [...]}``. Node positions
@@ -108,6 +114,7 @@ def materialize(case: dict, tmp: Path) -> str:
 def main() -> None:
     seen: set[str] = set()
     rows = []
+    stages = []
     contexts: list[list] = []
     ctx_index: dict[str, int] = {}
     for case_dir in sorted((GOLDENS / "cases").iterdir()):
@@ -119,9 +126,19 @@ def main() -> None:
             continue
         with tempfile.TemporaryDirectory() as td:
             base_dir = materialize(case, Path(td))
-            expanded = replace_inline_tikz(expand_macros(preprocess(source, base_dir), base_dir))
-            expanded = normalize_spacing_and_icons(expanded)
+            pre = preprocess(source, base_dir)
+            exp = expand_macros(pre, base_dir)
+            tikz = replace_inline_tikz(exp)
+            expanded = normalize_spacing_and_icons(tikz)
             body, _preamble = P._split_document(expanded)
+            chain = [source, pre, exp, tikz, expanded]
+            stages.append({
+                "case": case_dir.name,
+                "pre": pre, "exp": None if exp == pre else exp,
+                "tikz": None if tikz == exp else tikz,
+                "norm": None if expanded == tikz else expanded,
+                "body": body, "preamble": _preamble,
+            })
             theorem_src = expanded + "\n" + local_package_sources(source, base_dir)
             custom, _unnum, _shared = P._collect_newtheorems(theorem_src)
             tcb_envs, _styles = P._collect_tcolorbox_defs(theorem_src)
@@ -145,6 +162,10 @@ def main() -> None:
         for r in rows:
             fh.write(json.dumps(r, ensure_ascii=False, sort_keys=True, separators=(",", ":")) + "\n")
     print(f"wrote {len(rows)} walker goldens -> {out}")
+    with (GOLDENS / "stages.jsonl").open("w") as fh:
+        for st in stages:
+            fh.write(json.dumps(st, ensure_ascii=False, sort_keys=True, separators=(",", ":")) + "\n")
+    print(f"wrote {len(stages)} stage goldens -> {GOLDENS / 'stages.jsonl'}")
 
 
 if __name__ == "__main__":

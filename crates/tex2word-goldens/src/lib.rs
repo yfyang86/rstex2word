@@ -46,6 +46,79 @@ impl Case {
     }
 }
 
+/// A temporary directory holding a case's snapshot files; removed on drop.
+pub struct Materialized {
+    root: PathBuf,
+    /// the `base_dir` argument to replay with (`"."` when none was recorded)
+    pub base_dir: String,
+}
+
+impl Materialized {
+    /// The path a recorded file argument (`{"@file": "@arg/name"}`) maps to.
+    pub fn arg_path(&self, name: &str) -> String {
+        self.root.join(name).to_string_lossy().into_owned()
+    }
+
+    /// The temp root.
+    pub fn root(&self) -> &Path {
+        &self.root
+    }
+
+    /// Replace the capture placeholders (`{BASE}`, `{ARG:name}`) in an
+    /// expected value with this replay's real paths... and vice versa: map the
+    /// real paths in a Rust-produced string back to the placeholders.
+    pub fn to_placeholders(&self, s: &str) -> String {
+        let mut out = s.to_string();
+        let arg_dir = self.root.join("@arg");
+        if let Ok(entries) = fs::read_dir(&arg_dir) {
+            for e in entries.flatten() {
+                let p = e.path().to_string_lossy().into_owned();
+                let name = e.file_name().to_string_lossy().into_owned();
+                out = out.replace(&p, &format!("{{ARG:{name}}}"));
+            }
+        }
+        if self.base_dir != "." {
+            out = out.replace(&self.base_dir, "{BASE}");
+        }
+        out
+    }
+}
+
+impl Drop for Materialized {
+    fn drop(&mut self) {
+        let _ = fs::remove_dir_all(&self.root);
+    }
+}
+
+/// Write a case's snapshot files (`case.json` `files`) into a fresh temp dir.
+pub fn materialize(case: &Case) -> Materialized {
+    use std::sync::atomic::{AtomicUsize, Ordering};
+    static N: AtomicUsize = AtomicUsize::new(0);
+    let root = std::env::temp_dir().join(format!(
+        "t2w-golden-{}-{}-{}",
+        std::process::id(),
+        case.id,
+        N.fetch_add(1, Ordering::Relaxed)
+    ));
+    let _ = fs::remove_dir_all(&root);
+    fs::create_dir_all(&root).expect("temp dir");
+    if let Some(files) = case.case.get("files").and_then(Value::as_object) {
+        for (rel, sha) in files {
+            let dest = root.join(rel);
+            fs::create_dir_all(dest.parent().unwrap()).expect("mkdir");
+            fs::write(&dest, blob(sha.as_str().unwrap())).expect("write snapshot file");
+        }
+    }
+    let base_dir = if case.case.get("base_dir").and_then(Value::as_str) == Some("base") {
+        let b = root.join("base");
+        fs::create_dir_all(&b).expect("mkdir base");
+        b.to_string_lossy().into_owned()
+    } else {
+        ".".to_string()
+    };
+    Materialized { root, base_dir }
+}
+
 /// Read a content-addressed blob.
 pub fn blob(sha: &str) -> Vec<u8> {
     fs::read(root().join("blobs").join(sha)).unwrap_or_else(|e| panic!("blob {sha}: {e}"))

@@ -17,7 +17,7 @@
 use std::cell::RefCell;
 use std::collections::HashMap;
 use std::fmt;
-use std::rc::Rc;
+use std::sync::Arc;
 
 use crate::pystr::{is_decimal, is_space, is_word};
 
@@ -814,12 +814,12 @@ impl Compiler {
 pub struct Regex {
     pattern: String,
     flags: Flags,
-    progs: Rc<Vec<Program>>,
-    classes: Rc<Vec<Class>>,
+    progs: Arc<Vec<Program>>,
+    classes: Arc<Vec<Class>>,
     ngroups: usize,
     /// capture slots (2 per group incl. group 0) + mark slots
     nslots: usize,
-    names: Rc<Vec<(String, usize)>>,
+    names: Arc<Vec<(String, usize)>>,
     /// a literal the match must start with (search skips ahead to it)
     prefix: Option<String>,
 }
@@ -829,7 +829,7 @@ pub struct Regex {
 pub struct Match<'s> {
     s: &'s str,
     slots: Vec<Option<usize>>,
-    names: Rc<Vec<(String, usize)>>,
+    names: Arc<Vec<(String, usize)>>,
 }
 
 impl<'s> Match<'s> {
@@ -955,11 +955,11 @@ impl Regex {
         Ok(Regex {
             pattern: pattern.to_string(),
             flags,
-            progs: Rc::new(c.progs),
-            classes: Rc::new(c.classes),
+            progs: Arc::new(c.progs),
+            classes: Arc::new(c.classes),
             ngroups,
             nslots: c.nslots,
-            names: Rc::new(p.names),
+            names: Arc::new(p.names),
             prefix: prefix.filter(|s| !s.is_empty()),
         })
     }
@@ -1616,5 +1616,18 @@ mod tests {
         );
         let lazy = Regex::with_flags(r"x.*?y", Flags::S);
         assert_eq!(lazy.search(&format!("x{s}y")).unwrap().end(), s.len() + 2);
+    }
+}
+
+#[cfg(test)]
+mod sync_tests {
+    use super::*;
+    use std::sync::LazyLock;
+
+    static STATIC_RE: LazyLock<Regex> = LazyLock::new(|| Regex::new(r"\\verb\*"));
+
+    #[test]
+    fn regex_is_usable_from_a_static() {
+        assert!(STATIC_RE.is_match("\\verb*|x|"));
     }
 }

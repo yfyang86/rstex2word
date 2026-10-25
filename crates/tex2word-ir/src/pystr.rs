@@ -61,6 +61,40 @@ pub fn is_word(c: char) -> bool {
     c == '_' || is_alnum(c)
 }
 
+/// The value of a Unicode decimal digit (`unicodedata.decimal(c)`).
+pub fn decimal_value(c: char) -> Option<u32> {
+    if c.is_ascii_digit() {
+        return c.to_digit(10);
+    }
+    let cp = c as u32;
+    // every Nd run in the table is a block of ten digits starting at 0
+    DECIMAL
+        .iter()
+        .find(|&&(lo, hi)| lo <= cp && cp <= hi)
+        .map(|&(lo, _)| (cp - lo) % 10)
+}
+
+/// `int(s)` for a decimal string: optional surrounding whitespace and sign,
+/// any Unicode decimal digits, and `_` separators between digits.
+pub fn parse_int(s: &str) -> Option<i64> {
+    let t = strip(s);
+    let (neg, digits) = match t.strip_prefix('-') {
+        Some(rest) => (true, rest),
+        None => (false, t.strip_prefix('+').unwrap_or(t)),
+    };
+    if digits.is_empty() || digits.starts_with('_') || digits.ends_with('_') || digits.contains("__") {
+        return None;
+    }
+    let mut v: i64 = 0;
+    for c in digits.chars() {
+        if c == '_' {
+            continue;
+        }
+        v = v.checked_mul(10)?.checked_add(decimal_value(c)? as i64)?;
+    }
+    Some(if neg { -v } else { v })
+}
+
 /// `s.strip()`.
 pub fn strip(s: &str) -> &str {
     s.trim_matches(is_space)

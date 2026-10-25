@@ -1,0 +1,219 @@
+//! Python `os.path` (POSIX) and text-file reading semantics.
+//!
+//! Paths flow into the IR and the report (image paths, include resolution),
+//! so they are manipulated as strings exactly as `posixpath` does. Text files
+//! are read like `open(path, encoding="utf-8")`: universal newlines (`\r\n`
+//! and `\r` become `\n`) and a choice of decode-error handling.
+
+use std::fs;
+use std::io;
+use std::path::Path;
+
+/// `os.path.join(a, *rest)` (posixpath).
+pub fn join(a: &str, rest: &[&str]) -> String {
+    let mut path = a.to_string();
+    for b in rest {
+        if b.starts_with('/') {
+            path = (*b).to_string();
+        } else if path.is_empty() || path.ends_with('/') {
+            path.push_str(b);
+        } else {
+            path.push('/');
+            path.push_str(b);
+        }
+    }
+    path
+}
+
+/// `os.path.join(a, b)`.
+pub fn join2(a: &str, b: &str) -> String {
+    join(a, &[b])
+}
+
+/// `os.path.dirname(p)`.
+pub fn dirname(p: &str) -> String {
+    let i = p.rfind('/').map_or(0, |k| k + 1);
+    let head = &p[..i];
+    if !head.is_empty() && !head.chars().all(|c| c == '/') {
+        head.trim_end_matches('/').to_string()
+    } else {
+        head.to_string()
+    }
+}
+
+/// `os.path.basename(p)`.
+pub fn basename(p: &str) -> &str {
+    &p[p.rfind('/').map_or(0, |k| k + 1)..]
+}
+
+/// `os.path.splitext(p)` -> `(root, ext)`; leading dots of a name are not an
+/// extension (`.bashrc` has none).
+pub fn splitext(p: &str) -> (&str, &str) {
+    let sep = p.rfind('/').map_or(-1, |k| k as isize);
+    let dot = p.rfind('.').map_or(-1, |k| k as isize);
+    if dot > sep {
+        let mut i = (sep + 1) as usize;
+        let dot = dot as usize;
+        while i < dot {
+            if p.as_bytes()[i] != b'.' {
+                return (&p[..dot], &p[dot..]);
+            }
+            i += 1;
+        }
+    }
+    (p, "")
+}
+
+/// `os.path.normpath(p)`.
+pub fn normpath(p: &str) -> String {
+    if p.is_empty() {
+        return ".".into();
+    }
+    let initial = if p.starts_with("//") && !p.starts_with("///") {
+        2
+    } else if p.starts_with('/') {
+        1
+    } else {
+        0
+    };
+    let mut comps: Vec<&str> = Vec::new();
+    for c in p.split('/') {
+        if c.is_empty() || c == "." {
+            continue;
+        }
+        if c != ".." || (initial == 0 && comps.is_empty()) || comps.last() == Some(&"..") {
+            comps.push(c);
+        } else if !comps.is_empty() {
+            comps.pop();
+        }
+    }
+    let mut out = "/".repeat(initial);
+    out.push_str(&comps.join("/"));
+    if out.is_empty() {
+        ".".into()
+    } else {
+        out
+    }
+}
+
+/// `os.path.abspath(p)`.
+pub fn abspath(p: &str) -> String {
+    if p.starts_with('/') {
+        normpath(p)
+    } else {
+        let cwd = std::env::current_dir()
+            .map(|d| d.to_string_lossy().into_owned())
+            .unwrap_or_else(|_| ".".into());
+        normpath(&join2(&cwd, p))
+    }
+}
+
+/// `os.path.isfile(p)`.
+pub fn isfile(p: &str) -> bool {
+    Path::new(p).is_file()
+}
+
+/// `os.path.isdir(p)`.
+pub fn isdir(p: &str) -> bool {
+    Path::new(p).is_dir()
+}
+
+/// `os.path.exists(p)`.
+pub fn exists(p: &str) -> bool {
+    Path::new(p).exists()
+}
+
+/// How undecodable UTF-8 is handled (`errors=` of `open`).
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum Errors {
+    /// raise (Python's default)
+    Strict,
+    /// drop the bad bytes
+    Ignore,
+    /// substitute U+FFFD
+    Replace,
+}
+
+/// Universal-newline translation: `\r\n` and lone `\r` become `\n`.
+pub fn universal_newlines(s: &str) -> String {
+    if !s.contains('\r') {
+        return s.to_string();
+    }
+    let mut out = String::with_capacity(s.len());
+    let mut chars = s.chars().peekable();
+    while let Some(c) = chars.next() {
+        if c == '\r' {
+            if chars.peek() == Some(&'\n') {
+                chars.next();
+            }
+            out.push('\n');
+        } else {
+            out.push(c);
+        }
+    }
+    out
+}
+
+/// Decode UTF-8 bytes with the given error handling.
+pub fn decode_utf8(bytes: &[u8], errors: Errors) -> io::Result<String> {
+    match errors {
+        Errors::Strict => String::from_utf8(bytes.to_vec())
+            .map_err(|e| io::Error::new(io::ErrorKind::InvalidData, e.to_string())),
+        Errors::Replace => Ok(String::from_utf8_lossy(bytes).into_owned()),
+        Errors::Ignore => {
+            let mut out = String::new();
+            let mut rest = bytes;
+            loop {
+                match std::str::from_utf8(rest) {
+                    Ok(s) => {
+                        out.push_str(s);
+                        return Ok(out);
+                    }
+                    Err(e) => {
+                        let good = e.valid_up_to();
+                        out.push_str(std::str::from_utf8(&rest[..good]).expect("valid prefix"));
+                        let skip = e.error_len().unwrap_or(rest.len() - good);
+                        rest = &rest[good + skip..];
+                    }
+                }
+            }
+        }
+    }
+}
+
+/// `open(path, encoding="utf-8", errors=errors).read()`.
+pub fn read_text(path: &str, errors: Errors) -> io::Result<String> {
+    let bytes = fs::read(path)?;
+    Ok(universal_newlines(&decode_utf8(&bytes, errors)?))
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn posixpath_semantics() {
+        assert_eq!(join("a", &["b", "c"]), "a/b/c");
+        assert_eq!(join("a/", &["b"]), "a/b");
+        assert_eq!(join("a", &["/abs", "x"]), "/abs/x");
+        assert_eq!(join("", &["b"]), "b");
+        assert_eq!(dirname("a/b/c.tex"), "a/b");
+        assert_eq!(dirname("c.tex"), "");
+        assert_eq!(dirname("/c.tex"), "/");
+        assert_eq!(dirname("a//b"), "a");
+        assert_eq!(basename("a/b/c.tex"), "c.tex");
+        assert_eq!(splitext("a/b.tar.gz"), ("a/b.tar", ".gz"));
+        assert_eq!(splitext(".bashrc"), (".bashrc", ""));
+        assert_eq!(splitext("a.d/b"), ("a.d/b", ""));
+        assert_eq!(normpath("a/./b/../c"), "a/c");
+        assert_eq!(normpath("../x"), "../x");
+        assert_eq!(normpath("/../x"), "/x");
+    }
+
+    #[test]
+    fn text_reading_semantics() {
+        assert_eq!(universal_newlines("a\r\nb\rc\n"), "a\nb\nc\n");
+        assert_eq!(decode_utf8(b"a\xffb", Errors::Ignore).unwrap(), "ab");
+        assert!(decode_utf8(b"a\xffb", Errors::Strict).is_err());
+    }
+}

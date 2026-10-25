@@ -4,7 +4,7 @@ version = 4
 
 [[package]]
 name = "tex2word"
-version = "1.0.6"
+version = "2.0.0"
 dependencies = [
  "tex2word-backend",
  "tex2word-frontend",
@@ -15,7 +15,7 @@ dependencies = [
 
 [[package]]
 name = "tex2word-backend"
-version = "1.0.6"
+version = "2.0.0"
 dependencies = [
  "tex2word-ir",
  "tex2word-math",
@@ -23,7 +23,7 @@ dependencies = [
 
 [[package]]
 name = "tex2word-cli"
-version = "1.0.6"
+version = "2.0.0"
 dependencies = [
  "tex2word",
  "tex2word-validate",
@@ -31,26 +31,43 @@ dependencies = [
 
 [[package]]
 name = "tex2word-frontend"
-version = "1.0.6"
+version = "2.0.0"
+dependencies = [
+ "tex2word-ir",
+ "tex2word-latexwalker",
+]
+
+[[package]]
+name = "tex2word-goldens"
+version = "2.0.0"
+dependencies = [
+ "tex2word-frontend",
+ "tex2word-ir",
+ "tex2word-latexwalker",
+]
+
+[[package]]
+name = "tex2word-ir"
+version = "2.0.0"
+
+[[package]]
+name = "tex2word-latex"
+version = "2.0.0"
 dependencies = [
  "tex2word-ir",
 ]
 
 [[package]]
-name = "tex2word-ir"
-version = "1.0.6"
-
-[[package]]
-name = "tex2word-latex"
-version = "1.0.6"
+name = "tex2word-latexwalker"
+version = "2.0.0"
 dependencies = [
  "tex2word-ir",
 ]
 
 [[package]]
 name = "tex2word-math"
-version = "1.0.6"
+version = "2.0.0"
 
 [[package]]
 name = "tex2word-validate"
-version = "1.0.6"
+version = "2.0.0"

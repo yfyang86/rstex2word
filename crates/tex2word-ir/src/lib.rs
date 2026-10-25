@@ -14,12 +14,14 @@
 //! * [`report`] — the [`ConversionReport`] sink for warnings and coverage;
 //! * [`crossref`] — the cross-reference resolution transform (IR -> IR);
 //! * [`pystr`] — Python `str` semantics the ported code relies on;
-//! * [`re`] — a regex engine compatible with Python's `re` module.
+//! * [`re`] — a regex engine compatible with Python's `re` module;
+//! * [`pyos`] — `os.path` and text-file reading with Python semantics.
 
 pub mod crossref;
 pub mod dict;
 pub mod json;
 mod nodes;
+pub mod pyos;
 pub mod pystr;
 pub mod re;
 pub mod report;
