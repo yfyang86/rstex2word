@@ -18,3 +18,4 @@ tex2word-math.workspace = true
 tex2word-frontend.workspace = true
 tex2word.workspace = true
 tex2word-validate.workspace = true
+tex2word-latex.workspace = true

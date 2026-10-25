@@ -6,6 +6,7 @@ pub mod cascade;
 pub mod imagemath;
 pub mod latex_math;
 pub mod omml;
+pub mod omml_reader;
 pub mod symbols;
 
 pub use latex_math::MathError;

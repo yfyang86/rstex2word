@@ -254,3 +254,39 @@ pub fn sha256_hex(data: &[u8]) -> String {
     }
     h.iter().map(|x| format!("{x:08x}")).collect()
 }
+
+/// The `convert_source` keyword arguments a case recorded.
+pub fn convert_options(case: &Case, m: &Materialized) -> tex2word::ConvertOptions {
+    let mut o = tex2word::ConvertOptions::default();
+    let s = |k: &str| case.arg(k).and_then(json::Value::as_str).map(str::to_string);
+    let b = |k: &str| case.arg(k).and_then(json::Value::as_bool);
+    if let Some(v) = b("embed_manifest") {
+        o.embed_manifest = v;
+    }
+    if let Some(v) = b("number_by_section") {
+        o.number_by_section = v;
+    }
+    if let Some(v) = b("math_image_fallback") {
+        o.math_image_fallback = v;
+    }
+    if let Some(v) = s("citation_mode") {
+        o.citation_mode = v;
+    }
+    if let Some(v) = s("frontend") {
+        o.frontend = v;
+    }
+    if let Some(v) = case.arg("columns").and_then(json::Value::as_i64) {
+        o.columns = v;
+    }
+    o.csl = s("csl");
+    o.language = s("language");
+    o.reference_doc = match case.arg("reference_doc") {
+        Some(v) => match v.get("@file").and_then(json::Value::as_str) {
+            Some(rel) => Some(m.arg_path(rel)),
+            None => v.as_str().map(str::to_string),
+        },
+        None => None,
+    };
+    o
+}
+

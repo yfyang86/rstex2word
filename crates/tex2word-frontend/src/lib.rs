@@ -3,6 +3,7 @@
 
 pub mod algorithms;
 pub mod colors;
+pub mod docx_reader;
 pub mod latexml;
 pub mod macros;
 pub mod parser;

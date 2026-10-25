@@ -2,7 +2,8 @@
 //! report, and every `.docx` part byte for byte, in the same zip order.
 
 use tex2word::{convert_source, ConvertOptions};
-use tex2word_goldens::{blob, json_diff, load_all, materialize, sha256_hex, Case, Materialized};
+use tex2word_goldens::convert_options;
+use tex2word_goldens::{blob, json_diff, load_all, materialize, sha256_hex, Case};
 use tex2word_ir::json::{self, Value};
 use tex2word_ir::ToJson;
 use tex2word_ooxml::zip::Archive;
@@ -10,45 +11,11 @@ use tex2word_ooxml::zip::Archive;
 /// Both tests set `SOURCE_DATE_EPOCH`; run them one at a time.
 static ENV: std::sync::Mutex<()> = std::sync::Mutex::new(());
 
-fn options(case: &Case, m: &Materialized) -> ConvertOptions {
-    let mut o = ConvertOptions::default();
-    let s = |k: &str| case.arg(k).and_then(Value::as_str).map(str::to_string);
-    let b = |k: &str| case.arg(k).and_then(Value::as_bool);
-    if let Some(v) = b("embed_manifest") {
-        o.embed_manifest = v;
-    }
-    if let Some(v) = b("number_by_section") {
-        o.number_by_section = v;
-    }
-    if let Some(v) = b("math_image_fallback") {
-        o.math_image_fallback = v;
-    }
-    if let Some(v) = s("citation_mode") {
-        o.citation_mode = v;
-    }
-    if let Some(v) = s("frontend") {
-        o.frontend = v;
-    }
-    if let Some(v) = case.arg("columns").and_then(Value::as_i64) {
-        o.columns = v;
-    }
-    o.csl = s("csl");
-    o.language = s("language");
-    o.reference_doc = match case.arg("reference_doc") {
-        Some(v) => match v.get("@file").and_then(Value::as_str) {
-            Some(rel) => Some(m.arg_path(rel)),
-            None => v.as_str().map(str::to_string),
-        },
-        None => None,
-    };
-    o
-}
-
 /// `None` when everything matches.
 fn check(case: &Case, dump: Option<&std::path::Path>) -> Option<String> {
     let source = case.arg("source").and_then(Value::as_str)?.to_string();
     let m = materialize(case);
-    let opts = options(case, &m);
+    let opts = convert_options(case, &m);
     let r = match convert_source(&source, &m.base_dir, &opts) {
         Ok(r) => r,
         Err(e) => return Some(format!("error: {e}")),

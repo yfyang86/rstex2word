@@ -19,3 +19,7 @@ tex2word-math.workspace = true
 tex2word-bib.workspace = true
 tex2word-frontend.workspace = true
 tex2word-backend.workspace = true
+tex2word-latex.workspace = true
+
+[dev-dependencies]
+tex2word-validate.workspace = true

@@ -284,6 +284,20 @@ impl Element {
         out
     }
 
+    /// `element.iter()` over every node: this one and its descendants in
+    /// document order, comments and processing instructions included.
+    pub fn iter_nodes(&self) -> Vec<&Element> {
+        let mut out = Vec::new();
+        fn go<'a>(e: &'a Element, out: &mut Vec<&'a Element>) {
+            out.push(e);
+            for c in &e.children {
+                go(c, out);
+            }
+        }
+        go(self, &mut out);
+        out
+    }
+
     /// Apply `f` to this element and every descendant element, in document
     /// order (a mutable `iter()`).
     pub fn for_each_mut(&mut self, f: &mut dyn FnMut(&mut Element)) {
