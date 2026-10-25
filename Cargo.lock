@@ -51,9 +51,11 @@ dependencies = [
 name = "tex2word-goldens"
 version = "2.0.0"
 dependencies = [
+ "tex2word-bib",
  "tex2word-frontend",
  "tex2word-ir",
  "tex2word-latexwalker",
+ "tex2word-ooxml",
 ]
 
 [[package]]
@@ -80,6 +82,10 @@ version = "2.0.0"
 dependencies = [
  "tex2word-ir",
 ]
+
+[[package]]
+name = "tex2word-ooxml"
+version = "2.0.0"
 
 [[package]]
 name = "tex2word-validate"
