@@ -60,6 +60,9 @@ static PICTURE_RE: LazyLock<Regex> = LazyLock::new(|| {
 
 /// `shutil.which(name)`: an executable file of that name on `PATH`.
 pub fn which(name: &str) -> Option<String> {
+    if std::env::var_os("TEX2WORD_NO_EXTERNAL_TOOLS").is_some() {
+        return None;
+    }
     let path = std::env::var_os("PATH")?;
     for dir in std::env::split_paths(&path) {
         let cand = dir.join(name);
@@ -203,15 +206,50 @@ pub fn build_standalone(picture: &str, preamble: &str, unicode_engine: bool) -> 
     .join("\n")
 }
 
-/// Compile the picture in `source` to a cropped PNG; `None` on any failure
-/// (always, without a PDF rasteriser).
-pub fn render(source: &str, _preamble: &str) -> Option<(Vec<u8>, i64, i64)> {
-    extract_picture(source)?;
-    if available_engines().is_empty() {
-        return None;
-    }
+/// Compile the picture in `source` to a cropped PNG: `(png bytes, w, h)`.
+///
+/// Writes a `standalone` document into a private temp dir, runs the best TeX
+/// engine on PATH, then rasterises the cropped PDF (`raster`). `None` on any
+/// failure — the writer reports the reason. Set `TEX2WORD_TIKZ_DEBUG=1` to
+/// keep the compile directory and print the engine log to stderr.
+pub fn render(source: &str, preamble: &str) -> Option<(Vec<u8>, i64, i64)> {
+    let picture = extract_picture(source)?;
+    let engine = available_engines().first().copied()?;
     if !crate::raster::has_pdf_support() {
         return None;
     }
-    None
+    let doc = build_standalone(&picture, preamble, engine != "pdflatex");
+    let debug = std::env::var("TEX2WORD_TIKZ_DEBUG").as_deref() == Ok("1");
+    let dir = std::env::temp_dir().join(format!("tex2word-tikz-{}", std::process::id()));
+    std::fs::create_dir_all(&dir).ok()?;
+    let tex = dir.join("figure.tex");
+    std::fs::write(&tex, doc).ok()?;
+    let mut cmd = std::process::Command::new(engine);
+    cmd.arg("-interaction=nonstopmode")
+        .arg("-halt-on-error")
+        .arg("-output-directory").arg(&dir)
+        .arg(&tex);
+    if !debug {
+        cmd.stdin(std::process::Stdio::null());
+        cmd.stdout(std::process::Stdio::null());
+        cmd.stderr(std::process::Stdio::null());
+    }
+    let ok = cmd.status().map(|s| s.success()).unwrap_or(false);
+    if !ok {
+        if debug {
+            if let Ok(log) = std::fs::read_to_string(dir.join("figure.log")) {
+                eprint!("{log}");
+            }
+        }
+        if !debug {
+            let _ = std::fs::remove_dir_all(&dir);
+        }
+        return None;
+    }
+    let pdf = dir.join("figure.pdf");
+    let out = crate::raster::rasterize_pdf(&pdf.display().to_string(), crate::raster::DEFAULT_DPI);
+    if !debug {
+        let _ = std::fs::remove_dir_all(&dir);
+    }
+    out
 }

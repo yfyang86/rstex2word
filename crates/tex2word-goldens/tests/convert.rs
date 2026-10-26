@@ -74,6 +74,9 @@ fn check(case: &Case, dump: Option<&std::path::Path>) -> Option<String> {
 #[test]
 fn convert_source_matches_python() {
     let _env = ENV.lock().unwrap_or_else(|e| e.into_inner());
+    // the goldens were recorded with the Python core install: no TeX engine,
+    // no PDF rasteriser. Pin that even on machines that have the tools.
+    std::env::set_var("TEX2WORD_NO_EXTERNAL_TOOLS", "1");
     let dump = std::env::var_os("T2W_GOLDEN_DUMP").map(std::path::PathBuf::from);
     let only = std::env::var("T2W_GOLDEN_CASE").ok();
     let mut failures = Vec::new();
@@ -98,6 +101,7 @@ fn convert_source_matches_python() {
             failures.push(format!("{} {:?}: {d}", case.id, case.tests().first()));
         }
     }
+    std::env::remove_var("TEX2WORD_NO_EXTERNAL_TOOLS");
     assert!(n > 0);
     assert!(
         failures.is_empty(),

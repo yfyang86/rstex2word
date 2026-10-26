@@ -54,6 +54,8 @@ fn error(type_name: &str) -> Value {
 
 #[test]
 fn reverse_path_matches_python() {
+    // goldens recorded with the Python core install (no TeX / rasteriser)
+    std::env::set_var("TEX2WORD_NO_EXTERNAL_TOOLS", "1");
     std::env::set_var("SOURCE_DATE_EPOCH", "1767312000");
     let text = std::fs::read_to_string(root().join("reverse.jsonl")).unwrap();
     let mut failures = Vec::new();
