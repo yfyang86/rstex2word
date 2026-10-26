@@ -41,12 +41,16 @@ jobs:
         run: |
           set -uo pipefail
 
-          # Publish one crate, tolerating "already published" and waiting out
-          # crates.io's new-crate rate limit (HTTP 429).
+          # Publish one crate, tolerating "already published", waiting out
+          # crates.io's new-crate rate limit (HTTP 429), and waiting for the
+          # crates.io index to show a just-published dependency (the index is
+          # updated by a background job and served through a CDN, so a new
+          # version can take several minutes to become resolvable).
           publish_one() {
             local crate="$1"
-            local attempt
-            for attempt in $(seq 1 6); do
+            local rate_limited=0 index_waits=0 attempt=0
+            while true; do
+              attempt=$((attempt + 1))
               echo "::group::publish $crate (attempt $attempt)"
               local out rc
               out="$(cargo publish -p "$crate" 2>&1)"; rc=$?
@@ -61,15 +65,28 @@ jobs:
                 return 0
               fi
               if printf '%s' "$out" | grep -qiE '429|too many requests'; then
+                rate_limited=$((rate_limited + 1))
+                if [ "$rate_limited" -gt 6 ]; then
+                  echo "::error::gave up publishing $crate after repeated rate limits"
+                  return 1
+                fi
                 echo "::warning::rate limited publishing $crate; waiting 11 minutes then retrying"
                 sleep 660
+                continue
+              fi
+              if printf '%s' "$out" | grep -qiE 'failed to select a version for the requirement'; then
+                index_waits=$((index_waits + 1))
+                if [ "$index_waits" -gt 30 ]; then
+                  echo "::error::a dependency of $crate never appeared in the crates.io index"
+                  return 1
+                fi
+                echo "::warning::a dependency of $crate is not in the crates.io index yet; waiting 60 seconds"
+                sleep 60
                 continue
               fi
               echo "::error::failed to publish $crate"
               return 1
             done
-            echo "::error::gave up publishing $crate after repeated rate limits"
-            return 1
           }
 
           for crate in \
