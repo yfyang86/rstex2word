@@ -1,0 +1,11 @@
+{
+"api": "convert_source",
+"args": {
+"source": "\\newtcolorbox{tb}[1]{colframe=black,colbacktitle=black,title={#1}}\\begin{document}\\begin{tb}{Takeaways}Body\\end{tb}\\end{document}"
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_box_environments.py::test_titled_callout_renders_title_bar"
+]
+}

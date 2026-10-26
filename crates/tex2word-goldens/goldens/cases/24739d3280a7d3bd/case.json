@@ -1,0 +1,11 @@
+{
+"api": "expand_macros",
+"args": {
+"source": "\\NewDocumentCommand{\\hi}{m}{Hello #1!}\\hi{World}"
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_xparse.py::test_mandatory"
+]
+}

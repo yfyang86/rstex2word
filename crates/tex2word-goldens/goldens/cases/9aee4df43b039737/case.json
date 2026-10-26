@@ -1,0 +1,13 @@
+{
+"api": "validate_docx",
+"args": {
+"docx_bytes": {
+"@blob": "e7093055c061810989b93f2da72051f0118f473ad23abe882edf68edf359773a"
+}
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_declaremathoperator.py::test_operator_with_braced_body"
+]
+}

@@ -1,0 +1,13 @@
+{
+"api": "validate_docx",
+"args": {
+"docx_bytes": {
+"@blob": "c3299d2dd1f332bd241fbb81358a44ecfd78023bf08158147bdfa518600ba040"
+}
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_cref_multi.py::test_valid"
+]
+}

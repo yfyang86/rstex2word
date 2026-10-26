@@ -1,0 +1,23 @@
+{
+"api": "convert_source",
+"args": {
+"citation_mode": "static",
+"columns": 1,
+"csl": null,
+"embed_manifest": true,
+"frontend": "pure",
+"language": null,
+"math_image_fallback": false,
+"number_by_section": false,
+"reference_doc": null,
+"source": "\\begin{document}\\citep[p.~5]{e1905} and \\citep[see][ch.~2]{k1984}.\\bibliographystyle{plain}\\bibliography{refs}\\end{document}"
+},
+"base_dir": "base",
+"files": {
+"base/c.tex": "c2a26a24b1fe6bca6fb1ce4f2fb384a04e2df7a8869bb4bb6a52572538e13365",
+"base/refs.bib": "e90eee6530e4172c3102f9253ed49f1f0c1b64b5873459b98253c89a986e8e4d"
+},
+"tests": [
+"tests/test_bib.py::test_citation_locators_numeric"
+]
+}

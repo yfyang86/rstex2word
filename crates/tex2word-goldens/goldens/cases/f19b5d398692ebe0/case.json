@@ -1,0 +1,11 @@
+{
+"api": "convert_source",
+"args": {
+"source": "\\documentclass{article}\\usepackage{amsmath,amssymb}\\begin{document}\\[\\left\\{\\begin{align*}u &= f(v) \\\\ w &= g(u)\\end{align*}\\right.\\]\\end{document}"
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_aligned_envs.py::test_left_brace_wrapping_align_system_renders"
+]
+}

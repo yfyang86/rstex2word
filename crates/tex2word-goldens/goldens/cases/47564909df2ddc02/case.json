@@ -1,0 +1,11 @@
+{
+"api": "convert_source",
+"args": {
+"source": "\\begin{document}\\fontfamily{qhv}\\selectfont text \\rule{\\linewidth}{0.8pt} \\fontsize{21}{25}\\selectfont more\\end{document}"
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_boxes_verbatim.py::test_rule_and_font_macros_are_silent"
+]
+}

@@ -1,0 +1,1 @@
+{"value":"\\documentclass{article}\n\\usepackage[utf8]{inputenc}\n\\begin{document}\n\\section{S}\n\nThe first paragraph is unchanged.\n% comment: [Bob] check this\n\n\\end{document}"}

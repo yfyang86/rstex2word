@@ -1,0 +1,13 @@
+{
+"api": "validate_docx",
+"args": {
+"docx_bytes": {
+"@blob": "c44a9f1e223c71d161dd2984dfa103c282912c87a316400e1c8e2eef36f6866c"
+}
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_uat_bundle.py::test_uat_bundle_converts_cleanly[bundle:homework.tex]"
+]
+}

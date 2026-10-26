@@ -1,0 +1,11 @@
+{
+"api": "convert_source",
+"args": {
+"source": "\\begin{document}\\section{Introduction}\\label{sec:intro}See \\nameref{sec:intro}.\\end{document}"
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_nameref.py::test_nameref_to_section_uses_title"
+]
+}

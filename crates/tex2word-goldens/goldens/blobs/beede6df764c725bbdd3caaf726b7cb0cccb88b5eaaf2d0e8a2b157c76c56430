@@ -1,0 +1,93 @@
+{
+  "generated": "2026-01-02T00:00:00+00:00",
+  "ir": {
+    "@type": "Document",
+    "blocks": [
+      {
+        "@type": "Paragraph",
+        "align": null,
+        "inlines": [
+          {
+            "@type": "Text",
+            "value": "See "
+          },
+          {
+            "@type": "Cite",
+            "keys": [
+              "einstein1905"
+            ],
+            "mode": "paren",
+            "prefix": null,
+            "rendered": "(Einstein(1905))",
+            "suffix": null
+          },
+          {
+            "@type": "Text",
+            "value": " and "
+          },
+          {
+            "@type": "Cite",
+            "keys": [
+              "knuth1984"
+            ],
+            "mode": "paren",
+            "prefix": null,
+            "rendered": "(Knuth(1984))",
+            "suffix": null
+          },
+          {
+            "@type": "Text",
+            "value": "."
+          }
+        ]
+      },
+      {
+        "@type": "Bibliography",
+        "entries": [
+          {
+            "@type": "CSLItem",
+            "csl_fields": {
+              "_label": "Einstein(1905)",
+              "_order": 1,
+              "note": "Albert Einstein. Zur Elektrodynamik. Annalen der Physik, 1905."
+            },
+            "id": "einstein1905",
+            "type": "document"
+          },
+          {
+            "@type": "CSLItem",
+            "csl_fields": {
+              "_label": "Knuth(1984)",
+              "_order": 2,
+              "note": "Donald E. Knuth. The TeXbook. Addison-Wesley, 1984."
+            },
+            "id": "knuth1984",
+            "type": "document"
+          }
+        ],
+        "style": "author-year"
+      }
+    ],
+    "book": false,
+    "labels": {},
+    "meta": {
+      "@type": "DocumentMeta",
+      "abstract": null,
+      "affiliations": [],
+      "authors": [],
+      "cjk_main_font": null,
+      "cjk_mono_font": null,
+      "cjk_sans_font": null,
+      "columns": 1,
+      "date": null,
+      "keywords": null,
+      "language": null,
+      "main_font": null,
+      "running_head": null,
+      "title": null
+    }
+  },
+  "labels": {},
+  "manifest_version": 1,
+  "tool": "tex2word"
+}

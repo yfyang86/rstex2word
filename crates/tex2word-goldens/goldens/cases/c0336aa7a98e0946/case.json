@@ -1,0 +1,11 @@
+{
+"api": "convert_source",
+"args": {
+"source": "\\begin{document}\\textrm{plain}\\end{document}"
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_font_reset.py::test_textrm_is_not_italic"
+]
+}

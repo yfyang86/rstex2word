@@ -1,0 +1,16 @@
+[package]
+name = "tex2word-latexwalker"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+authors.workspace = true
+repository.workspace = true
+homepage.workspace = true
+keywords.workspace = true
+categories.workspace = true
+readme = "../../README.md"
+description = "A Rust port of pylatexenc's LaTeX walker (node tree, macro specs, latex2text) for tex2word"
+
+[dependencies]
+tex2word-ir.workspace = true

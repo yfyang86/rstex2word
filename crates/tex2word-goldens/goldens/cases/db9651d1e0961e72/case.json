@@ -1,0 +1,11 @@
+{
+"api": "convert_source",
+"args": {
+"source": "\\begin{document}\\textbf{x}\\end{document}"
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_backend.py::test_bold_run_has_b_property"
+]
+}

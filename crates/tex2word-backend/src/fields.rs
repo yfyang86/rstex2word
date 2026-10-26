@@ -1,133 +1,99 @@
-//! Word field codes and bookmarks (`SEQ` / `REF` / `PAGEREF`) — a Rust port of
-//! the Python `backend/fields.py`.
-//!
-//! These are the primitives that make numbering *live*: a complex field is a run
-//! sequence `fldChar begin` → `instrText` (the code) → `fldChar separate` → a
-//! cached result run → `fldChar end`. Word recomputes the result on field
-//! refresh, so `\ref`/caption numbers auto-renumber. Bookmarks mark the targets
-//! those fields point at; ids come from a per-document [`Bookmarks`] counter so
-//! output stays deterministic.
+//! Word field codes and bookmarks: SEQ / REF / PAGEREF (port of
+//! `backend/fields.py`). A complex field is `fldChar begin` -> `instrText` ->
+//! `fldChar separate` -> a cached result run -> `fldChar end`.
 
-use crate::ooxml::{escape, escape_text};
+use std::cell::Cell;
 
-/// A monotonic, per-document bookmark-id source (reset per render for
-/// deterministic output, like Python's `reset_bookmark_ids`).
-#[derive(Default)]
-pub struct Bookmarks {
-    next: u32,
+use tex2word_ooxml::xml::{el, preserve_space, qn, sub, text_el, Element};
+
+thread_local! {
+    static BOOKMARK_IDS: Cell<u64> = const { Cell::new(1) };
 }
 
-impl Bookmarks {
-    /// Open a bookmark: returns `(<w:bookmarkStart …/>, id)`. Pair the id with
-    /// [`Bookmarks::end`] once the bookmarked content is emitted.
-    pub fn start(&mut self, name: &str, out: &mut String) -> u32 {
-        let id = self.next;
-        self.next += 1;
-        out.push_str(&format!(
-            "<w:bookmarkStart w:id=\"{id}\" w:name=\"{}\"/>",
-            escape(name)
-        ));
-        id
+/// `w:bookmarkStart` with the next document-wide id.
+pub fn bookmark_start(name: &str) -> Element {
+    let bid = BOOKMARK_IDS.with(|c| {
+        let v = c.get();
+        c.set(v + 1);
+        v
+    });
+    el(
+        "w:bookmarkStart",
+        &[("w:id", &bid.to_string()), ("w:name", name)],
+    )
+}
+
+/// The `w:bookmarkEnd` matching a start element.
+pub fn bookmark_end_for(start: &Element) -> Element {
+    let bid = start.get(&qn("w:id")).unwrap_or("").to_string();
+    el("w:bookmarkEnd", &[("w:id", &bid)])
+}
+
+/// Reset the bookmark-id counter (per document, for deterministic ids).
+pub fn reset_bookmark_ids() {
+    BOOKMARK_IDS.with(|c| c.set(1));
+}
+
+pub(crate) fn instr_run(code: &str) -> Element {
+    let mut r = el("w:r", &[]);
+    let instr = sub(&mut r, "w:instrText", &[]);
+    preserve_space(instr);
+    instr.text = Some(code.to_string());
+    r
+}
+
+pub(crate) fn fldchar(kind: &str) -> Element {
+    let mut r = el("w:r", &[]);
+    sub(&mut r, "w:fldChar", &[("w:fldCharType", kind)]);
+    r
+}
+
+/// A complex field as a list of runs; `cached` is the placeholder result
+/// shown until Word refreshes fields.
+pub fn field(code: &str, cached: &str) -> Vec<Element> {
+    let mut runs = vec![fldchar("begin"), instr_run(code), fldchar("separate")];
+    let mut result = el("w:r", &[]);
+    let mut t = text_el("w:t", if cached.is_empty() { " " } else { cached }, &[]);
+    preserve_space(&mut t);
+    result.append(t);
+    runs.push(result);
+    runs.push(fldchar("end"));
+    runs
+}
+
+/// A hidden `{ XE "term" }` index-entry field (no visible result).
+pub fn index_entry(term: &str) -> Vec<Element> {
+    vec![
+        fldchar("begin"),
+        instr_run(&format!("XE \"{term}\"")),
+        fldchar("end"),
+    ]
+}
+
+pub fn seq_field(counter: &str, cached: &str) -> Vec<Element> {
+    field(&format!("SEQ {counter} \\* ARABIC"), cached)
+}
+
+/// Runs for a live number: flat `SEQ`, or per-section `N.M`
+/// (`STYLEREF 1 \s` + `.` + `SEQ counter \s 1`).
+pub fn number_field(counter: &str, by_section: bool) -> Vec<Element> {
+    if !by_section {
+        return seq_field(counter, "1");
     }
-
-    pub fn end(&self, id: u32, out: &mut String) {
-        out.push_str(&format!("<w:bookmarkEnd w:id=\"{id}\"/>"));
-    }
+    let mut runs = field("STYLEREF 1 \\s", "1");
+    let mut dot = el("w:r", &[]);
+    dot.append(text_el("w:t", ".", &[]));
+    runs.push(dot);
+    runs.extend(field(&format!("SEQ {counter} \\s 1 \\* ARABIC"), "1"));
+    runs
 }
 
-/// Open a complex field: `fldChar begin` → `instrText` (code) → `fldChar
-/// separate`. Follow with the result run(s), then [`field_close`].
-pub fn field_open(code: &str, out: &mut String) {
-    out.push_str("<w:r><w:fldChar w:fldCharType=\"begin\"/></w:r>");
-    out.push_str("<w:r><w:instrText xml:space=\"preserve\">");
-    out.push_str(&escape_text(code));
-    out.push_str("</w:instrText></w:r>");
-    out.push_str("<w:r><w:fldChar w:fldCharType=\"separate\"/></w:r>");
-}
-
-/// Close a complex field opened with [`field_open`] (`fldChar end`).
-pub fn field_close(out: &mut String) {
-    out.push_str("<w:r><w:fldChar w:fldCharType=\"end\"/></w:r>");
-}
-
-/// A complete complex field with a single cached result run. `code` is the
-/// instruction (e.g. `SEQ Figure \* ARABIC`); `cached` is the placeholder shown
-/// until Word refreshes fields.
-pub fn field(code: &str, cached: &str, out: &mut String) {
-    let shown = if cached.is_empty() { " " } else { cached };
-    field_open(code, out);
-    out.push_str("<w:r><w:t xml:space=\"preserve\">");
-    out.push_str(&escape(shown));
-    out.push_str("</w:t></w:r>");
-    field_close(out);
-}
-
-/// A `SEQ <counter>` auto-number (the live figure/table/equation number). The
-/// `cached` result is the computed number shown before Word runs "Update Fields"
-/// (so it displays correctly in viewers that never auto-update).
-pub fn seq_field(counter: &str, cached: &str, out: &mut String) {
-    field(&format!("SEQ {counter} \\* ARABIC"), cached, out);
-}
-
-/// A `REF <bookmark>` field. `paragraph_number` uses `\r` (the target's list /
-/// section number); otherwise `\h` hyperlinks to the bookmark. `cached` is the
-/// target's computed number, shown until fields are updated.
-pub fn ref_field(bookmark: &str, paragraph_number: bool, cached: &str, out: &mut String) {
+/// `REF bookmark \h` (`\r \h` inserts the paragraph/list number).
+pub fn ref_field(bookmark: &str, cached: &str, paragraph_number: bool) -> Vec<Element> {
     let switches = if paragraph_number { "\\r \\h" } else { "\\h" };
-    field(&format!("REF {bookmark} {switches}"), cached, out);
+    field(&format!("REF {bookmark} {switches}"), cached)
 }
 
-/// A `PAGEREF <bookmark> \h` field (the page the bookmark is on).
-pub fn pageref_field(bookmark: &str, out: &mut String) {
-    field(&format!("PAGEREF {bookmark} \\h"), "1", out);
-}
-
-/// A `TOC` field (table of contents / list of figures/tables) with a cached
-/// "update fields" hint.
-pub fn toc_field(code: &str, out: &mut String) {
-    field(
-        code,
-        "Right-click and choose \u{201c}Update Field\u{201d}.",
-        out,
-    );
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn field_has_the_five_runs() {
-        let mut s = String::new();
-        field("SEQ Figure \\* ARABIC", "1", &mut s);
-        assert!(s.contains("w:fldCharType=\"begin\""));
-        assert!(
-            s.contains("<w:instrText xml:space=\"preserve\">SEQ Figure \\* ARABIC</w:instrText>")
-        );
-        assert!(s.contains("w:fldCharType=\"separate\""));
-        assert!(s.contains("w:fldCharType=\"end\""));
-    }
-
-    #[test]
-    fn bookmarks_pair_ids_deterministically() {
-        let mut bm = Bookmarks::default();
-        let mut s = String::new();
-        let id0 = bm.start("fig_a", &mut s);
-        bm.end(id0, &mut s);
-        let id1 = bm.start("fig_b", &mut s);
-        bm.end(id1, &mut s);
-        assert_eq!((id0, id1), (0, 1));
-        assert!(s.contains("w:bookmarkStart w:id=\"0\" w:name=\"fig_a\""));
-        assert!(s.contains("w:bookmarkEnd w:id=\"1\""));
-    }
-
-    #[test]
-    fn ref_and_pageref_codes() {
-        let mut s = String::new();
-        ref_field("fig_a", false, "2", &mut s);
-        pageref_field("fig_a", &mut s);
-        assert!(s.contains("REF fig_a \\h"));
-        assert!(s.contains("<w:t xml:space=\"preserve\">2</w:t>")); // cached number
-        assert!(s.contains("PAGEREF fig_a \\h"));
-    }
+pub fn pageref_field(bookmark: &str, cached: &str) -> Vec<Element> {
+    field(&format!("PAGEREF {bookmark} \\h"), cached)
 }

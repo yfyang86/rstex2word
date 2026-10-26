@@ -1,0 +1,13 @@
+{
+"api": "validate_docx",
+"args": {
+"docx_bytes": {
+"@blob": "951f8e9d4e03a9127d0caef76d735ee2fdf535b2ae66139ab3aedf22574f76c3"
+}
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_cite_variants.py::test_valid"
+]
+}

@@ -1,0 +1,11 @@
+{
+"api": "convert_source",
+"args": {
+"source": "\\begin{document}\\CheckmarkBold{} and \\XSolidBrush{}\\end{document}"
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_frontend.py::test_bbding_symbols"
+]
+}

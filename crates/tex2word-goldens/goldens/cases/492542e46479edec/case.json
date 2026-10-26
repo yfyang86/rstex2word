@@ -1,0 +1,14 @@
+{
+"api": "convert_source",
+"args": {
+"source": "\n\\begin{document}\n\\section{S}$\\frac{a}{b}$\n\\begin{equation}\\label{eq:e}E=mc^2\\end{equation}\nSee \\eqref{eq:e}.\n\\end{document}\n"
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_validate.py::test_detects_malformed_xml",
+"tests/test_validate.py::test_detects_missing_required_part",
+"tests/test_validate.py::test_valid_output_passes",
+"tests/test_validate.py::test_validate_docx_flags_injected_bad_order"
+]
+}

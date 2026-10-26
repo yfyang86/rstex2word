@@ -1,0 +1,11 @@
+{
+"api": "convert_source",
+"args": {
+"source": "\\begin{document}\\begin{tcolorbox}Plain\\end{tcolorbox}\\end{document}"
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_box_environments.py::test_plain_tcolorbox_uses_tcolorbox_defaults"
+]
+}

@@ -1,0 +1,11 @@
+{
+"api": "convert_source",
+"args": {
+"source": "\\begin{document}a {\\bf b} c\\end{document}"
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_font_declarations.py::test_scope_ends_at_group"
+]
+}

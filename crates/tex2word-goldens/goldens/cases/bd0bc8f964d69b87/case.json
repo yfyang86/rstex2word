@@ -1,0 +1,13 @@
+{
+"api": "validate_docx",
+"args": {
+"docx_bytes": {
+"@blob": "62234772b93c2ad2c71d2ecc7dcb3d519bdf3a82b39e45f6ac467769c00b58fd"
+}
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_substack.py::test_substack_is_a_matrix_stack"
+]
+}

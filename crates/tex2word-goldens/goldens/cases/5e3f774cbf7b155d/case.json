@@ -1,0 +1,13 @@
+{
+"api": "convert_source",
+"args": {
+"source": "\\documentclass{article}\\usepackage{amssymb}\\usepackage{mymac}\\begin{document}\\( \\ExpOp_{x}[f] \\)\\end{document}"
+},
+"base_dir": "base",
+"files": {
+"base/mymac.sty": "4a6337e390bc2c6c1c60cf0acaa9cdcd8a5ca7ec6e307cab941125645a5a5310"
+},
+"tests": [
+"tests/test_declaremathoperator.py::test_operator_defined_in_local_package"
+]
+}

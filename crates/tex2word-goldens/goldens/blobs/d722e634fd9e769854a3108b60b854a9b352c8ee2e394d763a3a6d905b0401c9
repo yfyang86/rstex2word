@@ -1,0 +1,117 @@
+{
+  "generated": "2026-01-02T00:00:00+00:00",
+  "ir": {
+    "@type": "Document",
+    "blocks": [
+      {
+        "@type": "Figure",
+        "blocks": [],
+        "caption": [
+          {
+            "@type": "Text",
+            "value": "First"
+          }
+        ],
+        "caption_numbered": true,
+        "image": {
+          "@type": "Image",
+          "alt": "a.png",
+          "angle": null,
+          "clip": false,
+          "height": null,
+          "keep_aspect": false,
+          "original_format": "png",
+          "path": "a.png",
+          "rel_height": null,
+          "rel_width": null,
+          "scale": null,
+          "trim": null,
+          "width": 1800000.0
+        },
+        "label": "fig:a",
+        "source": "",
+        "spanning": false,
+        "subfigures": []
+      },
+      {
+        "@type": "Figure",
+        "blocks": [],
+        "caption": [
+          {
+            "@type": "Text",
+            "value": "Second"
+          }
+        ],
+        "caption_numbered": true,
+        "image": {
+          "@type": "Image",
+          "alt": "b.png",
+          "angle": null,
+          "clip": false,
+          "height": null,
+          "keep_aspect": false,
+          "original_format": "png",
+          "path": "b.png",
+          "rel_height": null,
+          "rel_width": null,
+          "scale": null,
+          "trim": null,
+          "width": 1800000.0
+        },
+        "label": "fig:b",
+        "source": "",
+        "spanning": false,
+        "subfigures": []
+      }
+    ],
+    "book": false,
+    "labels": {
+      "fig:a": {
+        "@type": "LabelInfo",
+        "bookmark": "fig_a",
+        "counter_name": "Figure",
+        "kind": "figure",
+        "name": "First",
+        "number": null
+      },
+      "fig:b": {
+        "@type": "LabelInfo",
+        "bookmark": "fig_b",
+        "counter_name": "Figure",
+        "kind": "figure",
+        "name": "Second",
+        "number": null
+      }
+    },
+    "meta": {
+      "@type": "DocumentMeta",
+      "abstract": null,
+      "affiliations": [],
+      "authors": [],
+      "cjk_main_font": null,
+      "cjk_mono_font": null,
+      "cjk_sans_font": null,
+      "columns": 1,
+      "date": null,
+      "keywords": null,
+      "language": null,
+      "main_font": null,
+      "running_head": null,
+      "title": null
+    }
+  },
+  "labels": {
+    "fig:a": {
+      "bookmark": "fig_a",
+      "counter": "Figure",
+      "kind": "figure"
+    },
+    "fig:b": {
+      "bookmark": "fig_b",
+      "counter": "Figure",
+      "kind": "figure"
+    }
+  },
+  "manifest_version": 1,
+  "tool": "tex2word"
+}

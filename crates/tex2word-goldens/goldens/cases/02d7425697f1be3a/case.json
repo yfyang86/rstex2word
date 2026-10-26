@@ -1,0 +1,11 @@
+{
+"api": "convert_source",
+"args": {
+"source": "\\begin{document}\\title{T}\\author{A}\\affiliation{Dept of CS, Example U}\\maketitle\\end{document}"
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_authors_keywords.py::test_affiliations_render_and_round_trip"
+]
+}

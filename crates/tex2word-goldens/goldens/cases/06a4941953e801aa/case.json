@@ -1,0 +1,11 @@
+{
+"api": "convert_source",
+"args": {
+"source": "\\begin{document}\\begin{theorem}\\label{t:1}X\\end{theorem}See \\ref{t:1}.\\end{document}"
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_theorems.py::test_theorem_ref_is_plain_seq_reference"
+]
+}

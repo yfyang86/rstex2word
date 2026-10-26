@@ -1,0 +1,24 @@
+{
+"api": "convert_source",
+"args": {
+"citation_mode": "static",
+"columns": 1,
+"csl": null,
+"embed_manifest": false,
+"frontend": "pure",
+"language": null,
+"math_image_fallback": false,
+"number_by_section": false,
+"reference_doc": null,
+"source": "\\documentclass{article}\\begin{document}\\subimport{parts/}{a.tex}\\end{document}"
+},
+"base_dir": "base",
+"files": {
+"base/main.tex": "5e7b19740f289d7133ab7a3da96176f9d2cb1a36d8c723b2755eb3fd04c5553e",
+"base/parts/a.tex": "ed8e30b60144cc68d2d36bf815355fa370d7cbe1807d2a2f7f39a4d55753663e",
+"base/parts/b.tex": "772d2d60efc797eefe21428913135e77ec2ae5b30e355fb7f38e760d6dbd48a8"
+},
+"tests": [
+"tests/test_import_package.py::test_subimport_and_nested_input"
+]
+}

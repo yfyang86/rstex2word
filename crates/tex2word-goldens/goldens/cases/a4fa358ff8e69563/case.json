@@ -1,0 +1,11 @@
+{
+"api": "convert_source",
+"args": {
+"source": "\\begin{document}\\section{S}\\label{s}As shown in \\ref{s}, it holds.\\end{document}"
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_reconcile.py::test_inline_reconcile_falls_back_to_manifest_for_ref_paragraphs"
+]
+}

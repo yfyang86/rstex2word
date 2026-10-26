@@ -1,0 +1,76 @@
+{
+  "generated": "2026-01-02T00:00:00+00:00",
+  "ir": {
+    "@type": "Document",
+    "blocks": [
+      {
+        "@type": "Paragraph",
+        "align": null,
+        "inlines": [
+          {
+            "@type": "Cite",
+            "keys": [
+              "k1984"
+            ],
+            "mode": "text",
+            "prefix": null,
+            "rendered": "Knuth (1984)",
+            "suffix": null
+          },
+          {
+            "@type": "Text",
+            "value": "."
+          }
+        ]
+      },
+      {
+        "@type": "Bibliography",
+        "entries": [
+          {
+            "@type": "CSLItem",
+            "csl_fields": {
+              "author": [
+                {
+                  "family": "Knuth",
+                  "given": "Donald E."
+                }
+              ],
+              "issued": {
+                "date-parts": [
+                  [
+                    1984
+                  ]
+                ]
+              },
+              "title": "The TeXbook"
+            },
+            "id": "k1984",
+            "type": "book"
+          }
+        ],
+        "style": "author-year"
+      }
+    ],
+    "book": false,
+    "labels": {},
+    "meta": {
+      "@type": "DocumentMeta",
+      "abstract": null,
+      "affiliations": [],
+      "authors": [],
+      "cjk_main_font": null,
+      "cjk_mono_font": null,
+      "cjk_sans_font": null,
+      "columns": 1,
+      "date": null,
+      "keywords": null,
+      "language": null,
+      "main_font": null,
+      "running_head": null,
+      "title": null
+    }
+  },
+  "labels": {},
+  "manifest_version": 1,
+  "tool": "tex2word"
+}

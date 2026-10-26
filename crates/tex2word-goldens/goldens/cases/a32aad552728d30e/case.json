@@ -1,0 +1,22 @@
+{
+"api": "convert_source",
+"args": {
+"citation_mode": "static",
+"columns": 1,
+"csl": null,
+"embed_manifest": false,
+"frontend": "pure",
+"language": null,
+"math_image_fallback": false,
+"number_by_section": false,
+"reference_doc": null,
+"source": "\\documentclass{article}\\begin{document}Before \\import{x/}{gone.tex} after.\\end{document}"
+},
+"base_dir": "base",
+"files": {
+"base/main.tex": "8fda84b31f6e39179edbf0b2d3763eba9352972ab09a65363b731d6e6ca095ef"
+},
+"tests": [
+"tests/test_import_package.py::test_missing_import_is_dropped"
+]
+}

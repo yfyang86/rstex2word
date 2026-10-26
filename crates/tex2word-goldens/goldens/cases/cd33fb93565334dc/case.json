@@ -1,0 +1,11 @@
+{
+"api": "convert_source",
+"args": {
+"source": "\\begin{document}\\epigraph{A wise saying.}{Anon}\\end{document}"
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_epigraph.py::test_epigraph_makes_quote_with_attribution"
+]
+}

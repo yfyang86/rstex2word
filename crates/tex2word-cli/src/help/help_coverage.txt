@@ -1,0 +1,9 @@
+usage: tex2word coverage [-h] [-o OUTPUT] directory
+
+positional arguments:
+  directory             directory of .tex files (searched recursively)
+
+options:
+  -h, --help            show this help message and exit
+  -o OUTPUT, --output OUTPUT
+                        output HTML path

@@ -1,0 +1,13 @@
+{
+"api": "convert_source",
+"args": {
+"source": "\n\\begin{document}\n\\section{Introduction}\\label{sec:intro}\nSee \\hyperref[sec:intro]{the intro} for details.\n\\end{document}\n"
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_hyperref.py::test_hyperref_emits_internal_hyperlink",
+"tests/test_hyperref.py::test_hyperref_link_node_has_anchor",
+"tests/test_hyperref.py::test_hyperref_roundtrips"
+]
+}

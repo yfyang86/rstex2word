@@ -1,0 +1,11 @@
+{
+"api": "convert_source",
+"args": {
+"source": "\\begin{document}\\(\\substack{a \\\\ b \\\\ c}\\)\\end{document}"
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_substack.py::test_three_row_substack"
+]
+}

@@ -1,0 +1,14 @@
+{
+"api": "convert_source",
+"args": {
+"source": "\n\\begin{document}\n\\begin{algorithm}\n\\caption{Binary search}\\label{alg:bs}\n\\begin{algorithmic}[1]\n\\REQUIRE sorted array $A$\n\\STATE $lo \\gets 0$\n\\WHILE{$lo \\leq hi$}\n  \\STATE $mid \\gets (lo+hi)/2$\n  \\IF{$A[mid] = x$}\n    \\RETURN $mid$\n  \\ELSE\n    \\STATE $lo \\gets mid+1$\n  \\ENDIF\n\\ENDWHILE\n\\RETURN $-1$\n\\end{algorithmic}\n\\end{algorithm}\nSee Algorithm \\ref{alg:bs}.\n\\end{document}\n"
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_algorithms.py::test_algorithm_caption_has_seq_and_ref_resolves",
+"tests/test_algorithms.py::test_algorithm_lines_are_indented_and_numbered",
+"tests/test_algorithms.py::test_inline_math_in_algorithm_is_omml",
+"tests/test_algorithms.py::test_no_warnings_for_algorithm"
+]
+}

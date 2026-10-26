@@ -1,0 +1,11 @@
+{
+"api": "convert_source",
+"args": {
+"source": "\\begin{document}Code \\mintinline{python}|def f(): pass| done.\\end{document}"
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_lstinline.py::test_mintinline_with_language_delimiter"
+]
+}

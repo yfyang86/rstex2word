@@ -1,0 +1,13 @@
+{
+"api": "read_docx",
+"args": {
+"docx_bytes": {
+"@blob": "a393d4f99aae559217d58a26d35c93a640c65dd27277a07bc2a4edce91613343"
+}
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_docx_reader.py::test_reader_recovers_untitled_lemma"
+]
+}

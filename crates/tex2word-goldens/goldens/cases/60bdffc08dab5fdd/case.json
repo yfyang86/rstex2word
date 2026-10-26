@@ -1,0 +1,23 @@
+{
+"api": "convert_source",
+"args": {
+"citation_mode": "static",
+"columns": 1,
+"csl": null,
+"embed_manifest": false,
+"frontend": "pure",
+"language": null,
+"math_image_fallback": false,
+"number_by_section": false,
+"reference_doc": null,
+"source": "\\documentclass{article}\\begin{document}\\import{chapters/}{ch1.tex}\\end{document}"
+},
+"base_dir": "base",
+"files": {
+"base/chapters/ch1.tex": "b9cbcb51e2266b82f72663ae61bc5c0bb182edd085e1f2837690a1a1718dc66c",
+"base/main.tex": "9cfedb8cf37d3e5469187dd048ae09f6179dcd0dfc3f03de211520be626eaf9c"
+},
+"tests": [
+"tests/test_import_package.py::test_import_inlines_file_from_dir"
+]
+}

@@ -1,0 +1,13 @@
+{
+"api": "validate_docx",
+"args": {
+"docx_bytes": {
+"@blob": "7c37e07bfbbf25a90b726c0692a950406c59fce3bf9c8aaabd4e1158ebcd26a6"
+}
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_split_footnote.py::test_split_footnote_in_table_pairs_across_boundary"
+]
+}

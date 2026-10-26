@@ -1,0 +1,11 @@
+{
+"api": "parse_document",
+"args": {
+"source": "\\documentclass{article}\\usepackage[german,english]{babel}\\begin{document}Hi\\end{document}"
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_language.py::test_babel_main_option_and_last_wins"
+]
+}

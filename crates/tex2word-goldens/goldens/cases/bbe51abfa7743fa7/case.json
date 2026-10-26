@@ -1,0 +1,11 @@
+{
+"api": "parse_document",
+"args": {
+"source": "\\begin{document}\\mbox{\\texttt{best\\_skill.md}}\\end{document}"
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_boxes_verbatim.py::test_mbox_and_raisebox_are_transparent"
+]
+}

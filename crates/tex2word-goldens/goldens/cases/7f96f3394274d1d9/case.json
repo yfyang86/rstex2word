@@ -1,0 +1,14 @@
+{
+"api": "convert_source",
+"args": {
+"embed_manifest": true,
+"source": "\\begin{document}a \\includegraphics{pic.png} b\\end{document}"
+},
+"base_dir": "base",
+"files": {
+"base/pic.png": "5503ff8fef5a4d87e1fe0bdc07254b11153a86debfa97500641c7abbf93357ef"
+},
+"tests": [
+"tests/test_images.py::test_inline_image_round_trips"
+]
+}

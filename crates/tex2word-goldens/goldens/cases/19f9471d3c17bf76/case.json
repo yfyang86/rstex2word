@@ -1,0 +1,11 @@
+{
+"api": "convert_source",
+"args": {
+"source": "\\begin{document}\\begin{algorithm}\\caption{A}\\begin{algorithmic}\\STATE x\\end{algorithmic}\\end{algorithm}\\end{document}"
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_coverage_cli.py::test_algorithm_rendered_in_ruled_box"
+]
+}

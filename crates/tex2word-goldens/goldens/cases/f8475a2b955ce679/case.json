@@ -1,0 +1,23 @@
+{
+"api": "convert_source",
+"args": {
+"citation_mode": "zotero",
+"columns": 1,
+"csl": null,
+"embed_manifest": false,
+"frontend": "pure",
+"language": null,
+"math_image_fallback": false,
+"number_by_section": false,
+"reference_doc": null,
+"source": "\\begin{document}\\cite{e1905}\\bibliographystyle{plain}\\bibliography{refs}\\end{document}"
+},
+"base_dir": "base",
+"files": {
+"base/c.tex": "b89b48551d720e7dcbe5d475e99143c1eababee51971112b912ba70458b76ff8",
+"base/refs.bib": "dad92652449ecbca63330959b969adc6cb4145727a1f0620b59ed55e496a298a"
+},
+"tests": [
+"tests/test_docx_reader.py::test_reads_zotero_citation"
+]
+}

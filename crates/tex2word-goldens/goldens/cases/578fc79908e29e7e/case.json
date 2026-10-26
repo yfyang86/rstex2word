@@ -1,0 +1,13 @@
+{
+"api": "to_latex",
+"args": {
+"docx_bytes": {
+"@blob": "4bfa92edfef961f7b1fa8e36a9e256128e25ee5af5ef6bb3cdad24cada675bea"
+}
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_part.py::test_part_unedited_reconciles_to_identity"
+]
+}

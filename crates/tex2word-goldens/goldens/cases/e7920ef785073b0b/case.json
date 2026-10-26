@@ -1,0 +1,11 @@
+{
+"api": "parse_document",
+"args": {
+"source": "{\\color{green}tinted} plain"
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_color.py::test_color_switch_is_scoped_to_group"
+]
+}

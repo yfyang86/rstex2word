@@ -1,328 +1,463 @@
-//! Math AST -> OMML (OfficeMath) XML — the `m:` namespace elements Word edits
-//! natively. A subset of the Python `mathml/omml.py`.
+//! LaTeX math AST -> OMML (port of `mathml/omml.py`).
+//!
+//! The direct LaTeX->OMML path (texmath-style): output lives under the `m:`
+//! namespace and is embedded as native math runs in `document.xml`.
 
-use crate::parser::Node;
+use std::sync::LazyLock;
 
-/// Is `c` a character that is legal in XML 1.0 text? Control characters other
-/// than tab/newline/carriage-return are forbidden and would make the document
-/// part unparseable, so they are dropped by [`escape`].
-fn is_xml_char(c: char) -> bool {
-    matches!(c, '\t' | '\n' | '\r' | ' '..='\u{d7ff}' | '\u{e000}'..)
+use tex2word_ir::pystr;
+use tex2word_ir::re::Regex;
+use tex2word_ooxml::xml::{el, preserve_space, qn, sub, Element};
+
+use crate::latex_math::{self as L, MNode, MathError, Row};
+
+// strip equation-numbering / label noise before parsing a math line
+static LABEL_RE: LazyLock<Regex> =
+    LazyLock::new(|| Regex::new(r"\\(?:label|tag|nonumber|notag)\b\s*(?:\{[^{}]*\})?"));
+
+/// CJK ranges (Unified Ideographs + ext A, compat ideographs, kana, Hangul,
+/// CJK symbols/punctuation and fullwidth forms).
+fn is_cjk(c: char) -> bool {
+    matches!(c as u32,
+        0x3000..=0x303F | 0x3040..=0x30FF | 0x3400..=0x4DBF | 0x4E00..=0x9FFF | 0xAC00..=0xD7AF
+            | 0xF900..=0xFAFF | 0xFF00..=0xFFEF)
 }
 
-/// Escape XML text/attribute content. `"` is escaped so the result is safe in
-/// attribute position (e.g. `m:begChr`), and XML-illegal control characters are
-/// dropped rather than emitted verbatim.
-fn escape(s: &str) -> String {
-    let mut out = String::with_capacity(s.len());
-    for c in s.chars() {
-        match c {
-            '&' => out.push_str("&amp;"),
-            '<' => out.push_str("&lt;"),
-            '>' => out.push_str("&gt;"),
-            '"' => out.push_str("&quot;"),
-            c if is_xml_char(c) => out.push(c),
-            _ => {}
+/// Set an East-Asian font on math runs (`m:r`) whose `m:t` holds CJK, so Word
+/// uses the document's CJK font for those glyphs. The `w:rPr` goes before
+/// `m:t` (after any `m:rPr`); `w:rFonts` is first in it.
+pub fn tag_cjk_runs(root: &mut Element, east_asia_font: &str) {
+    let (m_t, m_r) = (qn("m:t"), qn("m:r"));
+    let (w_rpr, w_rfonts, w_ea) = (qn("w:rPr"), qn("w:rFonts"), qn("w:eastAsia"));
+    root.for_each_mut(&mut |r| {
+        if !r.is(&m_r) {
+            return;
         }
+        let mut i = 0;
+        while i < r.children.len() {
+            let c = &r.children[i];
+            if c.is(&m_t) && c.text.as_deref().is_some_and(|t| t.chars().any(is_cjk)) {
+                let t_index = i;
+                if r.find(&w_rpr).is_none() {
+                    r.insert(t_index, el("w:rPr", &[])); // before m:t, after any m:rPr
+                    i += 1;
+                }
+                let wrpr = r.find_mut(&w_rpr).unwrap();
+                if wrpr.find(&w_rfonts).is_none() {
+                    wrpr.insert(0, el("w:rFonts", &[])); // rFonts is first in CT_RPr
+                }
+                wrpr.find_mut(&w_rfonts).unwrap().set(&w_ea, east_asia_font);
+            }
+            i += 1;
+        }
+    });
+}
+
+// --------------------------------------------------------------------------- //
+// Leaf runs
+// --------------------------------------------------------------------------- //
+
+fn run(text: &str, upright: bool, bold: bool, script: Option<&str>) -> Element {
+    let mut r = el("m:r", &[]);
+    if upright || bold || script.is_some() {
+        let rpr = sub(&mut r, "m:rPr", &[]);
+        if upright {
+            sub(rpr, "m:nor", &[]);
+        }
+        if let Some(s) = script {
+            sub(rpr, "m:scr", &[("m:val", s)]);
+        }
+        if bold {
+            sub(rpr, "m:sty", &[("m:val", "b")]);
+        } else if script.is_some() {
+            sub(rpr, "m:sty", &[("m:val", "p")]);
+        }
+    }
+    let t = sub(&mut r, "m:t", &[]);
+    t.text = Some(text.to_string());
+    preserve_space(t);
+    r
+}
+
+// --------------------------------------------------------------------------- //
+// Node emission
+// --------------------------------------------------------------------------- //
+
+/// Render a node to a list of sibling OMML elements.
+fn emit(node: &MNode) -> Vec<Element> {
+    match node {
+        MNode::Lit(l) => {
+            if l.text.is_empty() {
+                return Vec::new();
+            }
+            vec![run(&l.text, l.upright, l.bold, l.script.as_deref())]
+        }
+        MNode::Row(r) | MNode::Group(r) => emit_row(r),
+        other => vec![emit_single(other)],
+    }
+}
+
+fn emit_row(r: &Row) -> Vec<Element> {
+    r.0.iter().flat_map(emit).collect()
+}
+
+/// An OMML container element filled with the rendered node.
+fn fill(tag: &str, node: Option<&MNode>) -> Element {
+    let mut c = el(tag, &[]);
+    if let Some(n) = node {
+        for child in emit(n) {
+            c.append(child);
+        }
+    }
+    c
+}
+
+fn fill_row(tag: &str, row: &Row) -> Element {
+    let mut c = el(tag, &[]);
+    for child in emit_row(row) {
+        c.append(child);
+    }
+    c
+}
+
+fn emit_single(node: &MNode) -> Element {
+    match node {
+        MNode::Frac(num, den) => {
+            let mut f = el("m:f", &[]);
+            f.append(fill_row("m:num", num));
+            f.append(fill_row("m:den", den));
+            f
+        }
+        MNode::Sup(base, s) => {
+            let mut e = el("m:sSup", &[]);
+            e.append(fill("m:e", Some(base)));
+            e.append(fill("m:sup", Some(s)));
+            e
+        }
+        MNode::Sub(base, s) => {
+            let mut e = el("m:sSub", &[]);
+            e.append(fill("m:e", Some(base)));
+            e.append(fill("m:sub", Some(s)));
+            e
+        }
+        MNode::SubSup(base, b, p) => {
+            let mut e = el("m:sSubSup", &[]);
+            e.append(fill("m:e", Some(base)));
+            e.append(fill("m:sub", Some(b)));
+            e.append(fill("m:sup", Some(p)));
+            e
+        }
+        MNode::Sqrt(radicand) => {
+            let mut r = el("m:rad", &[]);
+            let rpr = sub(&mut r, "m:radPr", &[]);
+            sub(rpr, "m:degHide", &[("m:val", "1")]);
+            r.append(fill("m:deg", None));
+            r.append(fill_row("m:e", radicand));
+            r
+        }
+        MNode::Root(index, radicand) => {
+            let mut r = el("m:rad", &[]);
+            r.append(fill_row("m:deg", index));
+            r.append(fill_row("m:e", radicand));
+            r
+        }
+        MNode::Nary(n) => {
+            let mut e = el("m:nary", &[]);
+            let npr = sub(&mut e, "m:naryPr", &[]);
+            sub(npr, "m:chr", &[("m:val", &n.op)]);
+            sub(npr, "m:limLoc", &[("m:val", &n.limloc)]);
+            if n.sub.is_none() {
+                sub(npr, "m:subHide", &[("m:val", "1")]);
+            }
+            if n.sup.is_none() {
+                sub(npr, "m:supHide", &[("m:val", "1")]);
+            }
+            e.append(fill("m:sub", n.sub.as_deref()));
+            e.append(fill("m:sup", n.sup.as_deref()));
+            e.append(fill("m:e", n.body.as_deref()));
+            e
+        }
+        MNode::Accent(base, ch) => {
+            let mut a = el("m:acc", &[]);
+            let apr = sub(&mut a, "m:accPr", &[]);
+            sub(apr, "m:chr", &[("m:val", ch)]);
+            a.append(fill_row("m:e", base));
+            a
+        }
+        MNode::Fenced(open, close, body) => {
+            let mut d = el("m:d", &[]);
+            let dpr = sub(&mut d, "m:dPr", &[]);
+            sub(dpr, "m:begChr", &[("m:val", open)]);
+            sub(dpr, "m:endChr", &[("m:val", close)]);
+            d.append(fill_row("m:e", body));
+            d
+        }
+        MNode::LimLow(base, lim) => {
+            let mut ll = el("m:limLow", &[]);
+            ll.append(fill("m:e", Some(base)));
+            ll.append(fill("m:lim", Some(lim)));
+            ll
+        }
+        MNode::GroupChr(body, ch, pos) => {
+            let mut g = el("m:groupChr", &[]);
+            let gpr = sub(&mut g, "m:groupChrPr", &[]);
+            sub(gpr, "m:chr", &[("m:val", ch)]);
+            sub(gpr, "m:pos", &[("m:val", pos)]);
+            sub(
+                gpr,
+                "m:vertJc",
+                &[("m:val", if pos == "top" { "bot" } else { "top" })],
+            );
+            g.append(fill_row("m:e", body));
+            g
+        }
+        MNode::Matrix(rows, aligned) => {
+            let mut m = el("m:m", &[]);
+            let ncols = rows.iter().map(Vec::len).max().unwrap_or(0);
+            if *aligned && ncols > 0 {
+                add_alignment_mcs(&mut m, ncols);
+            }
+            for row in rows {
+                let mr = sub(&mut m, "m:mr", &[]);
+                // pad short rows to the declared column count (aligned)
+                let count = if *aligned { ncols } else { row.len() };
+                for c in 0..count {
+                    mr.append(match row.get(c) {
+                        Some(cell) => fill_row("m:e", cell),
+                        None => fill("m:e", None),
+                    });
+                }
+            }
+            m
+        }
+        MNode::Lit(_) | MNode::Row(_) | MNode::Group(_) => unreachable!("handled by emit"),
+    }
+}
+
+// --------------------------------------------------------------------------- //
+// Public API
+// --------------------------------------------------------------------------- //
+
+fn omath(row: &Row) -> Element {
+    let mut o = el("m:oMath", &[]);
+    for child in emit_row(row) {
+        o.append(child);
+    }
+    o
+}
+
+/// Render inline math to a single `m:oMath` element.
+pub fn render_inline(latex: &str) -> Result<Element, MathError> {
+    let cleaned = LABEL_RE.sub("", latex);
+    let row = L::parse(pystr::strip(&cleaned))?;
+    Ok(omath(&row))
+}
+
+/// Detect a `\begin{`/`\end{` environment delimiter starting at byte `i`.
+///
+/// Returns `(env_depth_change, token_length)` -- `(1, 6)` for `\begin`,
+/// `(-1, 4)` for `\end`, `(0, 0)` otherwise. The next char must exist and be
+/// non-alphabetic, which distinguishes `\begin{x}` from macros like
+/// `\beginner`.
+pub fn env_token(s: &str, i: usize) -> (i64, usize) {
+    let next_alpha = |k: usize| s[k..].chars().next().map(pystr::is_alpha);
+    if s[i..].starts_with("\\begin") && next_alpha(i + 6) == Some(false) {
+        return (1, 6);
+    }
+    if s[i..].starts_with("\\end") && next_alpha(i + 4) == Some(false) {
+        return (-1, 4);
+    }
+    (0, 0)
+}
+
+/// Split `latex` on `sep` at brace depth 0 and outside `\begin…\end`.
+pub fn split_top_level(latex: &str, sep: &str) -> Vec<String> {
+    let mut parts = Vec::new();
+    let mut depth: i64 = 0;
+    // \begin..\end nesting: a separator inside an environment isn't top-level
+    let mut env: i64 = 0;
+    let n = latex.len();
+    let mut i = 0;
+    let mut buf = String::new();
+    while i < n {
+        let (denv, tlen) = env_token(latex, i);
+        if tlen != 0 {
+            env = (env + denv).max(0);
+            buf.push_str(&latex[i..i + tlen]);
+            i += tlen;
+            continue;
+        }
+        let c = latex[i..].chars().next().unwrap();
+        if c == '{' {
+            depth += 1;
+            buf.push(c);
+        } else if c == '}' {
+            depth -= 1;
+            buf.push(c);
+        } else if depth == 0 && env == 0 && latex[i..].starts_with(sep) {
+            parts.push(std::mem::take(&mut buf));
+            i += sep.len();
+            continue;
+        } else {
+            buf.push(c);
+        }
+        i += c.len_utf8();
+    }
+    parts.push(buf);
+    parts
+}
+
+/// Remove top-level `&` alignment markers from an align/aligned line (a `&`
+/// inside a nested environment is left intact).
+pub fn strip_align_markers(line: &str) -> String {
+    let mut out = String::with_capacity(line.len());
+    let (mut depth, mut env): (i64, i64) = (0, 0);
+    let mut i = 0;
+    while i < line.len() {
+        let (denv, tlen) = env_token(line, i);
+        if tlen != 0 {
+            env = (env + denv).max(0);
+            out.push_str(&line[i..i + tlen]);
+            i += tlen;
+            continue;
+        }
+        let c = line[i..].chars().next().unwrap();
+        if c == '{' {
+            depth += 1;
+        } else if c == '}' {
+            depth -= 1;
+        }
+        if c == '&' && depth == 0 && env == 0 {
+            out.push(' ');
+        } else {
+            out.push(c);
+        }
+        i += c.len_utf8();
     }
     out
 }
 
-/// A run of math-italic text (`<m:r>`).
-fn run(s: &str) -> String {
-    if s.is_empty() {
-        return String::new();
-    }
-    format!("<m:r><m:t>{}</m:t></m:r>", escape(s))
-}
-
-/// An upright run (`<m:nor/>` suppresses the default math italic).
-fn upright(s: &str) -> String {
-    if s.is_empty() {
-        return String::new();
-    }
-    format!(
-        "<m:r><m:rPr><m:nor/></m:rPr><m:t xml:space=\"preserve\">{}</m:t></m:r>",
-        escape(s)
-    )
-}
-
-/// Render a node's content as the children of a container (`m:e`/`m:num`/…),
-/// guaranteeing at least one run so required elements are never empty.
-fn cell(node: &Node) -> String {
-    let r = render(node);
-    if r.is_empty() {
-        "<m:r><m:t></m:t></m:r>".to_string()
-    } else {
-        r
-    }
-}
-
-/// Render a math node to OMML.
-pub fn render(node: &Node) -> String {
-    match node {
-        Node::Run(s) => run(s),
-        Node::Upright(s) => upright(s),
-        Node::Row(items) => items.iter().map(render).collect(),
-        Node::Frac(num, den) => format!(
-            "<m:f><m:fPr><m:type m:val=\"bar\"/></m:fPr><m:num>{}</m:num><m:den>{}</m:den></m:f>",
-            cell(num),
-            cell(den)
-        ),
-        Node::Sup(base, sup) => format!(
-            "<m:sSup><m:e>{}</m:e><m:sup>{}</m:sup></m:sSup>",
-            cell(base),
-            cell(sup)
-        ),
-        Node::Sub(base, sub) => format!(
-            "<m:sSub><m:e>{}</m:e><m:sub>{}</m:sub></m:sSub>",
-            cell(base),
-            cell(sub)
-        ),
-        Node::SubSup(base, sub, sup) => format!(
-            "<m:sSubSup><m:e>{}</m:e><m:sub>{}</m:sub><m:sup>{}</m:sup></m:sSubSup>",
-            cell(base),
-            cell(sub),
-            cell(sup)
-        ),
-        Node::Sqrt(rad) => format!(
-            "<m:rad><m:radPr><m:degHide m:val=\"1\"/></m:radPr><m:deg/><m:e>{}</m:e></m:rad>",
-            cell(rad)
-        ),
-        Node::Root(index, rad) => format!(
-            "<m:rad><m:radPr><m:degHide m:val=\"0\"/></m:radPr><m:deg>{}</m:deg><m:e>{}</m:e></m:rad>",
-            cell(index),
-            cell(rad)
-        ),
-        Node::Nary {
-            op,
-            sub,
-            sup,
-            body,
-            over_under,
-        } => {
-            let limloc = if *over_under { "undOvr" } else { "subSup" };
-            let (sub_hide, sub_xml) = match sub {
-                Some(n) => ("0", render(n)),
-                None => ("1", String::new()),
-            };
-            let (sup_hide, sup_xml) = match sup {
-                Some(n) => ("0", render(n)),
-                None => ("1", String::new()),
-            };
-            format!(
-                "<m:nary><m:naryPr><m:chr m:val=\"{}\"/><m:limLoc m:val=\"{}\"/>\
-                 <m:subHide m:val=\"{}\"/><m:supHide m:val=\"{}\"/></m:naryPr>\
-                 <m:sub>{}</m:sub><m:sup>{}</m:sup><m:e>{}</m:e></m:nary>",
-                escape(op),
-                limloc,
-                sub_hide,
-                sup_hide,
-                sub_xml,
-                sup_xml,
-                cell(body)
-            )
+/// True if `line` has a top-level `&` alignment marker.
+pub fn has_top_amp(line: &str) -> bool {
+    let (mut depth, mut env): (i64, i64) = (0, 0);
+    let mut i = 0;
+    while i < line.len() {
+        let (denv, tlen) = env_token(line, i);
+        if tlen != 0 {
+            env = (env + denv).max(0);
+            i += tlen;
+            continue;
         }
-        Node::Delim { open, close, body } => format!(
-            "<m:d><m:dPr><m:begChr m:val=\"{}\"/><m:endChr m:val=\"{}\"/></m:dPr><m:e>{}</m:e></m:d>",
-            escape(open),
-            escape(close),
-            cell(body)
-        ),
-        Node::Accent { chr, base } => format!(
-            "<m:acc><m:accPr><m:chr m:val=\"{}\"/></m:accPr><m:e>{}</m:e></m:acc>",
-            escape(&chr.to_string()),
-            cell(base)
-        ),
-        Node::Bar { top, base } => format!(
-            "<m:bar><m:barPr><m:pos m:val=\"{}\"/></m:barPr><m:e>{}</m:e></m:bar>",
-            if *top { "top" } else { "bot" },
-            cell(base)
-        ),
-        Node::Styled { sty, text } => {
-            if text.is_empty() {
-                String::new()
+        let c = line[i..].chars().next().unwrap();
+        if c == '{' {
+            depth += 1;
+        } else if c == '}' {
+            depth -= 1;
+        } else if c == '&' && depth == 0 && env == 0 {
+            return true;
+        }
+        i += c.len_utf8();
+    }
+    false
+}
+
+/// `m:mPr/m:mcs` column properties for the classic `array{rl}` look.
+fn add_alignment_mcs(m: &mut Element, ncols: usize) {
+    let mpr = sub(m, "m:mPr", &[]);
+    let mcs = sub(mpr, "m:mcs", &[]);
+    for i in 0..ncols {
+        let mc = sub(mcs, "m:mc", &[]);
+        let mcpr = sub(mc, "m:mcPr", &[]);
+        sub(mcpr, "m:count", &[("m:val", "1")]);
+        sub(
+            mcpr,
+            "m:mcJc",
+            &[("m:val", if i % 2 == 0 { "right" } else { "left" })],
+        );
+    }
+}
+
+/// `&`-aligned lines -> one `m:oMath` holding a column-justified matrix.
+fn aligned_matrix(lines: &[String]) -> Result<Element, MathError> {
+    let rows: Vec<Vec<String>> = lines
+        .iter()
+        .map(|line| {
+            split_top_level(line, "&")
+                .iter()
+                .map(|c| pystr::strip(c).to_string())
+                .collect()
+        })
+        .collect();
+    let ncols = rows.iter().map(Vec::len).max().unwrap_or(0);
+    let mut m = el("m:m", &[]);
+    add_alignment_mcs(&mut m, ncols);
+    for cells in &rows {
+        let mut mr = el("m:mr", &[]);
+        for i in 0..ncols {
+            let cell = cells.get(i).map_or("", String::as_str);
+            if cell.is_empty() {
+                mr.append(fill("m:e", None));
             } else {
-                format!(
-                    "<m:r><m:rPr><m:sty m:val=\"{}\"/></m:rPr><m:t xml:space=\"preserve\">{}</m:t></m:r>",
-                    sty,
-                    escape(text)
-                )
+                mr.append(fill_row("m:e", &L::parse(cell)?));
             }
         }
-        Node::Binom(num, den) => format!(
-            "<m:d><m:dPr><m:begChr m:val=\"(\"/><m:endChr m:val=\")\"/></m:dPr><m:e>\
-             <m:f><m:fPr><m:type m:val=\"noBar\"/></m:fPr><m:num>{}</m:num><m:den>{}</m:den></m:f>\
-             </m:e></m:d>",
-            cell(num),
-            cell(den)
-        ),
-        Node::Matrix { rows, delim } => {
-            let ncols = rows.iter().map(Vec::len).max().unwrap_or(0);
-            let mut m = String::from("<m:m>");
-            for row in rows {
-                m.push_str("<m:mr>");
-                for c in 0..ncols {
-                    // pad short rows so every m:mr has ncols cells
-                    let content = row.get(c).map_or_else(
-                        || "<m:r><m:t></m:t></m:r>".to_string(),
-                        cell,
-                    );
-                    m.push_str(&format!("<m:e>{content}</m:e>"));
-                }
-                m.push_str("</m:mr>");
-            }
-            m.push_str("</m:m>");
-            match delim {
-                Some((open, close)) => format!(
-                    "<m:d><m:dPr><m:begChr m:val=\"{}\"/><m:endChr m:val=\"{}\"/></m:dPr><m:e>{}</m:e></m:d>",
-                    escape(open),
-                    escape(close),
-                    m
-                ),
-                None => m,
-            }
-        }
+        m.append(mr);
     }
+    let mut o = el("m:oMath", &[]);
+    o.append(m);
+    Ok(o)
+}
+
+/// Render display math (possibly multi-line) to a list of `m:oMath`: one per
+/// `\\` line, or -- with `collapse_align` and `&` markers -- a single
+/// column-aligned matrix.
+pub fn render_block_lines(latex: &str, collapse_align: bool) -> Result<Vec<Element>, MathError> {
+    let cleaned = LABEL_RE.sub("", latex);
+    let cleaned = pystr::strip(&cleaned);
+    let lines: Vec<String> = split_top_level(cleaned, "\\\\")
+        .iter()
+        .map(|s| pystr::strip(s).to_string())
+        .filter(|l| !l.is_empty())
+        .collect();
+    if lines.is_empty() {
+        return Err(MathError::unsupported("empty", "no math content"));
+    }
+    if collapse_align && lines.iter().any(|l| has_top_amp(l)) {
+        return Ok(vec![aligned_matrix(&lines)?]);
+    }
+    lines
+        .iter()
+        .map(|line| {
+            let stripped = strip_align_markers(line);
+            Ok(omath(&L::parse(pystr::strip(&stripped))?))
+        })
+        .collect()
+}
+
+/// `latex_to_omml(latex, display)`: an `m:oMathPara` of lines, or an inline
+/// `m:oMath`.
+pub fn latex_to_omml(latex: &str, display: bool) -> Result<Element, MathError> {
+    if display {
+        let mut para = el("m:oMathPara", &[]);
+        for line in render_block_lines(latex, true)? {
+            para.append(line);
+        }
+        return Ok(para);
+    }
+    render_inline(latex)
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::parser::parse;
 
     #[test]
-    fn fraction_scripts_root() {
-        let f = render(&parse(r"\frac{1}{2}"));
-        assert!(f.contains("<m:f>") && f.contains("<m:num>") && f.contains("<m:den>"));
-        assert!(render(&parse("x^2")).contains("<m:sSup>"));
-        assert!(render(&parse("x_i^n")).contains("<m:sSubSup>"));
-        assert!(render(&parse(r"\sqrt{2}")).contains("<m:rad>"));
-    }
-
-    #[test]
-    fn function_is_upright() {
-        assert!(render(&parse(r"\sin")).contains("<m:nor/>"));
-    }
-
-    #[test]
-    fn font_alphabets_binom_and_mod() {
-        // blackboard-bold with a "hole" letter (ℝ from Letterlike Symbols)
-        assert!(render(&parse(r"\mathbb{R}")).contains("ℝ"));
-        assert!(render(&parse(r"\mathbb{Z}")).contains("ℤ"));
-        assert!(render(&parse(r"\mathcal{L}")).contains("ℒ"));
-        assert!(render(&parse(r"\mathfrak{g}")).contains("𝔤"));
-        // \mathbf -> bold styled run
-        let bf = render(&parse(r"\mathbf{v}"));
-        assert!(bf.contains("m:sty m:val=\"b\"") && bf.contains(">v</m:t>"));
-        // \binom -> parens + no-bar fraction
-        let b = render(&parse(r"\binom{n}{k}"));
-        assert!(b.contains("m:type m:val=\"noBar\"") && b.contains("m:begChr m:val=\"(\""));
-        // \pmod
-        assert!(render(&parse(r"\pmod{n}")).contains("mod"));
-    }
-
-    #[test]
-    fn amp_is_escaped() {
-        assert!(render(&Node::Run("a&b".into())).contains("a&amp;b"));
-    }
-
-    #[test]
-    fn nary_sum_and_int() {
-        let sum = render(&parse(r"\sum_{i=1}^{n} a_i"));
-        assert!(sum.contains("<m:nary>"));
-        assert!(sum.contains("m:chr m:val=\"∑\""));
-        assert!(sum.contains("m:limLoc m:val=\"undOvr\"")); // sums: limits above/below
-        assert!(sum.contains("m:subHide m:val=\"0\"") && sum.contains("m:supHide m:val=\"0\""));
-        // integral: limits as scripts, only a lower limit here
-        let int = render(&parse(r"\int_0 f"));
-        assert!(int.contains("m:limLoc m:val=\"subSup\""));
-        assert!(int.contains("m:supHide m:val=\"1\"")); // no upper limit
-    }
-
-    #[test]
-    fn matrices() {
-        let p = render(&parse(r"\begin{pmatrix} a & b \\ c & d \end{pmatrix}"));
-        assert!(p.contains("<m:m>"));
-        assert!(p.matches("<m:mr>").count() == 2); // two rows
-        assert!(p.matches("<m:e>").count() >= 4); // 2x2 cells (+ the delim m:e)
-        assert!(p.contains("m:begChr m:val=\"(\"") && p.contains("m:endChr m:val=\")\""));
-        // cases: left brace only, ragged rows padded
-        let c = render(&parse(r"\begin{cases} 1 & x>0 \\ 0 \end{cases}"));
-        assert!(c.contains("m:begChr m:val=\"{\"") && c.contains("m:endChr m:val=\"\""));
-        // bare matrix: no delimiter wrapper
-        assert!(!render(&parse(r"\begin{matrix} a \\ b \end{matrix}")).contains("<m:d>"));
-    }
-
-    #[test]
-    fn accents_and_bars() {
-        let hat = render(&parse(r"\hat{x}"));
-        assert!(hat.contains("<m:acc>") && hat.contains("m:chr m:val=\"\u{0302}\""));
-        assert!(render(&parse(r"\vec{v}")).contains("m:chr m:val=\"\u{20D7}\""));
-        assert!(render(&parse(r"\bar{y}")).contains("m:chr m:val=\"\u{0304}\""));
-        let over = render(&parse(r"\overline{AB}"));
-        assert!(over.contains("<m:bar>") && over.contains("m:pos m:val=\"top\""));
-        assert!(render(&parse(r"\underline{z}")).contains("m:pos m:val=\"bot\""));
-    }
-
-    #[test]
-    fn delimiters() {
-        let d = render(&parse(r"\left( \frac{a}{b} \right)"));
-        assert!(d.contains("<m:d>"));
-        assert!(d.contains("m:begChr m:val=\"(\"") && d.contains("m:endChr m:val=\")\""));
-        assert!(d.contains("<m:f>")); // the fraction inside
-                                      // \left. … \right| (one-sided; . = no left delim, | = single bar)
-        let one = render(&parse(r"\left. x \right|"));
-        assert!(one.contains("m:begChr m:val=\"\"") && one.contains("m:endChr m:val=\"|\""));
-        // \right\| gives a double bar ‖
-        assert!(render(&parse(r"\left. x \right\|")).contains("m:endChr m:val=\"‖\""));
-        assert!(
-            render(&parse(r"\left(\left[x\right]\right)"))
-                .matches("<m:d>")
-                .count()
-                == 2
+    fn splits_outside_groups_and_envs() {
+        assert_eq!(
+            split_top_level(r"a\\{b\\c}\\\begin{x}d\\e\end{x}\\f", r"\\"),
+            vec!["a", r"{b\\c}", r"\begin{x}d\\e\end{x}", "f"]
         );
-    }
-
-    #[test]
-    fn cr_is_matrix_row_separator() {
-        // plain-TeX `\cr` ends a row exactly like `\\`; cells must not be empty
-        let p = render(&parse(r"\begin{pmatrix}a&b\cr b&d\cr\end{pmatrix}"));
-        assert_eq!(p.matches("<m:mr>").count(), 2);
-        for ch in ["a", "b", "d"] {
-            assert!(p.contains(&format!(">{ch}<")), "cell {ch} missing from {p}");
-        }
-    }
-
-    #[test]
-    fn math_class_wrappers_are_transparent() {
-        // \mathbin/\mathop/… affect spacing only -> content rendered through
-        assert!(render(&parse(r"a \mathbin{\land} b")).contains("∧"));
-        // \mathop{…} T renders its content through (\rm is dropped; runs merge)
-        let im = render(&parse(r"\mathop{\rm im} T"));
-        assert!(im.contains(">im<") && im.contains(">T<"), "{im}");
-    }
-
-    #[test]
-    fn normal_subgroup_and_restriction_symbols() {
-        assert!(render(&parse(r"A \trianglelefteq B")).contains("⊴"));
-        assert!(render(&parse(r"a \nmid b")).contains("∤"));
-        assert!(render(&parse(r"T{\restriction} U")).contains("↾"));
-    }
-
-    #[test]
-    fn delimiter_attribute_escapes_quote() {
-        // A `"` delimiter must be escaped in the m:begChr/m:endChr attribute,
-        // never emitted as a bare `m:val="""`.
-        let out = render(&parse(r#"\left" x \right""#));
-        assert!(!out.contains(r#"m:val="""#), "{out}");
-        assert!(out.contains("&quot;"), "{out}");
-    }
-
-    #[test]
-    fn control_chars_are_dropped_from_output() {
-        // XML-illegal control characters must not reach the output verbatim.
-        let out = render(&parse("a\u{0C}b\u{08}"));
-        assert!(!out.contains('\u{0C}') && !out.contains('\u{08}'), "{out}");
+        assert_eq!(env_token(r"\beginner", 0), (0, 0));
+        assert_eq!(env_token(r"\begin", 0), (0, 0));
     }
 }

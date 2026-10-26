@@ -1,0 +1,11 @@
+{
+"api": "parse_document",
+"args": {
+"source": "\\begin{document}\\begin{lemma}\\label{l:1}X\\end{lemma}\\end{document}"
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_theorems.py::test_crossref_uses_per_kind_counter"
+]
+}

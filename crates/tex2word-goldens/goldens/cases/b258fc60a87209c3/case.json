@@ -1,0 +1,11 @@
+{
+"api": "convert_source",
+"args": {
+"source": "\\begin{document}\\color{white} content here\\end{document}"
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_block_level_scope.py::test_block_level_unresolved_color_no_leak"
+]
+}

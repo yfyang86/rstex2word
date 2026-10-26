@@ -1,0 +1,11 @@
+{
+"api": "convert_source",
+"args": {
+"source": "\n\\documentclass[sigplan]{acmart}\n\\setcopyright{acmlicensed}\n\\newcommand{\\sys}{Tutti\\xspace}\n\\begin{document}\n\\section{Eval}\n\\sys is fast and \\sys scales.\n\\end{document}\n"
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_robustness.py::test_macro_with_xspace_expands_cleanly"
+]
+}

@@ -1,0 +1,11 @@
+{
+"api": "parse_document",
+"args": {
+"source": "\\newacronym{ml}{ML}{machine learning}\\newacronym{ai}{AI}{artificial intelligence}\\begin{document}\\gls{nosuch}\\end{document}"
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_glossaries.py::test_undefined_acronym_falls_back_to_key"
+]
+}

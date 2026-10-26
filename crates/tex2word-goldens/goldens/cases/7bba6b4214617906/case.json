@@ -1,0 +1,11 @@
+{
+"api": "parse_document",
+"args": {
+"source": "\\tableofcontents\\listoffigures\\listoftables"
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_toc.py::test_toc_macros_parse_to_ir"
+]
+}

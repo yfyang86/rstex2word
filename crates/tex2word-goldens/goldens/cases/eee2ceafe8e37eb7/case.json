@@ -1,0 +1,13 @@
+{
+"api": "read_docx",
+"args": {
+"docx_bytes": {
+"@blob": "8c9385fc54d65bf83941c17e55315dc2bd3553e5adbf33455b1d70de061b6c15"
+}
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_docx_reader.py::test_bullet_list_is_not_read_as_a_description_list"
+]
+}

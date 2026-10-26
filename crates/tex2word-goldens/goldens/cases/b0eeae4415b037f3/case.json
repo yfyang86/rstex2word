@@ -1,0 +1,12 @@
+{
+"api": "convert_source",
+"args": {
+"embed_manifest": false,
+"source": "\\begin{document}Energy $e=mc^2$ holds.\\end{document}"
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_word_native.py::test_foreign_inline_equation_recovers_as_math"
+]
+}

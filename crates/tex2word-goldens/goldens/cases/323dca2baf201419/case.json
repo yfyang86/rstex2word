@@ -1,0 +1,12 @@
+{
+"api": "convert_source",
+"args": {
+"columns": 2,
+"source": "\\begin{document}text\\end{document}"
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_coverage_cli.py::test_columns_option_sets_section_cols"
+]
+}

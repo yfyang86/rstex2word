@@ -1,0 +1,11 @@
+{
+"api": "parse_document",
+"args": {
+"source": "\\begin{document}\\begin{tabular}{cl} & A \\\\ \\multirow{-2}{*}{Cat} & B \\\\\\end{tabular}\\end{document}"
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_tables.py::test_negative_multirow_keeps_content_without_merge"
+]
+}

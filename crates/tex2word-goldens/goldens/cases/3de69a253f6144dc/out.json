@@ -1,0 +1,1 @@
+{"value":"\\documentclass{article}\n\\usepackage[utf8]{inputenc}\n\\begin{document}\n\\textcolor[HTML]{FF0000}{a} \\colorbox[HTML]{FFFF00}{b}\n\\end{document}"}

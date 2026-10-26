@@ -1,0 +1,1 @@
+\documentclass{article}\begin{document}Before \import{x/}{gone.tex} after.\end{document}

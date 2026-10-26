@@ -1,0 +1,11 @@
+{
+"api": "convert_source",
+"args": {
+"source": "\\begin{document}Use \\tikz[baseline] \\node[circle] (c) {1}; markers.\\end{document}"
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_tikz.py::test_no_tikz_warnings_in_output"
+]
+}

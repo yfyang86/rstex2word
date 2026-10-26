@@ -1,0 +1,11 @@
+{
+"api": "parse_document",
+"args": {
+"source": "\\begin{document}\\begin{algorithm}\\eIf{$a>b$}{take a\\;}{take b\\;}\\end{algorithm}\\end{document}"
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_algorithms.py::test_algorithm2e_eif_renders_both_branches"
+]
+}

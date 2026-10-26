@@ -5,122 +5,133 @@ engagement (branching, commits, review), see [`CONTRIBUTING.md`](CONTRIBUTING.md
 
 ## Prerequisites
 
-- A stable Rust toolchain, **1.82 or newer** (the workspace MSRV). Install via
-  [rustup](https://rustup.rs).
-- No system libraries, no network: the build is fully offline and
-  dependency-free.
+- Rust **1.82 or newer** (the workspace MSRV), via [rustup](https://rustup.rs).
+- Nothing else to build or test: no system libraries, no network, no crates.
+- To re-record goldens: the Python reference checked out next to this repo
+  and a Python 3.12 environment with `tex2word` installed without extras (see
+  [Goldens](#goldens)).
 
 ```bash
 cargo build --workspace
 cargo test  --workspace
-cargo clippy --all-targets   # must be warning-free
-cargo fmt --check            # must be clean
+cargo clippy --workspace --all-targets   # must be warning-free
+cargo fmt --all --check                  # must be clean
 ```
 
-## Architecture
+## What this project is
 
-Conversion is a straight pipeline from LaTeX to a `.docx` byte buffer:
+A port of the Python `tex2word` **1.0.9** core install. The Python code is the
+specification: behavior, messages, ordering and output bytes are meant to be
+identical. When the two differ, the Rust code is wrong (unless the difference
+is listed in the README's "Not ported").
+
+That shapes how the code is written:
+
+- **Python semantics are explicit.** `tex2word-ir` carries `pystr` (Unicode
+  `isspace`/`isalpha`/`isdigit`, `int()`/`float()`/`round()`, `strip`, NFC),
+  `re` (a Python-compatible regex engine, including `sub` templates),
+  `json` (Python's `dumps`/`repr`/truthiness), `pyos` (`os.path`, text
+  reading) and `dict` (insertion-ordered maps). Use them instead of Rust's
+  near-equivalents whenever the Python code calls the Python version.
+- **Strings are indexed by byte offsets**, never by character counts carried
+  over from Python; convert where Python slices by code points.
+- **Exceptions Python lets escape become `Result` errors** carrying the Python
+  exception type and `str(exc)` (for example `ReadError`, `ValidateError`,
+  `XmlError`, `MathError`). Exceptions Python catches are caught at the same
+  place.
+- **Third-party libraries are ported, not approximated.** `tex2word-latexwalker`
+  is pylatexenc's walker and `latex2text`; `tex2word-ooxml` follows lxml's
+  tree model and serializer, libxml2's parser (including its error messages
+  and positions) and zlib 1.3's compressor, so `.docx` files are
+  byte-identical.
+
+## Pipeline
 
 ```
-LaTeX ─► tex2word-frontend ─► IR ─► crossref ─► tex2word-backend ─► .docx
-         (preprocess/         (tex2word-ir)   (numbering,   (OOXML + fields
-          macros/parse)            │           refs)         + math + zip)
-                                   │                              ▲
-                          tex2word-latex (IR→LaTeX)       tex2word-validate
-                          round-trip writer               structural checker
+LaTeX ─► preprocess ─► macros ─► latexwalker ─► parser ─► IR ─► crossref ─► DocumentWriter ─► DocxPackage ─► .docx
+         (frontend)   (frontend)  (pylatexenc)  (frontend)       (ir)       (backend + math)   (backend + ooxml)
+
+.docx ─► recover_ir (manifest) ─┐
+      └► docx_reader ───────────┴─► reconcile_blocks ─► latex writer ─► LaTeX
 ```
 
-The **IR** (`tex2word-ir`) is the contract between halves: a tree of `Block`s
-(headings, paragraphs, `MathBlock`, `List`, `Table`, `Float`, `Quote`,
-`Theorem`, `Bibliography`, …) whose leaves are `Inline`s (text, emphasis,
-`Math`, links, refs, …). Everything upstream produces IR; everything downstream
-consumes it. Keeping this boundary clean is the single most important rule.
+`tex2word::pipeline::convert_source` is the port of `pipeline.py`;
+`tex2word::roundtrip` is `roundtrip.py`.
 
-### Crates and responsibilities
+## Crates
 
-| crate | responsibility |
-|-------|----------------|
-| `tex2word-ir`       | IR types only — no logic. Change here ripples both ways. |
-| `tex2word-frontend` | LaTeX → IR. `strip_comments` → `flatten_inputs` → **`preprocess`** → `macros::expand_macros` → `parse_*`. |
-| `tex2word-math`     | LaTeX math → OMML. A recursive-descent parser (`parser.rs`) builds a math `Node` AST; `omml.rs` renders it; `symbols.rs` is the command/symbol table. |
-| `tex2word-backend`  | IR → OOXML. `ooxml.rs` emits `word/document.xml` and the numbering/styles parts; `fields.rs` builds `SEQ`/`REF`/`PAGEREF` complex fields; `zip.rs` is the STORE-method ZIP writer; `image.rs` handles rasters. |
-| `tex2word-latex`    | IR → LaTeX round-trip writer (basis of differential testing). |
-| `tex2word-validate` | Structural OOXML/OPC validation of a produced `.docx`. |
-| `tex2word`          | The public API (`convert_source`, `convert_file`, `to_latex_source`), plus `crossref` (numbering/reference resolution) and `report` (coverage). |
-| `tex2word-cli`      | Arg parsing and the `tex2word` binary (`convert`/`latex`/`validate`). |
+| crate | Python modules | notes |
+|-------|----------------|-------|
+| `tex2word-ir` | `ir.py`, `report.py`, `transforms/crossref.py` | plus the Python-semantics helpers above |
+| `tex2word-ooxml` | lxml, libxml2, `zipfile`/zlib, `backend/ooxml.py` | `xml` (tree + serializer), `parse`, `zip`, `deflate`, `inflate` |
+| `tex2word-latexwalker` | pylatexenc `latexwalker`, `macrospec`, `latex2text` | spec tables generated from pylatexenc |
+| `tex2word-math` | `mathml/latex_math.py`, `omml.py`, `symbols.py`, `cascade.py`, `imagemath.py`, `omml_reader.py` | |
+| `tex2word-bib` | `bib/bibtex.py`, `bbl.py`, `render.py` | |
+| `tex2word-frontend` | `frontend/*` | `preprocess`, `macros`, `colors`, `siunitx`, `algorithms`, `parser`, `latexml`, `docx_reader` |
+| `tex2word-backend` | `backend/*`, `templates/*`, `bib/zotero.py` | `document` (the writer), `fields`, `package`, `reference`, `templates`, `tikz`, `images`, `raster` |
+| `tex2word-latex` | `backend/latex_writer.py` | |
+| `tex2word-validate` | `validate.py` | |
+| `tex2word` | `pipeline.py`, `roundtrip.py`, `benchmark.py` | the public API, plus a `difflib` port |
+| `tex2word-cli` | `cli.py` | argparse-compatible parsing and help text |
+| `tex2word-goldens` | — | parity tests (not published) |
 
-### The front-end pipeline (order matters)
+## Goldens
 
-`tex2word-frontend`'s `parse_document_in` runs, in order:
+`crates/tex2word-goldens/goldens/` holds what the Python reference produced:
 
-1. `strip_comments` — remove `%` line comments (preserving `\%`).
-2. `flatten_inputs` — inline `\input`/`\include` (recursively).
-3. **`preprocess`** (`preprocess.rs`) — source-level rewrites that must happen
-   *before* macro expansion and parsing: the exam document class, plain-TeX
-   `\halign` → `array`, the TikZ cheatsheet idiom, `\/`.
-4. `macros::expand_macros` — user `\newcommand`/`\def` expansion.
-5. `parse_*` — split into blocks and inlines, building IR.
+- `cases/<id>/` — every call the Python test suite made to a public API
+  (`convert_source`, `parse_document`, `read_docx`, `to_latex`,
+  `validate_docx`, …): `case.json` is the input, `out.json` Python's result.
+  Binary inputs and outputs live content-addressed in `blobs/`.
+- `*.jsonl` — targeted recordings: walker trees, `latex2text`, regex
+  behavior, preprocessing stages, function-level results (`fn.jsonl`), XML
+  round-trips and malformed-XML errors, zlib output, the reverse path over all
+  recorded conversions, and the report helpers.
 
-If you are adding support for a **document class or a source idiom** (something
-that is better rewritten than parsed natively), it belongs in `preprocess.rs`.
-If you are adding a **macro or environment** with real IR meaning, it belongs in
-the parser.
+Each test in `crates/tex2word-goldens/tests/` replays one of these and fails
+on the first difference, printing the path of the mismatch.
 
-## How to add a feature
+To re-record (after the Python reference changes), with the reference checked
+out at `../yfyang86/tex2word` and its core install in a venv:
 
-Work outside-in and let the IR guide you.
+```bash
+# cases/ and blobs/: run the Python test suite with the capture plugin,
+# from the Python repo root
+PYTHONPATH=<this repo>/tools/golden GOLDEN_OUT=<this repo>/crates/tex2word-goldens/goldens \
+  python -m pytest -p capture_plugin -q
+# the targeted recordings
+python tools/golden/gen_walker_goldens.py
+python tools/golden/gen_fn_goldens.py
+SOURCE_DATE_EPOCH=1767312000 python tools/golden/gen_reverse_goldens.py
+python tools/golden/gen_report_goldens.py
+python tools/golden/gen_xml_goldens.py
+python tools/golden/gen_xmlerr_goldens.py
+python tools/golden/gen_deflate_goldens.py
+```
 
-1. **Model it in the IR** if no existing `Block`/`Inline` fits. Add the smallest
-   variant/field that captures the semantics, then follow the compiler errors —
-   every `match` on the changed type (front-end, back-end, latex writer, report,
-   IR text dump) must be updated. This is deliberate: exhaustive matches are how
-   we guarantee no consumer silently ignores new content.
-2. **Produce it in the front-end** — parse the macro/environment (or rewrite it
-   in `preprocess.rs`) into the IR.
-3. **Render it in the back-end** — emit the OOXML. Mind element ordering: Word's
-   schema is order-sensitive (e.g. `w:pPr` before runs, `tblPr` order). The
-   validator (`tex2word-validate`) exists to catch violations — add or run it.
-4. **Round-trip it** in `tex2word-latex` if the construct should survive
-   `parse → to_latex → parse`.
-5. **Cover it** — a unit test next to the code and, for anything user-visible,
-   an end-to-end test asserting a valid `.docx` and the specific rendering.
+Some Rust sources are generated from the reference and must be regenerated,
+not edited: `latex2text_specs.rs`, `symbols.rs`, `unicode_norm.rs`, the
+Unicode tables and the backend data (`gen_latex2text_specs.py`,
+`gen_math_tables.py`, `gen_unicode_norm.py`, `gen_walker_tables.py`,
+`gen_backend_data.py`).
 
-### Worked example: math
+Recordings freeze the clock: `\today` is January 2, 2026 and
+`SOURCE_DATE_EPOCH=1767312000`; the tests set the same values.
 
-A new math command is usually a one-line addition to `tex2word-math`:
+## Changing behavior
 
-- a plain symbol → an arm in `symbols.rs::symbol`,
-- an n-ary operator → `symbols.rs::nary`,
-- structural syntax (a new accent, wrapper, or environment) → an arm in
-  `parser.rs::parse_command` (and, if it renders differently, `omml.rs`).
-
-`\mathbin`/`\mathop`/… are examples of *transparent* wrappers: they parse their
-argument and return it unchanged (they only affect spacing).
-
-## Testing
-
-- **Unit tests** live inline (`#[cfg(test)] mod tests`) beside the code they
-  exercise — the parser, the math engine, the OOXML writer.
-- **Integration tests** live in `crates/tex2word/tests/`:
-  - `feature_1_0_6.rs` — the exam class, `\cr` matrices, math-class wrappers,
-    asserting valid `.docx` and the exact rendering (uses the vendored
-    `tests/fixtures/oxmathproblems` sheet).
-  - `validate_output.rs` — a broad sample must validate cleanly.
-  - `roundtrip.rs` — `parse → to_latex → parse` equality.
-  - `corpus_parity.rs` — runs an external corpus if present, else skips.
-- **Golden rule:** every conversion must produce a **structurally valid**
-  `.docx`. `tex2word-validate` is the gate; wire new output through it.
-
-Fixtures for tests must live **inside** `crates/*/tests/fixtures/` so the suite
-is self-contained (no dependency on paths outside the repo).
+1. Make the change in the Python reference first (or confirm the Python
+   behavior you are matching).
+2. Port it, keeping the structure of the Python function so the next diff is
+   easy to follow.
+3. Re-record the goldens and run `cargo test --workspace`.
 
 ## Conventions
 
-- **Zero runtime dependencies.** The workspace has no external crates and should
-  stay that way unless a dependency clearly pays for itself; discuss first (see
-  the dependency policy in `ROADMAP.md`).
-- **Never abort on unsupported input.** Drop it, record a `Warning`, keep going.
-  `--strict` is how a caller opts into treating degradation as failure.
-- **`clippy` clean and `rustfmt` clean** before every commit.
-- **Deterministic output.** The same input yields byte-identical `.docx`
-  (STORE-method ZIP, no timestamps) — keep it that way; tests rely on it.
+- **No crate dependencies.** Keep it that way unless a dependency clearly pays
+  for itself; discuss first.
+- **Deterministic output.** The same input and `SOURCE_DATE_EPOCH` give the
+  same `.docx` bytes as Python. No hash-map iteration order, no timestamps.
+- **Never abort on unsupported input** where Python doesn't: degrade and log
+  to the `ConversionReport`.
+- **clippy- and rustfmt-clean** before every commit.

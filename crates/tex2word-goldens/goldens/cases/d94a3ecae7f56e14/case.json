@@ -1,0 +1,11 @@
+{
+"api": "convert_source",
+"args": {
+"source": "\\documentclass{article}\\DeclareMathOperator{\\Var}{Var}\\begin{document}\\( \\Var(X) \\)\\end{document}"
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_declaremathoperator.py::test_operator_with_braced_body"
+]
+}

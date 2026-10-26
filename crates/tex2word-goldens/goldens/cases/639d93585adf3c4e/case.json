@@ -1,0 +1,12 @@
+{
+"api": "convert_source",
+"args": {
+"source": "\\documentclass{article}\\usepackage{xeCJK}\\setCJKmainfont{WenQuanYi Zen Hei}\\setCJKsansfont{WenQuanYi Zen Hei}\\begin{document}\\section{中文标题}段落里有中文与公式 $E=mc^2$。\\begin{table}\\caption{表格}\\begin{tabular}{ll}\\hline 姓名 & 年龄 \\\\ 张三 & 25 \\\\\\hline\\end{tabular}\\end{table}\\begin{itemize}\\item 列表项\\end{itemize}\\[ \\int_0^1 f(x)\\,dx = \\text{积分} \\]\\end{document}"
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_cjk_context.py::test_rich_cjk_document_applies_eastasia_font",
+"tests/test_cjk_context.py::test_rich_cjk_document_is_valid"
+]
+}

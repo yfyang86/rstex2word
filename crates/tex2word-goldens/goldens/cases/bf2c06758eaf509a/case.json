@@ -1,0 +1,11 @@
+{
+"api": "parse_document",
+"args": {
+"source": "\\begin{document}\\nicefrac{1}{2}\\end{document}"
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_nicefrac.py::test_nicefrac"
+]
+}

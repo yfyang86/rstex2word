@@ -1,0 +1,11 @@
+{
+"api": "parse_document",
+"args": {
+"source": "\\begin{document}\\title{T}\\author{\\IEEEauthorblockN{Grace Hopper}\\IEEEauthorblockA{US Navy}}\\maketitle\\end{document}"
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_authors_keywords.py::test_ieeetran_author_block_content_survives"
+]
+}

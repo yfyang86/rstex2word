@@ -1,0 +1,14 @@
+{
+"api": "to_latex",
+"args": {
+"docx_bytes": {
+"@blob": "eb7bd6d744faff3507e09d47dd089bbced66b6763d14945ce952ca1c4e27c7da"
+},
+"reconcile": true
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_reconcile.py::test_reconcile_keeps_unchanged_uses_exact_source"
+]
+}

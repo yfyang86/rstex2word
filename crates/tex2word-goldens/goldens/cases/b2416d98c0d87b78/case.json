@@ -1,0 +1,11 @@
+{
+"api": "parse_document",
+"args": {
+"source": "\\begin{document}\\begin{theorem*}X\\end{theorem*}\\end{document}"
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_theorems.py::test_starred_theorem_unnumbered"
+]
+}

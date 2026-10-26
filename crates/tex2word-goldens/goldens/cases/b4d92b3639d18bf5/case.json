@@ -1,0 +1,11 @@
+{
+"api": "expand_macros",
+"args": {
+"source": "\\newcommand{\\BB}{\\mathbb} $\\BB R$"
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_frontend.py::test_newcommand_unbraced_single_token_body"
+]
+}

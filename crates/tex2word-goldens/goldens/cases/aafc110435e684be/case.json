@@ -1,0 +1,13 @@
+{
+"api": "convert_source",
+"args": {
+"source": "\\begin{document}\\lstinputlisting[language=Python]{snippet.py}\\end{document}"
+},
+"base_dir": "base",
+"files": {
+"base/snippet.py": "c672747097aee45e434f1b5dca7b9a25b683bcf4f80c8cf8a9b8389cba2044b2"
+},
+"tests": [
+"tests/test_lstinputlisting.py::test_lstinputlisting_embeds_file"
+]
+}

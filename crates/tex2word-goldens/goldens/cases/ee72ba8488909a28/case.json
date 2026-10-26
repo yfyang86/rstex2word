@@ -1,0 +1,13 @@
+{
+"api": "convert_source",
+"args": {
+"embed_manifest": false,
+"source": "\\begin{document}\\begin{description}\\item[Apple] a pome fruit\\item[Banana] a yellow berry\\end{description}\\end{document}"
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_docx_reader.py::test_description_list_round_trips_to_latex",
+"tests/test_docx_reader.py::test_reader_recovers_description_list"
+]
+}

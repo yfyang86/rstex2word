@@ -1,0 +1,15 @@
+{
+"api": "convert_source",
+"args": {
+"embed_manifest": false,
+"source": "\\begin{document}\\begin{figure}\\includegraphics{p.png}\\caption{A diagram}\\end{figure}\\end{document}"
+},
+"base_dir": "base",
+"files": {
+"base/p.png": "29b6aeccaae8e34092befb486bf30bc5674395e0df138bc011ace36969fa0a90"
+},
+"tests": [
+"tests/test_sdt.py::test_figure_is_wrapped_in_a_tagged_sdt",
+"tests/test_sdt.py::test_reader_recovers_figure_from_sdt"
+]
+}

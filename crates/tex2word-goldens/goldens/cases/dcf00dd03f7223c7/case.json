@@ -1,0 +1,11 @@
+{
+"api": "convert_source",
+"args": {
+"source": "\\documentclass{article}\\acro{CPU}{Central Processing Unit}\\begin{document}\\acs{CPU} then \\acp{CPU} and \\Acl{CPU}\\end{document}"
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_acronym_package.py::test_plural_and_capitalised"
+]
+}

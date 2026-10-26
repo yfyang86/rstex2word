@@ -1,0 +1,23 @@
+{
+"api": "convert_source",
+"args": {
+"citation_mode": "static",
+"columns": 1,
+"csl": null,
+"embed_manifest": true,
+"frontend": "pure",
+"language": null,
+"math_image_fallback": false,
+"number_by_section": false,
+"reference_doc": null,
+"source": "\\begin{document}\\begin{figure}\\includegraphics{fig.png}\\caption{C}\\label{fig:x}\\end{figure}\\end{document}"
+},
+"base_dir": "base",
+"files": {
+"base/fig.png": "30692217bc8d4c812a60d2f0c6da22a88160e1e00e715f18d6f9626d09f3ee08",
+"base/main.tex": "b0c7b81352fa8f70293bcfd3d3c23384d87a0fe5243b6fdf4c4073333a124bfb"
+},
+"tests": [
+"tests/test_images.py::test_figure_embeds_image"
+]
+}

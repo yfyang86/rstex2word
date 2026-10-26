@@ -1,0 +1,11 @@
+{
+"api": "expand_macros",
+"args": {
+"source": "\\NewDocumentCommand{\\f}{o}{\\IfValueT{#1}{[#1]}\\IfNoValueT{#1}{empty}}\\f"
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_xparse.py::test_single_branch_conditionals"
+]
+}

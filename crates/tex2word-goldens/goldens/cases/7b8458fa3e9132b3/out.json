@@ -1,0 +1,1 @@
+{"value":"\\documentclass{article}\n\\usepackage[utf8]{inputenc}\n\\begin{document}\n\\begin{tabular}{ll}\na & \\cellcolor[HTML]{FFFF00}b \\\\\n\\end{tabular}\n\\end{document}"}

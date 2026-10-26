@@ -1,0 +1,11 @@
+{
+"api": "parse_document",
+"args": {
+"source": "\\begin{document}\\enquote{a \\textbf{b} c}\\end{document}"
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_enquote_symbols.py::test_enquote_nested_formatting"
+]
+}

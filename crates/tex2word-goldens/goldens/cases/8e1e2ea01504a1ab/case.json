@@ -1,0 +1,11 @@
+{
+"api": "parse_document",
+"args": {
+"source": "\\documentclass{llncs}\\title{T}\\author{Alice\\inst{1} \\and Bob\\inst{2}}\\institute{MIT \\and CMU}\\begin{document}\\maketitle\\end{document}"
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_authors_keywords.py::test_institute_split_on_and"
+]
+}

@@ -1,0 +1,11 @@
+{
+"api": "parse_document",
+"args": {
+"source": "\\begin{document}\\begin{table}\\centering\\resizebox{\\textwidth}{!}{\\begin{minipage}{\\textwidth}\\begin{minipage}{0.5\\textwidth}\\textbf{(a)}\\\\\\begin{tabular}{ll}1 & 2 \\\\\\end{tabular}\\end{minipage}\\hfill\\begin{minipage}{0.5\\textwidth}\\textbf{(b)}\\\\\\begin{tabular}{ll}3 & 4 \\\\\\end{tabular}\\end{minipage}\\end{minipage}}\\caption{Grid}\\end{table}\\end{document}"
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_tables.py::test_minipage_grid_of_subtables_recovered"
+]
+}

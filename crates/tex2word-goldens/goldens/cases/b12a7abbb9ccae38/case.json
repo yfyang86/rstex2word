@@ -1,0 +1,13 @@
+{
+"api": "convert_source",
+"args": {
+"source": "\\documentclass{thuc3i}\\usepackage{graphicx}\\title{T}\\pretitlefigure{\\begin{center}\\includegraphics{teaser.png}\\captionof{figure}{Teaser}\\label{fig:teaser}\\end{center}\\vskip4pt}\\begin{document}\\maketitle\\begin{figure}\\includegraphics{teaser.png}\\caption{Second}\\end{figure}\\end{document}"
+},
+"base_dir": "base",
+"files": {
+"base/teaser.png": "956c6c503e3d4daad6d515f6fdded19b0b1cc72fd9a87a2444d60899cf8f8d92"
+},
+"tests": [
+"tests/test_images.py::test_preamble_pretitlefigure_is_recovered_first"
+]
+}

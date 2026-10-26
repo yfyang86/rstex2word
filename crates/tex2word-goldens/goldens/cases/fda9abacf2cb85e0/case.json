@@ -1,0 +1,11 @@
+{
+"api": "convert_source",
+"args": {
+"source": "\\documentclass{article}\\usepackage{tikz}\\begin{document}\\begin{figure}\\begin{tikzpicture}\\draw (0,0)--(1,1);\\end{tikzpicture}\\caption{T}\\end{figure}\\end{document}"
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_images.py::test_tikz_figure_stays_on_compile_path"
+]
+}

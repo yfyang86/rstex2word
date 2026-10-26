@@ -1,0 +1,11 @@
+{
+"api": "parse_document",
+"args": {
+"source": "\\newacronym{ml}{ML}{machine learning}\\newacronym{ai}{AI}{artificial intelligence}\\begin{document}\\newacronym{xy}{XY}{ex why}\\acrshort{xy}\\end{document}"
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_glossaries.py::test_newacronym_emits_nothing_in_body"
+]
+}

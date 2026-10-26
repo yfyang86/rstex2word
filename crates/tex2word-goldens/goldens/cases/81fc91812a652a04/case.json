@@ -1,0 +1,11 @@
+{
+"api": "convert_source",
+"args": {
+"source": "\\begin{document}周报表(\\text{bills of mortality})说。\\end{document}"
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_structural_drops.py::test_text_outside_math_renders_its_argument"
+]
+}

@@ -1,0 +1,11 @@
+{
+"api": "convert_source",
+"args": {
+"source": "\\begin{document}\\section{S}\\label{sec:a}see \\textcolor{red}{\\ref{sec:a}} and {\\large \\ref{sec:a}}.\\end{document}"
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_color.py::test_ref_inside_textcolor_resolves"
+]
+}

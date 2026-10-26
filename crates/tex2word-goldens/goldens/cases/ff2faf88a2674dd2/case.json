@@ -1,0 +1,11 @@
+{
+"api": "convert_source",
+"args": {
+"source": "\\begin{document}\\begin{longtable}{@{}p{2.4cm}p{4.1cm}p{4.0cm}@{}} A & B & C \\\\ x & y & z \\\\ \\end{longtable}\\end{document}"
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_tabular_variants.py::test_longtable_colspec_not_eaten_as_row"
+]
+}

@@ -1,0 +1,23 @@
+{
+"api": "convert_source",
+"args": {
+"citation_mode": "static",
+"columns": 1,
+"csl": null,
+"embed_manifest": true,
+"frontend": "pure",
+"language": null,
+"math_image_fallback": false,
+"number_by_section": false,
+"reference_doc": null,
+"source": "\\begin{document}\\includegraphics{fig}\\end{document}"
+},
+"base_dir": "base",
+"files": {
+"base/fig.pdf": "932d2676c1e461ba50d559bba416fbc6af8da1f74309ae81370c615223d0e349",
+"base/main.tex": "332fd76d3f68a4e0b3a0d5873d076abc5a25931d8401db11673227bea76250ab"
+},
+"tests": [
+"tests/test_raster.py::test_extension_resolution_finds_pdf"
+]
+}

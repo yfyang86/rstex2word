@@ -1,0 +1,11 @@
+{
+"api": "convert_source",
+"args": {
+"source": "\\definecolor{hd}{HTML}{1F2A6E}\\newtcolorbox{tplbox}[1]{colback=white,colframe=hd,colbacktitle=hd,coltitle=white,fonttitle=\\bfseries,title={#1}}\\begin{document}\\begin{tplbox}{(a) Base template}Body text\\end{tplbox}\\end{document}"
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_box_environments.py::test_newtcolorbox_argument_becomes_title"
+]
+}

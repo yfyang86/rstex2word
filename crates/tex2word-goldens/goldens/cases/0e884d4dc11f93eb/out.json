@@ -1,0 +1,1 @@
+{"value":"\\documentclass{article}\n\\usepackage[utf8]{inputenc}\n\\usepackage{makeidx}\n\\makeindex\n\\begin{document}\nA\\index{alpha}.\n\n\\printindex\n\\end{document}"}

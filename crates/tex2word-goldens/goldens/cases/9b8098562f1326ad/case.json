@@ -1,0 +1,14 @@
+{
+"api": "read_docx",
+"args": {
+"docx_bytes": {
+"@blob": "0c9055b01487dda8b05bef8a561c626b27bb9ab08dbbd417481c19c23126521a"
+}
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_comments.py::test_comment_renders_as_latex_percent_line",
+"tests/test_comments.py::test_reader_recovers_comment"
+]
+}

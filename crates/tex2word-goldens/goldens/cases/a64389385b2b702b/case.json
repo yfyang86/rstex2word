@@ -1,0 +1,12 @@
+{
+"api": "parse_document",
+"args": {
+"source": "\\documentclass{report}\n\\begin{document}\n\\chapter{Intro}\\label{c:i}\n\\section{Background}\n\\subsection{Detail}\n\\appendix\n\\chapter{Extra}\\label{a:x}\n\\section{More}\n\\end{document}"
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_book.py::test_appendix_flag_on_later_headings",
+"tests/test_book.py::test_book_mode_detected_and_chapter_is_top_level"
+]
+}

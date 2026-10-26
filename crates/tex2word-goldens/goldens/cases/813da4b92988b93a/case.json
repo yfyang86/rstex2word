@@ -1,0 +1,11 @@
+{
+"api": "convert_source",
+"args": {
+"source": "\\begin{document}\\begin{lstlisting}[language=R]\nx <- lung$time\n\\end{lstlisting}\nprose after \\textsf{R} 函数。\n\\end{document}"
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_listing_dollar.py::test_odd_dollar_in_listing_does_not_eat_the_document"
+]
+}

@@ -1,0 +1,11 @@
+{
+"api": "convert_source",
+"args": {
+"source": "\\begin{document}\\section{A \\texorpdfstring{\\(x^2\\)}{x squared} title}\\end{document}"
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_ensuremath_texor.py::test_texorpdfstring_keeps_tex_form"
+]
+}

@@ -14,4 +14,6 @@ description = "tex2word OOXML back-end: IR -> .docx (fields, zip, images)"
 
 [dependencies]
 tex2word-ir.workspace = true
+tex2word-ooxml.workspace = true
 tex2word-math.workspace = true
+tex2word-bib.workspace = true

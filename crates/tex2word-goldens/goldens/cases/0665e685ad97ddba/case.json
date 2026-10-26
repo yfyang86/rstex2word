@@ -1,0 +1,13 @@
+{
+"api": "to_latex",
+"args": {
+"docx_bytes": {
+"@blob": "ccafda7def5f3bff8e14ecbf773d04bc49a729af1ee6b787626ca6e9de63f0c0"
+}
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_orcid.py::test_orcid_renders_and_round_trips"
+]
+}

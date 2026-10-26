@@ -1,0 +1,1 @@
+{"value":"\\documentclass{article}\n\\usepackage[utf8]{inputenc}\n\\newtheorem{theorem}{Theorem}\n\\begin{document}\n\\begin{theorem}[Euclid]\nA point has no part.\n\\end{theorem}\n\\end{document}"}

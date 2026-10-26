@@ -1,0 +1,11 @@
+{
+"api": "parse_document",
+"args": {
+"source": "\\begin{document}\\begin{table}\\resizebox{0.9\\textwidth}{!}{\n\\begin{tabular}{ll}a & b \\\\ c & d \\\\\\end{tabular}}\\caption{Cap}\\label{t:x}\\end{table}\\end{document}"
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_tables.py::test_resizebox_wrapped_table_is_recovered"
+]
+}

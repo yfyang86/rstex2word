@@ -1,0 +1,14 @@
+{
+"api": "convert_source",
+"args": {
+"embed_manifest": false,
+"source": "\\begin{document}\\begin{figure}\\includegraphics{p.png}\\caption{A red square}\\end{figure}\\end{document}"
+},
+"base_dir": "base",
+"files": {
+"base/p.png": "a116e65f9c020dc5c38664593e74e1a5eda18119e716763789af34739f8ffe44"
+},
+"tests": [
+"tests/test_docx_reader.py::test_reader_recovers_figure_with_caption"
+]
+}

@@ -1,0 +1,14 @@
+{
+"api": "convert_source",
+"args": {
+"embed_manifest": false,
+"source": "\\begin{document}\\begin{algorithm}\\caption{Binary search}\\label{alg:bs}\\begin{algorithmic}[1]\\STATE $lo \\gets 0$\\WHILE{$lo \\leq hi$}  \\STATE $mid \\gets (lo+hi)/2$\\ENDWHILE\\end{algorithmic}\\end{algorithm}\\end{document}"
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_docx_reader.py::test_algorithm_box_round_trips_to_latex",
+"tests/test_docx_reader.py::test_reader_recovers_algorithm_box",
+"tests/test_docx_reader.py::test_recovered_algorithm_lines_keep_relative_indent"
+]
+}

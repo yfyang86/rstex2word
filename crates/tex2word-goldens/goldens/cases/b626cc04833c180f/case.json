@@ -1,0 +1,12 @@
+{
+"api": "convert_source",
+"args": {
+"embed_manifest": false,
+"source": "\\begin{document}\\begin{table}\\begin{tabular}{ll}a & b\\\\\\end{tabular}\\caption{Results matrix}\\end{table}\\end{document}"
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_docx_reader.py::test_reader_recovers_table_with_caption"
+]
+}

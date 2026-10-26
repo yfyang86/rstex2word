@@ -1,0 +1,23 @@
+{
+"api": "convert_source",
+"args": {
+"citation_mode": "static",
+"columns": 1,
+"csl": null,
+"embed_manifest": false,
+"frontend": "pure",
+"language": null,
+"math_image_fallback": false,
+"number_by_section": false,
+"reference_doc": null,
+"source": "\\documentclass{article}\\begin{document}\\addbibresource{refs.bib}Text \\cite{e1905}.\\printbibliography\\end{document}"
+},
+"base_dir": "base",
+"files": {
+"base/p.tex": "b2f08e789a18005cd2f9eb752d83706ede41dc1d13cc9e63dbfa55757a294c68",
+"base/refs.bib": "59747822199b3324054ac8f48f8efa6da0fd408c17b92aa2a1b5ae2a164cfd75"
+},
+"tests": [
+"tests/test_biblatex.py::test_addbibresource_in_body_is_recognised"
+]
+}

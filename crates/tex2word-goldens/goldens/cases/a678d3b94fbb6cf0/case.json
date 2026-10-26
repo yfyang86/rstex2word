@@ -1,0 +1,11 @@
+{
+"api": "parse_document",
+"args": {
+"source": "\\begin{document}\\begin{theorem}[Pythagoras]$a^2+b^2=c^2$\\end{theorem}\\end{document}"
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_theorems.py::test_theorem_parsed_with_title_and_counter"
+]
+}

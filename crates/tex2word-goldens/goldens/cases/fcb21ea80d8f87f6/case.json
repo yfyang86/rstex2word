@@ -1,0 +1,13 @@
+{
+"api": "read_docx",
+"args": {
+"docx_bytes": {
+"@blob": "435588500c977c8aac68738c7eac8745cf7b0b49d008a51e21aea2a0e5374d65"
+}
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_toc.py::test_foreign_reader_recovers_toc_without_duplicate_title"
+]
+}

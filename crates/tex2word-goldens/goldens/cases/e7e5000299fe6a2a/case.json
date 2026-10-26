@@ -1,0 +1,13 @@
+{
+"api": "recover_ir",
+"args": {
+"docx_bytes": {
+"@blob": "1bfa001a575c7b9fd3e6cdec925d38caed9566915bb049e3d26d574e3a4ca9b0"
+}
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_glossaries.py::test_acronym_round_trips_as_text"
+]
+}

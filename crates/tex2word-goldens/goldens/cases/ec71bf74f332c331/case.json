@@ -1,0 +1,13 @@
+{
+"api": "convert_source",
+"args": {
+"source": "\\begin{document}a \\includegraphics{a.png} b \\includegraphics{a.png} c\\end{document}"
+},
+"base_dir": "base",
+"files": {
+"base/a.png": "b8ed59af7376306b7ec77b2b07606fe3851f920d69b41baa910e5bc2aad765c4"
+},
+"tests": [
+"tests/test_caching.py::test_dedup_keeps_docpr_ids_unique"
+]
+}

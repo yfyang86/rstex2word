@@ -1,0 +1,13 @@
+{
+"api": "convert_source",
+"args": {
+"source": "\\documentclass{article}\\usepackage{graphicx}\\begin{document}\\includegraphics[width=16cm]{p.png}\\end{document}"
+},
+"base_dir": "base",
+"files": {
+"base/p.png": "eb94120d5c7dfa29c8343045c2a549a9ac198caf2e376a10145c6d0ab6373e91"
+},
+"tests": [
+"tests/test_images.py::test_cap_is_text_column_not_six_inches"
+]
+}

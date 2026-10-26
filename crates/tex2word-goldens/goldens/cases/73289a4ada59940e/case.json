@@ -1,0 +1,13 @@
+{
+"api": "read_docx",
+"args": {
+"docx_bytes": {
+"@blob": "b2e29f251d2232a093fc4c8dd7e1bffb2cb4f7aa488ea71f7967b82e5bd3db38"
+}
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_sdt.py::test_reader_recovers_figure_from_sdt"
+]
+}

@@ -1,0 +1,1 @@
+{"value":"\\documentclass{article}\n\\usepackage[utf8]{inputenc}\n\\usepackage{hyperref}\n\\begin{document}\n\\section{Introduction}\\label{sec:intro}\n\nSee \\hyperref[sec_intro]{the intro} for details.\n\\end{document}"}

@@ -1,0 +1,11 @@
+{
+"api": "convert_source",
+"args": {
+"source": "\\begin{document}\n\\section{A}\\label{s:a}\n\\section{B}\\label{s:b}\n\\section{C}\\label{s:c}\n\\cref{s:a,s:b}.\\end{document}"
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_cref_multi.py::test_only_first_ref_carries_prefix"
+]
+}

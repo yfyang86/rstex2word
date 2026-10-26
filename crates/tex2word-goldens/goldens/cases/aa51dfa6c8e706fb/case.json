@@ -1,0 +1,11 @@
+{
+"api": "parse_document",
+"args": {
+"source": "{\\large big} small"
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_inline_extras.py::test_font_size_group_scoped"
+]
+}

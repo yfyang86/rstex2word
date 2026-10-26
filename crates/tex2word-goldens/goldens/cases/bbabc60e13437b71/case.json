@@ -1,0 +1,13 @@
+{
+"api": "to_latex",
+"args": {
+"docx_bytes": {
+"@blob": "ef01e68b730527c8adcd7c0c2b50bcc17b7c5441f92f9cc7955f4c76ab557068"
+}
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_siunitx.py::test_siunitx_round_trips_as_text"
+]
+}

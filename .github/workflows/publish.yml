@@ -1,8 +1,9 @@
 name: Publish
 
-# Publishes all workspace crates to crates.io when a version tag is pushed
-# (e.g. `v1.0.6`), or on manual dispatch. Crates are published leaf-first so
-# each one's version dependencies already exist on the registry.
+# Publishes the workspace crates (all but the unpublished tex2word-goldens) to
+# crates.io when a version tag is pushed (e.g. `v2.0.0`), or on manual
+# dispatch. Crates are published leaf-first so each one's version dependencies
+# already exist on the registry.
 #
 # The publish step is idempotent and rate-limit-aware, so it is safe to re-run:
 #   * a crate already on crates.io at this version is skipped, and
@@ -73,11 +74,14 @@ jobs:
 
           for crate in \
             tex2word-ir \
+            tex2word-ooxml \
+            tex2word-latexwalker \
             tex2word-math \
-            tex2word-frontend \
-            tex2word-backend \
+            tex2word-bib \
             tex2word-latex \
             tex2word-validate \
+            tex2word-frontend \
+            tex2word-backend \
             tex2word \
             tex2word-cli; do
             publish_one "$crate" || exit 1

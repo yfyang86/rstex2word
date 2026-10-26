@@ -1,0 +1,13 @@
+{
+"api": "validate_docx",
+"args": {
+"docx_bytes": {
+"@blob": "9dca5d78f95054fa1f54de0ebb39dbbf3f2e3b9d308705ade10bf455ed010c42"
+}
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_marginpar.py::test_valid"
+]
+}

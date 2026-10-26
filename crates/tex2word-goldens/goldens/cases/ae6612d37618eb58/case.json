@@ -1,0 +1,19 @@
+{
+"api": "convert_source",
+"args": {
+"source": "\\documentclass{cos324}\n\\usepackage{newtxtext,newtxmath} %Change the font look. Can remove, if so desired.\n\\usepackage{graphicx} %If you want to include graphics.\n\n%Modify the following as needed.\n\\name{Your Name}\n\\email{email@princeton.edu}\n\\course{MATH 340}\n\\assignment{Precept \\#5}\n\\duedate{23:55pm Monday August 24, 2020}\n\n\\begin{document}\n\nRecall the following useful facts about $D_{n}$ (which you discovered in a previous problem set).\n\\begin{itemize}\n    \\item Suppose $n$ is even. The conjugacy classes of $D_{n}$ are:\n    \\begin{align*}\n        \\{e\\},  \\{r,r^{n-1}\\},  \\{r^{2},r^{n-2}\\},  \\cdots ,  \\{r^{\\frac{n}{2}-1},r^{\\frac{n}{2}+1}\\}, \\{r^{\\frac{n}{2}}\\}, \\{s,r^{2}s,\\cdots,r^{n-2}s\\}, \\{rs,r^{3}s,\\cdots,r^{n-1}s\\}.\n    \\end{align*}\n    \\item Suppose $n$ is odd. The conjugacy classes of $D_{n}$ are:\n    \\begin{align*}\n        \\{e\\},  \\{r,r^{n-1}\\},  \\{r^{2},r^{n-2}\\},  \\cdots , \\{r^{\\frac{n-1}{2}},r^{\\frac{n+1}{2}}\\},  \\{s,rs,r^{2}s,\\cdots,r^{n-1}s\\}.\n    \\end{align*}\n\\end{itemize}\n\n\\input{problems/card_game.tex}\n\\input{solutions/card_game.tex}\n\n\\input{problems/beads.tex}\n\\input{solutions/beads.tex}\n\n\\end{document}"
+},
+"base_dir": "base",
+"files": {
+"base/cos324.cls": "49e1b71496e7b9c2902607f38688f8af3981cb753abbb1a26aed4c575f897255",
+"base/image/pentagonthing.png": "10459ec10c4c8568fb3603035547954c9f9412683c02fcc8da1457438e5a73f0",
+"base/main.tex": "237d971c49604fe098d5d0493d6c873e24e8f7dfaf95a9990aab9459e0e643a9",
+"base/problems/beads.tex": "b2a4c46639db2b9a84e9757d9833c400a4baa7db4b714452507f1caeda52f684",
+"base/problems/card_game.tex": "0f43c639a0492326fefb21c7db7b62b267ebf36fb329aa8d70b2bb608816a5ce",
+"base/solutions/beads.tex": "b195f4ce0bc6481d6560de2e4bd547c0bc64fc0af2873be4d1a5a721505b4743",
+"base/solutions/card_game.tex": "fdb12ddbc4f245b549ddf14ecd2381a592da671bf3185021ea1236f74a80b86b"
+},
+"tests": [
+"tests/test_uat_bundle.py::test_uat_bundle_converts_cleanly[ProblemSet:main.tex]"
+]
+}

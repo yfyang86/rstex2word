@@ -1,0 +1,1 @@
+{"value":"\\documentclass{article}\n\\usepackage[utf8]{inputenc}\n\\begin{document}\n\\textbf{Contents}\n\n\\tableofcontents\n\n\\textbf{List of Figures}\n\n\\listoffigures\n\n\\textbf{List of Tables}\n\n\\listoftables\n\n\\section{Intro}\\label{s:i}\n\nHi.\n\\end{document}"}

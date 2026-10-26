@@ -1,0 +1,11 @@
+{
+"api": "convert_source",
+"args": {
+"source": "\\begin{document}\\begin{tabular}{cc}\\begin{tabular}{@{}c@{}}\\begin{itemize}\\item Zeta\\end{itemize}\\end{tabular} & B \\\\\\end{tabular}\\end{document}"
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_tables.py::test_nested_tabular_with_block_content_not_flattened"
+]
+}

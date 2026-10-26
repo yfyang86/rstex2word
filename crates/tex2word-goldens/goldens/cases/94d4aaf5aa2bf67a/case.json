@@ -1,0 +1,23 @@
+{
+"api": "convert_source",
+"args": {
+"citation_mode": "static",
+"columns": 1,
+"csl": null,
+"embed_manifest": true,
+"frontend": "pure",
+"language": null,
+"math_image_fallback": false,
+"number_by_section": false,
+"reference_doc": null,
+"source": "\\begin{document}\\input{child}\\end{document}"
+},
+"base_dir": "base",
+"files": {
+"base/child.tex": "a38775fc1a2d99e2bcf5936ac85b80b3d639e448198cabdd8e4b96e0a4cd0302",
+"base/main.tex": "acee1c233c8a0f1c865d59ec4de54ba8b9ef402dcc04c9ffc3a400473a4343f1"
+},
+"tests": [
+"tests/test_end_to_end.py::test_input_flattening"
+]
+}

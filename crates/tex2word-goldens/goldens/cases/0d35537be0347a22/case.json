@@ -1,0 +1,11 @@
+{
+"api": "expand_macros",
+"args": {
+"source": "\\DeclareDocumentCommand{\\g}{m}{#1}\\g{A}"
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_xparse.py::test_declare_and_renew_document_command"
+]
+}

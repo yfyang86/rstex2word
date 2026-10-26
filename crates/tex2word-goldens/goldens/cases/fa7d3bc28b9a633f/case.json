@@ -1,0 +1,11 @@
+{
+"api": "parse_document",
+"args": {
+"source": "\\renewcommand{\\today}{2026-09-04}\\title{T}\\begin{document}\\maketitle\\end{document}"
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_authors_keywords.py::test_redefined_today_is_used_for_the_default_date"
+]
+}

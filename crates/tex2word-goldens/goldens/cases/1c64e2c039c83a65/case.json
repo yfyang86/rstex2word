@@ -1,0 +1,11 @@
+{
+"api": "parse_document",
+"args": {
+"source": "\\si{\\micro\\metre}"
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_siunitx.py::test_prefix_attaches_without_separator"
+]
+}

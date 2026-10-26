@@ -1,0 +1,14 @@
+{
+"api": "convert_source",
+"args": {
+"source": "\n\\documentclass{article}\n\\title[Short Head]{A Long Full Title}\n\\begin{document}\\maketitle\n\\section{Intro}Body.\n\\end{document}\n"
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_running_head.py::test_output_is_valid_with_running_head",
+"tests/test_running_head.py::test_running_head_roundtrips_to_latex",
+"tests/test_running_head.py::test_running_head_survives_reconcile",
+"tests/test_running_head.py::test_title_optional_sets_running_head"
+]
+}

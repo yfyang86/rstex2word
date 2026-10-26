@@ -1,0 +1,1 @@
+{"value":"\\documentclass{article}\n\\usepackage[utf8]{inputenc}\n\\begin{document}\n\\sout{a} \\hl{b} {\\large c}\n\\end{document}"}

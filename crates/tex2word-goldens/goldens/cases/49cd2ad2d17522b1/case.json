@@ -1,0 +1,11 @@
+{
+"api": "convert_source",
+"args": {
+"source": "\\begin{document}\n\\section{A}\\label{s:a}\n\\section{B}\\label{s:b}\n\\section{C}\\label{s:c}\nSee \\cref{s:a,s:b,s:c}.\\end{document}"
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_cref_multi.py::test_three_label_cref_uses_comma_and_and"
+]
+}

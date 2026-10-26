@@ -1,0 +1,23 @@
+{
+"api": "convert_source",
+"args": {
+"citation_mode": "static",
+"columns": 1,
+"csl": null,
+"embed_manifest": true,
+"frontend": "pure",
+"language": null,
+"math_image_fallback": false,
+"number_by_section": false,
+"reference_doc": null,
+"source": "\\begin{document}Text~\\cite{e1905} and~\\cite{k1984}.\\bibliographystyle{plain}\\bibliography{refs}\\end{document}"
+},
+"base_dir": "base",
+"files": {
+"base/p.tex": "c5b6fc761767fc86e109fdccc746f4470ef2a3860a079d99b9d33ceb0ef75797",
+"base/refs.bib": "e90eee6530e4172c3102f9253ed49f1f0c1b64b5873459b98253c89a986e8e4d"
+},
+"tests": [
+"tests/test_bib.py::test_end_to_end_bibliography"
+]
+}

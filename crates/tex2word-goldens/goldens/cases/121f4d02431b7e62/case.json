@@ -1,0 +1,11 @@
+{
+"api": "convert_source",
+"args": {
+"source": "\\begin{document}Text only.\\printglossaries\\end{document}"
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_printglossary.py::test_empty_glossary_emits_nothing"
+]
+}

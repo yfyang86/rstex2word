@@ -1,0 +1,13 @@
+{
+"api": "convert_source",
+"args": {
+"source": "\\begin{document}x\\end{document}"
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_cjk.py::test_no_fonts_leaves_defaults_untouched",
+"tests/test_language.py::test_no_language_leaves_styles_lang_free",
+"tests/test_latex_writer.py::test_to_latex_prefers_manifest_then_reader"
+]
+}

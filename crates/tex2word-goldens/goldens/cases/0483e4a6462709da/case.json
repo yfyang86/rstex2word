@@ -1,0 +1,11 @@
+{
+"api": "convert_source",
+"args": {
+"source": "\\begin{document}\\foreignquote{french}{bonjour}\\end{document}"
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_csquotes_inline.py::test_foreignquote_quotes_text_not_lang"
+]
+}

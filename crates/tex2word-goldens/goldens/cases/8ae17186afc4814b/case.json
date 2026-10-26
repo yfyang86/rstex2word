@@ -1,0 +1,13 @@
+{
+"api": "validate_docx",
+"args": {
+"docx_bytes": {
+"@blob": "be72deeaaca59a3eb210877f0fc44cf53177768990d92d0e302dd67a64da4295"
+}
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_corpus_harness.py::test_corpus_file_converts_cleanly[features.tex]"
+]
+}

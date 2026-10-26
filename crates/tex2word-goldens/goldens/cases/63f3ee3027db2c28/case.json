@@ -1,0 +1,24 @@
+{
+"api": "convert_source",
+"args": {
+"citation_mode": "static",
+"columns": 1,
+"csl": null,
+"embed_manifest": true,
+"frontend": "pure",
+"language": null,
+"math_image_fallback": false,
+"number_by_section": false,
+"reference_doc": null,
+"source": "\n\\begin{document}\n\\begin{figure}\n  \\centering\n  \\begin{subfigure}[b]{0.45\\textwidth}\n    \\includegraphics{a.png}\\caption{First}\\label{fig:a}\n  \\end{subfigure}\n  \\begin{subfigure}[b]{0.45\\textwidth}\n    \\includegraphics{b.png}\\caption{Second}\\label{fig:b}\n  \\end{subfigure}\n  \\caption{Both}\\label{fig:both}\n\\end{figure}\nSee \\ref{fig:both}, \\ref{fig:a}, \\ref{fig:b}.\n\\end{document}\n"
+},
+"base_dir": "base",
+"files": {
+"base/a.png": "21558f928983497bc51ff3923f1d2a6a660aa47b97962406df34c4ac3d4a7e68",
+"base/b.png": "b686f17e5a30c80db03ee64cf526865267c3dcd17da7e01f601c683d7f33269d",
+"base/main.tex": "87bd99b4ee733cf03b6cec6e6e1d8224d7f6ea72301928636e4220dffbfe58f1"
+},
+"tests": [
+"tests/test_subfigures.py::test_subfigures_render_images_and_captions"
+]
+}

@@ -1,0 +1,13 @@
+{
+"api": "validate_docx",
+"args": {
+"docx_bytes": {
+"@blob": "f4dcf6a0736b185389d0352b13c766ea3a92a5a94f0b620aa455c9ad296d592e"
+}
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_printglossary.py::test_empty_glossary_emits_nothing"
+]
+}

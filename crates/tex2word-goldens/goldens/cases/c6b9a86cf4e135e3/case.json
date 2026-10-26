@@ -1,0 +1,11 @@
+{
+"api": "expand_macros",
+"args": {
+"source": "\\DeclareRobustCommand{\\sys}{Tutti}\\sys is fast"
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_frontend.py::test_declare_robust_command"
+]
+}

@@ -1,0 +1,11 @@
+{
+"api": "parse_document",
+"args": {
+"source": "\\begin{document}\\title{T}\\author{A}\\orcid{https://orcid.org/0000-0001-2345-6789}\\maketitle\\end{document}"
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_orcid.py::test_orcid_full_url_kept"
+]
+}

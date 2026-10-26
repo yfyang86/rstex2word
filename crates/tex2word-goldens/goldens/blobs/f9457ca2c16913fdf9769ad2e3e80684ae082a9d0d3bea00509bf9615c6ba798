@@ -1,0 +1,127 @@
+{
+  "generated": "2026-01-02T00:00:00+00:00",
+  "ir": {
+    "@type": "Document",
+    "blocks": [
+      {
+        "@type": "Theorem",
+        "blocks": [
+          {
+            "@type": "Paragraph",
+            "align": null,
+            "inlines": [
+              {
+                "@type": "Text",
+                "value": "T."
+              }
+            ]
+          }
+        ],
+        "counter": "Theorem",
+        "kind": "Theorem",
+        "label": "THM:a",
+        "title": null
+      },
+      {
+        "@type": "Theorem",
+        "blocks": [
+          {
+            "@type": "Paragraph",
+            "align": null,
+            "inlines": [
+              {
+                "@type": "Text",
+                "value": "L."
+              }
+            ]
+          }
+        ],
+        "counter": "Theorem",
+        "kind": "Lemma",
+        "label": "LEM:b",
+        "title": null
+      },
+      {
+        "@type": "Paragraph",
+        "align": null,
+        "inlines": [
+          {
+            "@type": "Text",
+            "value": "See "
+          },
+          {
+            "@type": "Ref",
+            "bookmark": "THM_a",
+            "key": "THM:a",
+            "ref_kind": "theorem",
+            "style": "plain"
+          },
+          {
+            "@type": "Text",
+            "value": ", "
+          },
+          {
+            "@type": "Ref",
+            "bookmark": "LEM_b",
+            "key": "LEM:b",
+            "ref_kind": "theorem",
+            "style": "plain"
+          },
+          {
+            "@type": "Text",
+            "value": "."
+          }
+        ]
+      }
+    ],
+    "book": false,
+    "labels": {
+      "LEM:b": {
+        "@type": "LabelInfo",
+        "bookmark": "LEM_b",
+        "counter_name": "Theorem",
+        "kind": "theorem",
+        "name": "Lemma",
+        "number": null
+      },
+      "THM:a": {
+        "@type": "LabelInfo",
+        "bookmark": "THM_a",
+        "counter_name": "Theorem",
+        "kind": "theorem",
+        "name": "Theorem",
+        "number": null
+      }
+    },
+    "meta": {
+      "@type": "DocumentMeta",
+      "abstract": null,
+      "affiliations": [],
+      "authors": [],
+      "cjk_main_font": null,
+      "cjk_mono_font": null,
+      "cjk_sans_font": null,
+      "columns": 1,
+      "date": null,
+      "keywords": null,
+      "language": null,
+      "main_font": null,
+      "running_head": null,
+      "title": null
+    }
+  },
+  "labels": {
+    "LEM:b": {
+      "bookmark": "LEM_b",
+      "counter": "Theorem",
+      "kind": "theorem"
+    },
+    "THM:a": {
+      "bookmark": "THM_a",
+      "counter": "Theorem",
+      "kind": "theorem"
+    }
+  },
+  "manifest_version": 1,
+  "tool": "tex2word"
+}

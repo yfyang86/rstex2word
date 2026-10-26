@@ -1,0 +1,13 @@
+{
+"api": "read_docx",
+"args": {
+"docx_bytes": {
+"@blob": "740faf8363c7f81785b502545b9f5c7d5ca43b1dc51943e46c8ac94b83ee927a"
+}
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_color.py::test_color_survives_foreign_docx_read"
+]
+}

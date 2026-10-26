@@ -1,0 +1,13 @@
+{
+"api": "validate_docx",
+"args": {
+"docx_bytes": {
+"@blob": "e74221f4bf52ebc60bd271b66a34fd68b787787f669825e5a401ba98058799f6"
+}
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_uat_arxiv.py::test_uat_output_is_valid_ooxml"
+]
+}
