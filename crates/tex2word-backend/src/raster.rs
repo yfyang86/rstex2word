@@ -102,14 +102,16 @@ pub fn rasterize_pdf(path: &str, dpi: u32) -> Option<(Vec<u8>, i64, i64)> {
             let base = dir.join(format!("tw-raster-{}", std::process::id()));
             let mut cmd = Command::new(which("pdftoppm")?);
             cmd.arg("-png")
-                .arg("-r").arg(dpi.to_string())
+                .arg("-r")
+                .arg(dpi.to_string())
                 .arg("-singlefile")
                 .arg(path)
                 .arg(&base);
             if !run_quiet(cmd) {
                 return None;
             }
-            let png = std::fs::read(dir.join(format!("tw-raster-{}.png", std::process::id()))).ok()?;
+            let png =
+                std::fs::read(dir.join(format!("tw-raster-{}.png", std::process::id()))).ok()?;
             let (w, h) = png_size(&png)?;
             Some((png, w, h))
         }
@@ -121,8 +123,11 @@ pub fn rasterize_pdf(path: &str, dpi: u32) -> Option<(Vec<u8>, i64, i64)> {
             let out = dir.join(format!("tw-raster-{}.png", std::process::id()));
             let max_px = (dpi as u64).clamp(72, 1200).to_string();
             let mut cmd = Command::new(which("sips")?);
-            cmd.arg("-s").arg("format").arg("png")
-                .arg("-Z").arg(max_px)
+            cmd.arg("-s")
+                .arg("format")
+                .arg("png")
+                .arg("-Z")
+                .arg(max_px)
                 .arg(path)
                 .arg(&out);
             if !run_quiet(cmd) {
@@ -143,10 +148,14 @@ pub fn rasterize(path: &str, fmt: &str, dpi: u32) -> Option<(Vec<u8>, i64, i64)>
             let dir = std::path::Path::new(path).parent()?;
             let out = dir.join(format!("tw-raster-{}.png", std::process::id()));
             let mut cmd = Command::new(which("gs")?);
-            cmd.arg("-dNOPAUSE").arg("-dBATCH").arg("-dSAFER")
+            cmd.arg("-dNOPAUSE")
+                .arg("-dBATCH")
+                .arg("-dSAFER")
                 .arg("-sDEVICE=png16m")
-                .arg("-r").arg(dpi.to_string())
-                .arg("-sOutputFile").arg(&out)
+                .arg("-r")
+                .arg(dpi.to_string())
+                .arg("-sOutputFile")
+                .arg(&out)
                 .arg(path);
             if !run_quiet(cmd) {
                 return None;
@@ -167,8 +176,8 @@ mod tests {
     fn png_size_parses_ihdr() {
         // 1x1 PNG header
         let png: &[u8] = &[
-            0x89, b'P', b'N', b'G', 0x0d, 0x0a, 0x1a, 0x0a, 0, 0, 0, 13, b'I', b'H', b'D',
-            b'R', 0, 0, 0, 1, 0, 0, 0, 1, 8, 2, 0, 0, 0,
+            0x89, b'P', b'N', b'G', 0x0d, 0x0a, 0x1a, 0x0a, 0, 0, 0, 13, b'I', b'H', b'D', b'R', 0,
+            0, 0, 1, 0, 0, 0, 1, 8, 2, 0, 0, 0,
         ];
         assert_eq!(png_size(png), Some((1, 1)));
         assert_eq!(png_size(b"not a png"), None);

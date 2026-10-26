@@ -230,7 +230,8 @@ pub fn render(source: &str, preamble: &str) -> Option<(Vec<u8>, i64, i64)> {
     let mut cmd = std::process::Command::new(engine);
     cmd.arg("-interaction=nonstopmode")
         .arg("-halt-on-error")
-        .arg("-output-directory").arg(&dir)
+        .arg("-output-directory")
+        .arg(&dir)
         .arg(&tex);
     if !debug {
         cmd.stdin(std::process::Stdio::null());
