@@ -118,10 +118,13 @@ pub fn rasterize_pdf(path: &str, dpi: u32) -> Option<(Vec<u8>, i64, i64)> {
         #[cfg(target_os = "macos")]
         PdfBackend::Sips => {
             // sips renders the first page at the PDF's natural scale; the dpi
-            // hint can't be honoured, so cap the long side as a stand-in.
+            // hint can't be honoured, so cap the long side as a stand-in
+            // (typical figure ≈ 6in wide → dpi × 6 px). The destination must
+            // go through `--out`: positionally it is read as a second input,
+            // and sips still exits 0 without writing anything.
             let dir = std::path::Path::new(path).parent()?;
             let out = dir.join(format!("tw-raster-{}.png", std::process::id()));
-            let max_px = (dpi as u64).clamp(72, 1200).to_string();
+            let max_px = (dpi as u64).saturating_mul(6).clamp(72, 2400).to_string();
             let mut cmd = Command::new(which("sips")?);
             cmd.arg("-s")
                 .arg("format")
@@ -129,6 +132,7 @@ pub fn rasterize_pdf(path: &str, dpi: u32) -> Option<(Vec<u8>, i64, i64)> {
                 .arg("-Z")
                 .arg(max_px)
                 .arg(path)
+                .arg("--out")
                 .arg(&out);
             if !run_quiet(cmd) {
                 return None;
