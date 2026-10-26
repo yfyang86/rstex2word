@@ -220,7 +220,10 @@ pub fn render(source: &str, preamble: &str) -> Option<(Vec<u8>, i64, i64)> {
     }
     let doc = build_standalone(&picture, preamble, engine != "pdflatex");
     let debug = std::env::var("TEX2WORD_TIKZ_DEBUG").as_deref() == Ok("1");
-    let dir = std::env::temp_dir().join(format!("tex2word-tikz-{}", std::process::id()));
+    // unique per call: several converts (or tests) may run in one process
+    static SEQ: std::sync::atomic::AtomicU64 = std::sync::atomic::AtomicU64::new(0);
+    let seq = SEQ.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
+    let dir = std::env::temp_dir().join(format!("tex2word-tikz-{}-{}", std::process::id(), seq));
     std::fs::create_dir_all(&dir).ok()?;
     let tex = dir.join("figure.tex");
     std::fs::write(&tex, doc).ok()?;

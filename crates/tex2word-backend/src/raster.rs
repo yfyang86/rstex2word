@@ -99,7 +99,7 @@ pub fn rasterize_pdf(path: &str, dpi: u32) -> Option<(Vec<u8>, i64, i64)> {
     match pdf_backend()? {
         PdfBackend::Pdftoppm => {
             let dir = std::path::Path::new(path).parent()?;
-            let base = dir.join("tw-raster-page");
+            let base = dir.join(format!("tw-raster-{}", std::process::id()));
             let mut cmd = Command::new(which("pdftoppm")?);
             cmd.arg("-png")
                 .arg("-r").arg(dpi.to_string())
@@ -109,7 +109,7 @@ pub fn rasterize_pdf(path: &str, dpi: u32) -> Option<(Vec<u8>, i64, i64)> {
             if !run_quiet(cmd) {
                 return None;
             }
-            let png = std::fs::read(dir.join("tw-raster-page.png")).ok()?;
+            let png = std::fs::read(dir.join(format!("tw-raster-{}.png", std::process::id()))).ok()?;
             let (w, h) = png_size(&png)?;
             Some((png, w, h))
         }
@@ -118,7 +118,7 @@ pub fn rasterize_pdf(path: &str, dpi: u32) -> Option<(Vec<u8>, i64, i64)> {
             // sips renders the first page at the PDF's natural scale; the dpi
             // hint can't be honoured, so cap the long side as a stand-in.
             let dir = std::path::Path::new(path).parent()?;
-            let out = dir.join("tw-raster-page.png");
+            let out = dir.join(format!("tw-raster-{}.png", std::process::id()));
             let max_px = (dpi as u64).clamp(72, 1200).to_string();
             let mut cmd = Command::new(which("sips")?);
             cmd.arg("-s").arg("format").arg("png")
@@ -141,7 +141,7 @@ pub fn rasterize(path: &str, fmt: &str, dpi: u32) -> Option<(Vec<u8>, i64, i64)>
         "pdf" => rasterize_pdf(path, dpi),
         "eps" | "ps" if has_gs() => {
             let dir = std::path::Path::new(path).parent()?;
-            let out = dir.join("tw-raster-page.png");
+            let out = dir.join(format!("tw-raster-{}.png", std::process::id()));
             let mut cmd = Command::new(which("gs")?);
             cmd.arg("-dNOPAUSE").arg("-dBATCH").arg("-dSAFER")
                 .arg("-sDEVICE=png16m")
