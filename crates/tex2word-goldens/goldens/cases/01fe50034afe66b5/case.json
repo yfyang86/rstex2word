@@ -1,0 +1,11 @@
+{
+"api": "convert_source",
+"args": {
+"source": "\\begin{document}\\begin{lstlisting}[language=R, caption={[Fig.1] demo}]\nz <- 1\n\\end{lstlisting}\nprose after.\n\\end{document}"
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_listing_dollar.py::test_listing_options_with_braced_brackets_not_leaked"
+]
+}

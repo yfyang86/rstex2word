@@ -1,0 +1,11 @@
+{
+"api": "convert_source",
+"args": {
+"source": "\\begin{document}\\begin{framed}A \\textbf{bold} word.\\end{framed}\\end{document}"
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_box_environments.py::test_box_content_keeps_formatting"
+]
+}

@@ -1,0 +1,11 @@
+{
+"api": "convert_source",
+"args": {
+"source": "\\begin{document}\\section{S}The first paragraph is unchanged.\\end{document}"
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_comments.py::test_comment_survives_reconcile_on_unchanged_paragraph"
+]
+}

@@ -1,0 +1,12 @@
+{
+"api": "convert_source",
+"args": {
+"language": "de-DE",
+"source": "\\documentclass{article}\\usepackage[english]{babel}\\begin{document}x\\end{document}"
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_language.py::test_lang_override"
+]
+}

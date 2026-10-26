@@ -1,0 +1,1 @@
+{"value":"\\documentclass{article}\n\\usepackage[utf8]{inputenc}\n\\begin{document}\n\\title[Short Head]{A Long Full Title}\n\\date{January 2, 2026}\n\\maketitle\n\\section{Intro}\n\nBody.\n\\end{document}"}

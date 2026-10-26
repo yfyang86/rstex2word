@@ -1,0 +1,13 @@
+{
+"api": "convert_source",
+"args": {
+"source": "\\begin{document}icon \\includegraphics{a.png} x\\begin{figure}\\includegraphics{a.png}\\caption{1}\\end{figure}\\begin{figure}\\includegraphics{a.png}\\caption{2}\\end{figure}\\end{document}"
+},
+"base_dir": "base",
+"files": {
+"base/a.png": "b8ed59af7376306b7ec77b2b07606fe3851f920d69b41baa910e5bc2aad765c4"
+},
+"tests": [
+"tests/test_caching.py::test_identical_images_share_one_media_part"
+]
+}

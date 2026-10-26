@@ -1,0 +1,11 @@
+{
+"api": "parse_document",
+"args": {
+"source": "\\documentclass{article}\n\\usepackage[utf8]{inputenc}\n\\usepackage{amsmath}\n\\usepackage{amssymb}\n\\usepackage{hyperref}\n\\begin{document}\n\\section{S}\\label{s}\n\nText ${x}^{2}$ \\ref{s}.\n\n\\begin{itemize}\n\\item a\n\\item b\n\\end{itemize}\n\\end{document}"
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_docx_reader.py::test_to_latex_foreign_roundtrips_structure"
+]
+}

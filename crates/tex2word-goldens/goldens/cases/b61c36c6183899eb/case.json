@@ -1,0 +1,11 @@
+{
+"api": "convert_source",
+"args": {
+"source": "\\documentclass{article}\\usepackage{xeCJK}\\setCJKmainfont{WenQuanYi Zen Hei}\\setCJKsansfont{WenQuanYi Zen Hei}\\begin{document}能量 $E = mc^2 \\text{（能量）}$ 公式。\\end{document}"
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_cjk_context.py::test_chinese_in_inline_math_text"
+]
+}

@@ -1,0 +1,11 @@
+{
+"api": "convert_source",
+"args": {
+"source": "\\documentclass{article}\\begin{document}\\section{Intro}\\beginappendix\\section{Extra}\\end{document}"
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_newtheorem.py::test_beginappendix_switches_to_appendix_numbering"
+]
+}

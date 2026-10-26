@@ -1,0 +1,11 @@
+{
+"api": "convert_source",
+"args": {
+"source": "\\begin{document}\\textcolor{red}{$x$} plain $y$\\end{document}"
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_color.py::test_textcolor_colours_inline_math"
+]
+}

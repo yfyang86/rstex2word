@@ -1,0 +1,13 @@
+{
+"api": "read_docx",
+"args": {
+"docx_bytes": {
+"@blob": "009d3e3d26949f470855fa75edb664d6b90af25e5a3df56f43adc22d9c5477f0"
+}
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_docx_reader.py::test_reads_nested_list"
+]
+}

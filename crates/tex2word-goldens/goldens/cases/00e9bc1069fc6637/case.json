@@ -1,0 +1,23 @@
+{
+"api": "convert_source",
+"args": {
+"citation_mode": "static",
+"columns": 1,
+"csl": null,
+"embed_manifest": false,
+"frontend": "pure",
+"language": null,
+"math_image_fallback": false,
+"number_by_section": false,
+"reference_doc": null,
+"source": "\\documentclass{article}\\usepackage[style=authoryear]{biblatex}\\addbibresource{refs.bib}\\begin{document}\\citet{e1905} and \\citep{e1905}.\\printbibliography\\end{document}"
+},
+"base_dir": "base",
+"files": {
+"base/p.tex": "406e2b23376bf5cb43f62a7f29ed5cc0a6c5b3097109c43e743b5fee183ac572",
+"base/refs.bib": "59747822199b3324054ac8f48f8efa6da0fd408c17b92aa2a1b5ae2a164cfd75"
+},
+"tests": [
+"tests/test_biblatex.py::test_biblatex_authoryear_style_renders_author_year"
+]
+}

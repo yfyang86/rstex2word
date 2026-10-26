@@ -1,0 +1,11 @@
+{
+"api": "parse_document",
+"args": {
+"source": "\\includegraphics[width=3cm,angle=45,scale=2]{a.png}"
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_images.py::test_options_parsed_into_ir"
+]
+}

@@ -1,0 +1,11 @@
+{
+"api": "convert_source",
+"args": {
+"source": "\\begin{document}\\begin{figure}\\includegraphics{a.png}\\caption{C}\\label{fig:x}\\end{figure}\\ref{fig:x}\\end{document}"
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_inline_extras.py::test_plain_ref_has_no_prefix"
+]
+}

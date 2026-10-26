@@ -1,0 +1,11 @@
+{
+"api": "parse_document",
+"args": {
+"source": "\\NewDocumentCommand{\\kw}{s m}{\\IfBooleanTF{#1}{\\textbf{#2}}{\\emph{#2}}}\\begin{document}A \\kw*{bold} and \\kw{soft} word.\\end{document}"
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_xparse.py::test_xparse_used_in_document"
+]
+}

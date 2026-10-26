@@ -1,0 +1,12 @@
+{
+"api": "convert_source",
+"args": {
+"embed_manifest": false,
+"source": "\\begin{document}This is ordinary text.\\end{document}"
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_docx_reader.py::test_plain_paragraph_is_not_mistaken_for_a_theorem"
+]
+}

@@ -1,0 +1,11 @@
+{
+"api": "convert_source",
+"args": {
+"source": "\\begin{document}\\begin{lstlisting}[language=R, escapeinside={(*}{*)}]\nKMfun(1)\n(* $x$ *) note\n\\end{lstlisting}\n中间散文 $g(t)=1$ 定义：\n\\begin{lstlisting}[language=R]\nSUR <- temp$surv\n\\end{lstlisting}\n结尾散文。\n\\end{document}"
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_listing_dollar.py::test_two_listings_with_prose_between_and_after"
+]
+}

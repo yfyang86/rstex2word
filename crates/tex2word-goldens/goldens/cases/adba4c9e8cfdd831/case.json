@@ -1,0 +1,11 @@
+{
+"api": "parse_document",
+"args": {
+"source": "\\includegraphics[width=0.5\\linewidth]{x.png}"
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_images.py::test_relative_linewidth_width_is_not_fixed"
+]
+}

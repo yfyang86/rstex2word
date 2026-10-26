@@ -1,0 +1,12 @@
+{
+"api": "parse_document",
+"args": {
+"source": "\\begin{document}\n\\begin{tabular}{lll}\n\\toprule\nGroup & A & B \\\\\n\\midrule\n\\multirow{2}{*}{Pair} & 1 & 2 \\\\\n & 3 & 4 \\\\\n\\bottomrule\n\\end{tabular}\n\\end{document}"
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_tables.py::test_header_row_detected_with_midrule",
+"tests/test_tables.py::test_multirow_sets_rowspan"
+]
+}

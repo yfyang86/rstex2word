@@ -1,0 +1,13 @@
+{
+"api": "recover_ir",
+"args": {
+"docx_bytes": {
+"@blob": "753aee25876921bd5ce9dcbb28da17fdc43cc7f2b9d082fdde2cdea344bafe3d"
+}
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_images.py::test_inline_image_round_trips"
+]
+}

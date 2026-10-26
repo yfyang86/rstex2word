@@ -1,0 +1,11 @@
+{
+"api": "parse_document",
+"args": {
+"source": "\\begin{document}{\\footnotesize\n\\begin{verbatim}\nYou are an agent.\nRespond in JSON.\n\\end{verbatim}\n}\\end{document}"
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_boxes_verbatim.py::test_verbatim_inside_font_size_group_is_captured"
+]
+}

@@ -1,0 +1,11 @@
+{
+"api": "convert_source",
+"args": {
+"source": "\\begin{document}Plain.\\end{document}"
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_endnotes.py::test_no_endnotes_means_no_part"
+]
+}

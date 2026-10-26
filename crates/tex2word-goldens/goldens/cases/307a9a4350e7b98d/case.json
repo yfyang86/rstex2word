@@ -1,0 +1,11 @@
+{
+"api": "parse_document",
+"args": {
+"source": "\\begin{document}\\begin{ul}\\item one\\item two\\end{ul}\\end{document}"
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_robustness.py::test_custom_list_wrapper_renders_as_list"
+]
+}

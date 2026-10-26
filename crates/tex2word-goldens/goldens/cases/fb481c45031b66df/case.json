@@ -1,0 +1,11 @@
+{
+"api": "convert_source",
+"args": {
+"source": "\\begin{document}\\begin{table}\\begin{tabular}{l}x\\\\\\end{tabular}\\caption{C}\\end{table}\\end{document}"
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_inline_extras.py::test_caption_has_single_space_before_number"
+]
+}

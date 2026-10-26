@@ -1,0 +1,14 @@
+{
+"api": "to_latex",
+"args": {
+"docx_bytes": {
+"@blob": "371d57a2b421b6938c5ba9a7ae426bb353f1fd8fd46387c36477c9b7a2e20727"
+},
+"reconcile": true
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_latex_writer.py::test_to_latex_cli"
+]
+}

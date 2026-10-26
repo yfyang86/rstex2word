@@ -1,0 +1,11 @@
+{
+"api": "parse_document",
+"args": {
+"source": "\\documentclass{article}\\begin{document}\\begin{figure*}\\caption{wide}\\end{figure*}\\begin{table*}\\begin{tabular}{c}a\\end{tabular}\\caption{wt}\\end{table*}\\begin{figure}\\caption{narrow}\\end{figure}\\end{document}"
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_columns.py::test_starred_float_marked_spanning"
+]
+}

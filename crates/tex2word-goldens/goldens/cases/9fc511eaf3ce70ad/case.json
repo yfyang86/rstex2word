@@ -1,0 +1,11 @@
+{
+"api": "convert_source",
+"args": {
+"source": "\\begin{document}\\begin{theorem}\\label{t:1}X\\end{theorem}\\end{document}"
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_theorems.py::test_backend_emits_seq_counter_and_bookmark"
+]
+}

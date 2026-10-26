@@ -1,0 +1,24 @@
+{
+"api": "convert_source",
+"args": {
+"citation_mode": "static",
+"columns": 1,
+"csl": null,
+"embed_manifest": true,
+"frontend": "pure",
+"language": null,
+"math_image_fallback": false,
+"number_by_section": false,
+"reference_doc": null,
+"source": "\\begin{document}See \\cite{einstein1905} and \\cite{knuth1984}.\\bibliographystyle{plain}\\bibliography{refs}\\end{document}"
+},
+"base_dir": "base",
+"files": {
+"base/main.bbl": "f57fbac7f7a747766d0cf6cd54c408451977b8106500e1bf2be87f4258c24673",
+"base/main.tex": "6a3a44c215283311fce372120e913ab8aad4d36ae893ddb3a4485b124cbeca20",
+"base/refs.bib": "9138aaa75a37a1f35d08a8207cc0a493ac4ca7df8c0e63ceeb5dcbc838ec3d8a"
+},
+"tests": [
+"tests/test_bbl.py::test_bbl_author_year_uses_labels"
+]
+}

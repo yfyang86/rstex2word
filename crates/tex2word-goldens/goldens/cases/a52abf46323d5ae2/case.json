@@ -1,0 +1,23 @@
+{
+"api": "convert_source",
+"args": {
+"reference_doc": {
+"@file": "@arg/template.docx"
+},
+"source": "\\begin{document}\\section{Intro}Body.\\end{document}"
+},
+"base_dir": ".",
+"files": {
+"@arg/template.docx": "f408e8e92ce7ede4e25a3c8404df995e3629965154e315608e6c9895a3f17c94"
+},
+"tests": [
+"tests/test_reference_doc.py::test_header_logo_subresource_is_carried_and_namespaced",
+"tests/test_reference_doc.py::test_output_with_headers_is_valid",
+"tests/test_reference_doc.py::test_output_with_reference_is_valid",
+"tests/test_reference_doc.py::test_reference_headers_footers_are_carried",
+"tests/test_reference_doc.py::test_reference_page_geometry_is_applied",
+"tests/test_reference_doc.py::test_reference_styles_are_applied",
+"tests/test_reference_doc.py::test_reference_theme_is_carried",
+"tests/test_reference_doc.py::test_sectpr_references_headers_and_footers"
+]
+}

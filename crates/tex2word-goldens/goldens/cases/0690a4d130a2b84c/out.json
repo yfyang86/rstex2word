@@ -1,0 +1,1 @@
+{"value":"\\documentclass{article}\n\\usepackage[utf8]{inputenc}\n\\begin{document}\n\\title{T}\n\\author{A}\n\\affiliation{Dept of CS, Example U}\n\\date{January 2, 2026}\n\\maketitle\n\\end{document}"}

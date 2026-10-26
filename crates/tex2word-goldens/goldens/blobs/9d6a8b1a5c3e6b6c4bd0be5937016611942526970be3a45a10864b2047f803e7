@@ -1,0 +1,61 @@
+{
+  "generated": "2026-01-02T00:00:00+00:00",
+  "ir": {
+    "@type": "Document",
+    "blocks": [
+      {
+        "@type": "Paragraph",
+        "align": null,
+        "inlines": [
+          {
+            "@type": "Text",
+            "value": "X"
+          },
+          {
+            "@type": "Footnote",
+            "inlines": [
+              {
+                "@type": "Text",
+                "value": "First."
+              }
+            ]
+          },
+          {
+            "@type": "Text",
+            "value": " Y"
+          },
+          {
+            "@type": "Footnote",
+            "inlines": [
+              {
+                "@type": "Text",
+                "value": "Second."
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "book": false,
+    "labels": {},
+    "meta": {
+      "@type": "DocumentMeta",
+      "abstract": null,
+      "affiliations": [],
+      "authors": [],
+      "cjk_main_font": null,
+      "cjk_mono_font": null,
+      "cjk_sans_font": null,
+      "columns": 1,
+      "date": null,
+      "keywords": null,
+      "language": null,
+      "main_font": null,
+      "running_head": null,
+      "title": null
+    }
+  },
+  "labels": {},
+  "manifest_version": 1,
+  "tool": "tex2word"
+}

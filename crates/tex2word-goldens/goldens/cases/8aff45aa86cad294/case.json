@@ -1,0 +1,12 @@
+{
+"api": "convert_source",
+"args": {
+"frontend": "latexml",
+"source": "\\begin{document}\\section{S}$x^2$\\end{document}"
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_latexml.py::test_frontend_latexml_falls_back_when_unavailable"
+]
+}

@@ -1,0 +1,13 @@
+{
+"api": "parse_document",
+"args": {
+"source": "\\includegraphics{logo.png}"
+},
+"base_dir": "base",
+"files": {
+"base/logo.png": "5503ff8fef5a4d87e1fe0bdc07254b11153a86debfa97500641c7abbf93357ef"
+},
+"tests": [
+"tests/test_images.py::test_standalone_includegraphics_is_still_a_figure"
+]
+}

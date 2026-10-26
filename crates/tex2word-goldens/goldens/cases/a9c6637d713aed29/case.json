@@ -1,0 +1,11 @@
+{
+"api": "convert_source",
+"args": {
+"source": "\\begin{document}值 $\\log {\\rm Lik}(\\theta)$ 。\\end{document}"
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_math_font_decl.py::test_rm_declaration_in_math_renders_as_omml"
+]
+}

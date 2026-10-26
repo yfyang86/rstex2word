@@ -1,0 +1,11 @@
+{
+"api": "parse_document",
+"args": {
+"source": "\\documentclass{article}\\usepackage{xeCJK}\\setmainfont{Times New Roman}\\setCJKmainfont{SimSun}\\setCJKsansfont{SimHei}\\begin{document}测试中文字体。Formula $\\sum E=m c^2$.\\section{中文标题 Heading}更多中文内容。\\end{document}"
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_cjk.py::test_fonts_detected_from_preamble"
+]
+}

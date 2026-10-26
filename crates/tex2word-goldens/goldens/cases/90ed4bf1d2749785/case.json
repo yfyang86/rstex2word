@@ -1,0 +1,12 @@
+{
+"api": "convert_source",
+"args": {
+"source": "\n\\begin{document}\n\\markboth{Even Side}{Odd Running Head}\n\\section{S}Text.\n\\end{document}\n"
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_running_head.py::test_markboth_uses_recto_head",
+"tests/test_running_head.py::test_output_is_valid_with_running_head"
+]
+}

@@ -1,0 +1,1 @@
+\documentclass{article}\usepackage{graphicx}\begin{document}\begin{figure}\centering\includegraphics[width=5cm]{a.png}\caption{First}\label{fig:a}\includegraphics[width=5cm]{b.png}\caption{Second}\label{fig:b}\end{figure}\end{document}

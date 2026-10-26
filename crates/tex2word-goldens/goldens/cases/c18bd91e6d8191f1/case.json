@@ -1,0 +1,15 @@
+{
+"api": "read_docx",
+"args": {
+"docx_bytes": {
+"@blob": "2a0427743ba8ae94a696fcf6a1cdd8ea1c2131b0e56b268152b85673af2c09f6"
+}
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_docx_reader.py::test_reads_table",
+"tests/test_docx_reader.py::test_real_table_is_not_mistaken_for_an_algorithm",
+"tests/test_word_native.py::test_foreign_table_recovers"
+]
+}

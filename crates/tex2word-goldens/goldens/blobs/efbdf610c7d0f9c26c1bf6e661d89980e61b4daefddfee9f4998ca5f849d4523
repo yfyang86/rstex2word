@@ -1,0 +1,533 @@
+{
+  "generated": "2026-01-02T00:00:00+00:00",
+  "ir": {
+    "@type": "Document",
+    "blocks": [
+      {
+        "@type": "Paragraph",
+        "align": null,
+        "inlines": [
+          {
+            "@type": "Colored",
+            "bg": null,
+            "fg": "243A5E",
+            "inlines": [
+              {
+                "@type": "Emphasis",
+                "inlines": [
+                  {
+                    "@type": "Text",
+                    "value": "Training Compact Skills"
+                  }
+                ],
+                "kind_": "bold"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "@type": "Heading",
+        "appendix": false,
+        "inlines": [
+          {
+            "@type": "Text",
+            "value": "Results"
+          }
+        ],
+        "label": null,
+        "level": 1,
+        "numbered": true,
+        "part": false
+      },
+      {
+        "@type": "Paragraph",
+        "align": null,
+        "inlines": [
+          {
+            "@type": "Text",
+            "value": "The deployed artifact is a compact "
+          },
+          {
+            "@type": "Emphasis",
+            "inlines": [
+              {
+                "@type": "Text",
+                "value": "best_skill.md"
+              }
+            ],
+            "kind_": "typewriter"
+          },
+          {
+            "@type": "Text",
+            "value": " file."
+          }
+        ]
+      },
+      {
+        "@type": "Table",
+        "booktabs": true,
+        "caption": [
+          {
+            "@type": "Text",
+            "value": "Delta cells use "
+          },
+          {
+            "@type": "Emphasis",
+            "inlines": [
+              {
+                "@type": "Text",
+                "value": "\\dvalp"
+              }
+            ],
+            "kind_": "typewriter"
+          },
+          {
+            "@type": "Text",
+            "value": "."
+          }
+        ],
+        "caption_numbered": true,
+        "colspec": [
+          "left",
+          "center",
+          "center",
+          "center"
+        ],
+        "colwidths": [
+          null,
+          null,
+          null,
+          null
+        ],
+        "label": "tab:results",
+        "layout": false,
+        "rows": [
+          {
+            "@type": "TableRow",
+            "cells": [
+              {
+                "@type": "TableCell",
+                "align": "left",
+                "blocks": [
+                  {
+                    "@type": "Paragraph",
+                    "align": null,
+                    "inlines": [
+                      {
+                        "@type": "Emphasis",
+                        "inlines": [
+                          {
+                            "@type": "Text",
+                            "value": "Setting"
+                          }
+                        ],
+                        "kind_": "bold"
+                      }
+                    ]
+                  }
+                ],
+                "border_bottom": false,
+                "colspan": 1,
+                "rowspan": 1,
+                "shade": null
+              },
+              {
+                "@type": "TableCell",
+                "align": "center",
+                "blocks": [
+                  {
+                    "@type": "Paragraph",
+                    "align": null,
+                    "inlines": [
+                      {
+                        "@type": "Emphasis",
+                        "inlines": [
+                          {
+                            "@type": "Text",
+                            "value": "A"
+                          }
+                        ],
+                        "kind_": "bold"
+                      }
+                    ]
+                  }
+                ],
+                "border_bottom": false,
+                "colspan": 1,
+                "rowspan": 1,
+                "shade": null
+              },
+              {
+                "@type": "TableCell",
+                "align": "center",
+                "blocks": [
+                  {
+                    "@type": "Paragraph",
+                    "align": null,
+                    "inlines": [
+                      {
+                        "@type": "Emphasis",
+                        "inlines": [
+                          {
+                            "@type": "Text",
+                            "value": "B"
+                          }
+                        ],
+                        "kind_": "bold"
+                      }
+                    ]
+                  }
+                ],
+                "border_bottom": false,
+                "colspan": 1,
+                "rowspan": 1,
+                "shade": null
+              },
+              {
+                "@type": "TableCell",
+                "align": "center",
+                "blocks": [
+                  {
+                    "@type": "Paragraph",
+                    "align": null,
+                    "inlines": [
+                      {
+                        "@type": "Emphasis",
+                        "inlines": [
+                          {
+                            "@type": "Text",
+                            "value": "C"
+                          }
+                        ],
+                        "kind_": "bold"
+                      }
+                    ]
+                  }
+                ],
+                "border_bottom": false,
+                "colspan": 1,
+                "rowspan": 1,
+                "shade": null
+              }
+            ],
+            "is_header": true,
+            "rule_above": false,
+            "rule_below": false
+          },
+          {
+            "@type": "TableRow",
+            "cells": [
+              {
+                "@type": "TableCell",
+                "align": "left",
+                "blocks": [
+                  {
+                    "@type": "Paragraph",
+                    "align": null,
+                    "inlines": [
+                      {
+                        "@type": "Text",
+                        "value": "1 example"
+                      }
+                    ]
+                  }
+                ],
+                "border_bottom": false,
+                "colspan": 1,
+                "rowspan": 1,
+                "shade": null
+              },
+              {
+                "@type": "TableCell",
+                "align": "center",
+                "blocks": [
+                  {
+                    "@type": "Paragraph",
+                    "align": null,
+                    "inlines": [
+                      {
+                        "@type": "Text",
+                        "value": "81.0"
+                      },
+                      {
+                        "@type": "Emphasis",
+                        "inlines": [
+                          {
+                            "@type": "Colored",
+                            "bg": null,
+                            "fg": "1A7F37",
+                            "inlines": [
+                              {
+                                "@type": "Text",
+                                "value": "+4.1"
+                              }
+                            ]
+                          }
+                        ],
+                        "kind_": "subscript"
+                      }
+                    ]
+                  }
+                ],
+                "border_bottom": false,
+                "colspan": 1,
+                "rowspan": 1,
+                "shade": null
+              },
+              {
+                "@type": "TableCell",
+                "align": "center",
+                "blocks": [
+                  {
+                    "@type": "Paragraph",
+                    "align": null,
+                    "inlines": [
+                      {
+                        "@type": "Text",
+                        "value": "47.5"
+                      }
+                    ]
+                  }
+                ],
+                "border_bottom": false,
+                "colspan": 1,
+                "rowspan": 1,
+                "shade": null
+              },
+              {
+                "@type": "TableCell",
+                "align": "center",
+                "blocks": [
+                  {
+                    "@type": "Paragraph",
+                    "align": null,
+                    "inlines": [
+                      {
+                        "@type": "Text",
+                        "value": "59.1"
+                      }
+                    ]
+                  }
+                ],
+                "border_bottom": false,
+                "colspan": 1,
+                "rowspan": 1,
+                "shade": null
+              }
+            ],
+            "is_header": false,
+            "rule_above": false,
+            "rule_below": false
+          },
+          {
+            "@type": "TableRow",
+            "cells": [
+              {
+                "@type": "TableCell",
+                "align": "left",
+                "blocks": [
+                  {
+                    "@type": "Paragraph",
+                    "align": null,
+                    "inlines": [
+                      {
+                        "@type": "Text",
+                        "value": "100% train"
+                      }
+                    ]
+                  }
+                ],
+                "border_bottom": false,
+                "colspan": 1,
+                "rowspan": 1,
+                "shade": null
+              },
+              {
+                "@type": "TableCell",
+                "align": "center",
+                "blocks": [
+                  {
+                    "@type": "Paragraph",
+                    "align": null,
+                    "inlines": [
+                      {
+                        "@type": "Text",
+                        "value": "86.1"
+                      },
+                      {
+                        "@type": "Emphasis",
+                        "inlines": [
+                          {
+                            "@type": "Colored",
+                            "bg": null,
+                            "fg": "1A7F37",
+                            "inlines": [
+                              {
+                                "@type": "Text",
+                                "value": "+2.0"
+                              }
+                            ]
+                          }
+                        ],
+                        "kind_": "subscript"
+                      }
+                    ]
+                  }
+                ],
+                "border_bottom": false,
+                "colspan": 1,
+                "rowspan": 1,
+                "shade": null
+              },
+              {
+                "@type": "TableCell",
+                "align": "center",
+                "blocks": [
+                  {
+                    "@type": "Paragraph",
+                    "align": null,
+                    "inlines": [
+                      {
+                        "@type": "Text",
+                        "value": "78.0"
+                      },
+                      {
+                        "@type": "Emphasis",
+                        "inlines": [
+                          {
+                            "@type": "Colored",
+                            "bg": null,
+                            "fg": "B42318",
+                            "inlines": [
+                              {
+                                "@type": "Math",
+                                "latex": "-"
+                              },
+                              {
+                                "@type": "Text",
+                                "value": "1.5"
+                              }
+                            ]
+                          }
+                        ],
+                        "kind_": "subscript"
+                      }
+                    ]
+                  }
+                ],
+                "border_bottom": false,
+                "colspan": 1,
+                "rowspan": 1,
+                "shade": null
+              },
+              {
+                "@type": "TableCell",
+                "align": "center",
+                "blocks": [
+                  {
+                    "@type": "Paragraph",
+                    "align": null,
+                    "inlines": [
+                      {
+                        "@type": "Text",
+                        "value": "70.5"
+                      }
+                    ]
+                  }
+                ],
+                "border_bottom": false,
+                "colspan": 1,
+                "rowspan": 1,
+                "shade": null
+              }
+            ],
+            "is_header": false,
+            "rule_above": false,
+            "rule_below": false
+          }
+        ],
+        "spanning": false
+      },
+      {
+        "@type": "Heading",
+        "appendix": true,
+        "inlines": [
+          {
+            "@type": "Text",
+            "value": "Optimizer prompts"
+          }
+        ],
+        "label": null,
+        "level": 1,
+        "numbered": true,
+        "part": false
+      },
+      {
+        "@type": "Heading",
+        "appendix": true,
+        "inlines": [
+          {
+            "@type": "Text",
+            "value": "Failure analysis: "
+          },
+          {
+            "@type": "Emphasis",
+            "inlines": [
+              {
+                "@type": "Text",
+                "value": "analyst_error.md"
+              }
+            ],
+            "kind_": "typewriter"
+          }
+        ],
+        "label": null,
+        "level": 2,
+        "numbered": true,
+        "part": false
+      },
+      {
+        "@type": "CodeBlock",
+        "lang": null,
+        "text": "You are an expert failure-analysis agent for AI agent tasks.\n\nYou will be given MULTIPLE failed agent trajectories from a single minibatch.\nYour job is to identify the most important COMMON failure patterns and propose\na concise set of skill edits.\n\nRespond ONLY with a valid JSON object (no markdown fences, no extra text)."
+      }
+    ],
+    "book": false,
+    "labels": {
+      "tab:results": {
+        "@type": "LabelInfo",
+        "bookmark": "tab_results",
+        "counter_name": "Table",
+        "kind": "table",
+        "name": "Delta cells use \\dvalp.",
+        "number": null
+      }
+    },
+    "meta": {
+      "@type": "DocumentMeta",
+      "abstract": null,
+      "affiliations": [],
+      "authors": [],
+      "cjk_main_font": null,
+      "cjk_mono_font": null,
+      "cjk_sans_font": null,
+      "columns": 1,
+      "date": null,
+      "keywords": null,
+      "language": null,
+      "main_font": null,
+      "running_head": null,
+      "title": null
+    }
+  },
+  "labels": {
+    "tab:results": {
+      "bookmark": "tab_results",
+      "counter": "Table",
+      "kind": "table"
+    }
+  },
+  "manifest_version": 1,
+  "tool": "tex2word"
+}

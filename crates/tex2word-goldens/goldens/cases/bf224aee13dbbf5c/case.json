@@ -1,0 +1,13 @@
+{
+"api": "parse_document",
+"args": {
+"source": "\n\\begin{document}\n\\begin{algorithm}\n\\caption{Binary search}\\label{alg:bs}\n\\begin{algorithmic}[1]\n\\REQUIRE sorted array $A$\n\\STATE $lo \\gets 0$\n\\WHILE{$lo \\leq hi$}\n  \\STATE $mid \\gets (lo+hi)/2$\n  \\IF{$A[mid] = x$}\n    \\RETURN $mid$\n  \\ELSE\n    \\STATE $lo \\gets mid+1$\n  \\ENDIF\n\\ENDWHILE\n\\RETURN $-1$\n\\end{algorithmic}\n\\end{algorithm}\nSee Algorithm \\ref{alg:bs}.\n\\end{document}\n"
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_algorithms.py::test_algorithm_parsed_with_caption_label",
+"tests/test_algorithms.py::test_indentation_tracks_blocks",
+"tests/test_algorithms.py::test_keywords_and_input_label"
+]
+}

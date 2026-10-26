@@ -1,0 +1,13 @@
+{
+"api": "to_latex",
+"args": {
+"docx_bytes": {
+"@blob": "79795ec7803a861d744266e7040517a143367c5134d4f289f2ef174a7812555b"
+}
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_latex_writer.py::test_to_latex_prefers_manifest_then_reader"
+]
+}

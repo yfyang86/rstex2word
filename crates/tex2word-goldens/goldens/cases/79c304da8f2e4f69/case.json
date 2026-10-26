@@ -1,0 +1,12 @@
+{
+"api": "convert_source",
+"args": {
+"embed_manifest": false,
+"source": "\\begin{document}\\section{S}\\label{s}Text $x^2$ \\ref{s}.\\begin{itemize}\\item a\\item b\\end{itemize}\\end{document}"
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_docx_reader.py::test_to_latex_foreign_roundtrips_structure"
+]
+}

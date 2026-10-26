@@ -1,0 +1,12 @@
+{
+"api": "convert_source",
+"args": {
+"source": "\n\\documentclass{article}\n\\DeclareMathOperator{\\argmax}{arg\\,max}\n\\DeclareMathOperator*{\\argmin}{argmin}\n\\begin{document}\nInline \\( \\argmax_x f(x) \\).\n\\[ \\argmin_{y} g(y) \\]\n\\end{document}\n"
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_declaremathoperator.py::test_custom_operators_render_as_native_omml",
+"tests/test_declaremathoperator.py::test_no_unknown_macro_warnings"
+]
+}

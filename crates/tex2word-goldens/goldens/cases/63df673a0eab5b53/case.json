@@ -1,0 +1,13 @@
+{
+"api": "read_docx",
+"args": {
+"docx_bytes": {
+"@blob": "22a18f887395df1ff2749008416eb219fee386863a27d7900546a65315b70606"
+}
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_docx_reader.py::test_reader_recovers_table_with_caption"
+]
+}

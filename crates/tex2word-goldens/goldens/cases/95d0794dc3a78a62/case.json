@@ -1,0 +1,11 @@
+{
+"api": "parse_document",
+"args": {
+"source": "\\begin{document}\\SIrange{1}{5}{\\meter}\\end{document}"
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_siunitx_ranges.py::test_sirange_with_unit"
+]
+}

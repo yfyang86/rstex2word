@@ -1,0 +1,13 @@
+{
+"api": "read_docx",
+"args": {
+"docx_bytes": {
+"@blob": "f44fb8c3385c5cd0584a1eadc3885c6fbadfffa91a5acb386397c4a42badd5a4"
+}
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_docx_reader.py::test_plain_paragraph_is_not_mistaken_for_a_theorem"
+]
+}

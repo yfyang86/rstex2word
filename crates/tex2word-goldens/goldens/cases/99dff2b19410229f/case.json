@@ -1,0 +1,11 @@
+{
+"api": "parse_document",
+"args": {
+"source": "\\documentclass{article}\\newtcolorbox[auto counter]{findingbox}{colback=gray}\\begin{document}\\begin{findingbox}Key finding text.\\end{findingbox}\\end{document}"
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_frontend.py::test_newtcolorbox_environment_renders_as_quote"
+]
+}

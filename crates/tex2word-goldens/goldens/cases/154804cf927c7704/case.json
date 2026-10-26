@@ -1,0 +1,11 @@
+{
+"api": "convert_source",
+"args": {
+"source": "\\begin{document}\\index{a \"b\"}\\end{document}"
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_index.py::test_index_quote_is_sanitised"
+]
+}

@@ -1,0 +1,13 @@
+{
+"api": "to_latex",
+"args": {
+"docx_bytes": {
+"@blob": "3a8afbd0765aee58ccd584fa903d1c3359d915f1fcc0fad2ec3e5be634dfd28a"
+}
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_color.py::test_color_roundtrips_to_ir_and_latex"
+]
+}

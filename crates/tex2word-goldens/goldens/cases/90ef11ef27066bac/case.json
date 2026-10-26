@@ -1,0 +1,11 @@
+{
+"api": "convert_source",
+"args": {
+"source": "\\definecolor{lo}{HTML}{faa755}\\tcbset{ex/.style={colback=orange!6,colframe=lo,title=Example}}\\begin{document}\\begin{tcolorbox}[ex, title=Worked]X\\end{tcolorbox}\\end{document}"
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_box_environments.py::test_tcbset_style_and_override"
+]
+}

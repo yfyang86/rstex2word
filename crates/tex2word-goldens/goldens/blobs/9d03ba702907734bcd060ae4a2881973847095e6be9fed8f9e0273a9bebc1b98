@@ -1,0 +1,171 @@
+{
+  "generated": "2026-01-02T00:00:00+00:00",
+  "ir": {
+    "@type": "Document",
+    "blocks": [
+      {
+        "@type": "ItemList",
+        "description": false,
+        "items": [
+          {
+            "@type": "ListItem",
+            "blocks": [
+              {
+                "@type": "Paragraph",
+                "align": null,
+                "inlines": [
+                  {
+                    "@type": "Text",
+                    "value": "A"
+                  }
+                ]
+              }
+            ],
+            "label": "rq:base",
+            "term": null
+          },
+          {
+            "@type": "ListItem",
+            "blocks": [
+              {
+                "@type": "Paragraph",
+                "align": null,
+                "inlines": [
+                  {
+                    "@type": "Text",
+                    "value": "B"
+                  }
+                ]
+              }
+            ],
+            "label": "rq:prod",
+            "term": null
+          },
+          {
+            "@type": "ListItem",
+            "blocks": [
+              {
+                "@type": "Paragraph",
+                "align": null,
+                "inlines": [
+                  {
+                    "@type": "Text",
+                    "value": "C"
+                  }
+                ]
+              }
+            ],
+            "label": "rq:abla",
+            "term": null
+          }
+        ],
+        "ordered": true
+      },
+      {
+        "@type": "Paragraph",
+        "align": null,
+        "inlines": [
+          {
+            "@type": "Text",
+            "value": "See RQ"
+          },
+          {
+            "@type": "Ref",
+            "bookmark": "rq_base",
+            "key": "rq:base",
+            "ref_kind": "listitem",
+            "style": "plain"
+          },
+          {
+            "@type": "Text",
+            "value": ", RQ"
+          },
+          {
+            "@type": "Ref",
+            "bookmark": "rq_prod",
+            "key": "rq:prod",
+            "ref_kind": "listitem",
+            "style": "plain"
+          },
+          {
+            "@type": "Text",
+            "value": ", RQ"
+          },
+          {
+            "@type": "Ref",
+            "bookmark": "rq_abla",
+            "key": "rq:abla",
+            "ref_kind": "listitem",
+            "style": "plain"
+          },
+          {
+            "@type": "Text",
+            "value": "."
+          }
+        ]
+      }
+    ],
+    "book": false,
+    "labels": {
+      "rq:abla": {
+        "@type": "LabelInfo",
+        "bookmark": "rq_abla",
+        "counter_name": "Item",
+        "kind": "listitem",
+        "name": null,
+        "number": null
+      },
+      "rq:base": {
+        "@type": "LabelInfo",
+        "bookmark": "rq_base",
+        "counter_name": "Item",
+        "kind": "listitem",
+        "name": null,
+        "number": null
+      },
+      "rq:prod": {
+        "@type": "LabelInfo",
+        "bookmark": "rq_prod",
+        "counter_name": "Item",
+        "kind": "listitem",
+        "name": null,
+        "number": null
+      }
+    },
+    "meta": {
+      "@type": "DocumentMeta",
+      "abstract": null,
+      "affiliations": [],
+      "authors": [],
+      "cjk_main_font": null,
+      "cjk_mono_font": null,
+      "cjk_sans_font": null,
+      "columns": 1,
+      "date": null,
+      "keywords": null,
+      "language": null,
+      "main_font": null,
+      "running_head": null,
+      "title": null
+    }
+  },
+  "labels": {
+    "rq:abla": {
+      "bookmark": "rq_abla",
+      "counter": "Item",
+      "kind": "listitem"
+    },
+    "rq:base": {
+      "bookmark": "rq_base",
+      "counter": "Item",
+      "kind": "listitem"
+    },
+    "rq:prod": {
+      "bookmark": "rq_prod",
+      "counter": "Item",
+      "kind": "listitem"
+    }
+  },
+  "manifest_version": 1,
+  "tool": "tex2word"
+}

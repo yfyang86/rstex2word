@@ -1,0 +1,11 @@
+{
+"api": "parse_document",
+"args": {
+"source": "\\begin{document}Text\\thanks{a note}.\\end{document}"
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_enquote_symbols.py::test_thanks_in_body_is_a_footnote"
+]
+}

@@ -1,0 +1,12 @@
+{
+"api": "convert_source",
+"args": {
+"embed_manifest": false,
+"source": "\\begin{document}\\begin{theorem}[Euclid]A point has no part.\\end{theorem}\\end{document}"
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_docx_reader.py::test_theorem_round_trips_through_foreign_read"
+]
+}

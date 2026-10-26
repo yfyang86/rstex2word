@@ -1,0 +1,11 @@
+{
+"api": "convert_source",
+"args": {
+"source": "\\definecolor{Amber}{HTML}{B07D2B}\\definecolor{AmberLight}{HTML}{FAF0DC}\\newmdenv[backgroundcolor=AmberLight,linecolor=Amber]{obox}\\newcommand{\\open}[2]{\\begin{obox}\\textbf{Open item #1.}\\ #2\\end{obox}}\\begin{document}\\open{7}{The note body.}\\end{document}"
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_box_environments.py::test_newmdenv_defines_a_callout_environment"
+]
+}

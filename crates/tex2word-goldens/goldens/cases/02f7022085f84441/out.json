@@ -1,0 +1,1 @@
+{"value":"\\documentclass{article}\n\\usepackage[utf8]{inputenc}\n\\usepackage{amsmath}\n\\usepackage{amssymb}\n\\begin{document}\n\\section{Hi}\n\n$x^2$\n\\end{document}"}

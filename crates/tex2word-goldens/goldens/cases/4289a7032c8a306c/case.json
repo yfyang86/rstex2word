@@ -1,0 +1,11 @@
+{
+"api": "convert_source",
+"args": {
+"source": "\\begin{document}\\begin{tabular}{l p{3cm} c}a & b & c \\\\\\end{tabular}\\end{document}"
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_tables.py::test_pwidth_renders_gridcol_and_tcw"
+]
+}

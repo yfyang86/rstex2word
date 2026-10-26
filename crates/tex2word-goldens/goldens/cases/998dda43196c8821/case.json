@@ -1,0 +1,22 @@
+{
+"api": "convert_source",
+"args": {
+"citation_mode": "static",
+"columns": 1,
+"csl": null,
+"embed_manifest": true,
+"frontend": "pure",
+"language": null,
+"math_image_fallback": false,
+"number_by_section": false,
+"reference_doc": null,
+"source": "\\begin{document}\\includegraphics{nope.pdf}\\end{document}"
+},
+"base_dir": "base",
+"files": {
+"base/main.tex": "6ee35460484338ca937dd6808f3fd002ef7fd7b7d1a91b529d8d2a44f0b9a247"
+},
+"tests": [
+"tests/test_raster.py::test_missing_image_still_degrades"
+]
+}

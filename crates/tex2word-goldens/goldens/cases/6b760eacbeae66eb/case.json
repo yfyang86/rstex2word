@@ -1,0 +1,22 @@
+{
+"api": "convert_source",
+"args": {
+"citation_mode": "static",
+"columns": 1,
+"csl": null,
+"embed_manifest": true,
+"frontend": "pure",
+"language": null,
+"math_image_fallback": false,
+"number_by_section": false,
+"reference_doc": null,
+"source": "\\begin{document}\\section{Hi}$x^2$\\end{document}"
+},
+"base_dir": "base",
+"files": {
+"base/a.tex": "e34f0adb67c4e9b2045006efd324f16b9a2ca55adce9cb8e2dba7dcf77d5e42f"
+},
+"tests": [
+"tests/test_end_to_end.py::test_convert_file_writes_docx"
+]
+}

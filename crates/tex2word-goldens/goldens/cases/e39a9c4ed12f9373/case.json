@@ -1,0 +1,11 @@
+{
+"api": "convert_source",
+"args": {
+"source": "\\begin{document}Temp \\degree C is \\textonehalf of \\texteuro and \\checkmark.\\end{document}"
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_text_symbols_extra.py::test_valid_output"
+]
+}

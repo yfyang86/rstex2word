@@ -1,0 +1,11 @@
+{
+"api": "convert_source",
+"args": {
+"source": "\\begin{document}\\begin{itemize}\\item first para\n\nsecond para\\end{itemize}\\end{document}"
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_lists.py::test_multi_paragraph_item_marks_once"
+]
+}

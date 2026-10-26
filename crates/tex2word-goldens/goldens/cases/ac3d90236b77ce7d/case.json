@@ -1,0 +1,12 @@
+{
+"api": "convert_source",
+"args": {
+"embed_manifest": false,
+"source": "\n\\title{RT}\n\\begin{document}\n\\section{S}\\label{sec:s}\nText with $x^2$ and \\eqref{eq:e}.\n\\begin{equation}\\label{eq:e}E=mc^2\\end{equation}\n\\end{document}\n"
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_roundtrip.py::test_manifest_can_be_disabled"
+]
+}

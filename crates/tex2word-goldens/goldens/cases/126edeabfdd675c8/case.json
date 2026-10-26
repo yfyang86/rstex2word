@@ -1,0 +1,11 @@
+{
+"api": "parse_document",
+"args": {
+"source": "\\begin{document}\nFirst sentence on a line\n% an interspersed comment\nsecond sentence on the next line.\n\\end{document}"
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_robustness.py::test_soft_newlines_and_comments_keep_one_paragraph"
+]
+}

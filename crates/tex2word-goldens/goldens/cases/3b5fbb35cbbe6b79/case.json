@@ -1,0 +1,11 @@
+{
+"api": "convert_source",
+"args": {
+"source": "\\documentclass[twocolumn]{article}\\title{T}\\author{A}\\begin{document}\\maketitle\\begin{abstract}abs\\end{abstract}\\section{Intro}Body one.\\begin{figure*}\\caption{wide}\\end{figure*}More body.\\end{document}"
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_columns.py::test_twocolumn_body_with_spanning_figure_section_breaks"
+]
+}

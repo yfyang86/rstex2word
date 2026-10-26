@@ -1,0 +1,5 @@
+\begin{lstlisting}[language=R]
+temp <- WKM(x=lung$time2, d=lung$death2)
+inde <- (temp$jump > 0)
+\end{lstlisting}
+prose after the input \textsf{R} 函数。

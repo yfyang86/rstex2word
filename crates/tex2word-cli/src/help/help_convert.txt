@@ -1,0 +1,42 @@
+usage: tex2word convert [-h] [-o OUTPUT] [--report REPORT] [--no-manifest]
+                        [--number-by-section] [--citations {static,zotero}]
+                        [--columns N] [--frontend {pure,latexml}]
+                        [--math-image-fallback] [--csl STYLE.csl]
+                        [--reference-doc TEMPLATE.docx] [--lang BCP47] [-q]
+                        input
+
+positional arguments:
+  input                 input .tex file
+
+options:
+  -h, --help            show this help message and exit
+  -o OUTPUT, --output OUTPUT
+                        output .docx path
+  --report REPORT       write the conversion report (JSON, or HTML if the path
+                        ends in .html)
+  --no-manifest         do not embed the round-trip IR manifest in the .docx
+  --number-by-section   number figures/tables/equations as N.M per section
+                        (book/report style)
+  --citations {static,zotero}
+                        citation output: 'static' formatted text, or live
+                        'zotero' CSL fields
+  --columns N           lay out the body in N page columns; the default (1)
+                        auto-detects
+                        \documentclass[twocolumn]/\twocolumn/multicols, and
+                        N>1 overrides
+  --frontend {pure,latexml}
+                        parser: 'pure' (pylatexenc) or 'latexml' (genuine TeX
+                        expansion)
+  --math-image-fallback
+                        render math that can't become OMML as an image (needs
+                        TeX or matplotlib)
+  --csl STYLE.csl       format citations/bibliography with a real CSL engine
+                        against this .csl style (needs the 'csl' extra: uv
+                        sync --extra csl)
+  --reference-doc TEMPLATE.docx
+                        adopt the styles, theme and page geometry of this Word
+                        .docx (journal/corporate template)
+  --lang BCP47          document language for Word spell-check/accessibility
+                        (e.g. en-US, de-DE); overrides the babel/polyglossia
+                        language detected in the source
+  -q, --quiet           suppress the stderr summary

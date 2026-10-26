@@ -1,0 +1,15 @@
+{
+"api": "parse_bibtex",
+"args": {
+"source": "\n@article{e1905,\n  author = {Einstein, Albert},\n  title = {Zur Elektrodynamik bewegter K{\\\"o}rper},\n  journal = {Annalen der Physik},\n  volume = {17}, number = {10}, pages = {891--921}, year = {1905},\n  doi = {10.1002/andp.19053221004}\n}\n@book{k1984,\n  author = {Knuth, Donald E. and Lamport, Leslie},\n  title = {The {TeX}book}, publisher = {Addison-Wesley}, year = {1984}\n}\n"
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_bib.py::test_accent_decoding",
+"tests/test_bib.py::test_build_bibliography_author_year_sorted",
+"tests/test_bib.py::test_build_bibliography_numeric_order",
+"tests/test_bib.py::test_parse_bibtex_fields",
+"tests/test_bib.py::test_two_authors_joined"
+]
+}

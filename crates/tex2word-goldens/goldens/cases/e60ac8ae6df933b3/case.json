@@ -1,0 +1,28 @@
+{
+"api": "convert_source",
+"args": {
+"citation_mode": "static",
+"columns": 1,
+"csl": null,
+"embed_manifest": false,
+"frontend": "pure",
+"language": null,
+"math_image_fallback": false,
+"number_by_section": false,
+"reference_doc": null,
+"source": "\\documentclass[twocolumn]{article}\n\\usepackage{amsmath,amssymb}\n\\usepackage{algorithm,algorithmic}\n\\usepackage{booktabs,multirow}\n\\usepackage{subcaption,graphicx}\n\\usepackage{hyperref,cleveref}\n\\usepackage{xcolor}\n\n\\newtheorem{theorem}{Theorem}\n\\newcommand{\\R}{\\mathbb{R}}\n\\newcommand{\\sys}{Featurd\\xspace}\n\n\\title{A Feature-Exercising Note on \\sys}\n\\author{T. Esting}\n\n\\begin{document}\n\\maketitle\n\n\\begin{abstract}\nThis document exercises algorithms, theorems, description lists, sub-figures,\ncitations, and cross-references. It uses \\verb|inline code| too.\n\\end{abstract}\n\n\\section{Background}\\label{sec:bg}\nFor $x \\in \\R^n$ we have $\\displaystyle \\sum_{i=1}^{n} x_i^2 \\geq 0$, see\n\\eqref{eq:key}. As \\citet{knuth1984} notes, typography matters\n\\citep[p.~5]{einstein1905}.\n\n\\begin{equation}\\label{eq:key}\nE = mc^2 .\n\\end{equation}\n\n\\begin{theorem}[Pythagoras]\\label{thm:pyth}\nFor a right triangle, $a^2 + b^2 = c^2$.\n\\end{theorem}\n\n\\section{Method}\\label{sec:method}\nWe use the following terms:\n\\begin{description}\n\\item[Latency] time to first token.\n\\item[\\textbf{Throughput}] tokens per second.\n\\end{description}\n\n\\begin{algorithm}\n\\caption{Compute squares}\\label{alg:sq}\n\\begin{algorithmic}[1]\n\\REQUIRE array $A$\n\\FOR{$i = 1$ to $n$}\n  \\STATE $A[i] \\gets A[i]^2$\n\\ENDFOR\n\\RETURN $A$\n\\end{algorithmic}\n\\end{algorithm}\n\nAs \\cref{alg:sq} and \\Cref{thm:pyth} show, and per \\cref{sec:bg}.\n\n\\begin{figure}\n\\begin{subfigure}{0.45\\linewidth}\\includegraphics{a.pdf}\\caption{Left}\\label{fig:l}\\end{subfigure}\n\\begin{subfigure}{0.45\\linewidth}\\includegraphics{b.pdf}\\caption{Right}\\label{fig:r}\\end{subfigure}\n\\caption{Two panels.}\\label{fig:two}\n\\end{figure}\n\n\\begin{table}\n\\begin{tabular}{lcc}\n\\toprule\nMethod & Speed & Quality \\\\\n\\midrule\n\\multirow{2}{*}{Ours} & Fast & High \\\\\n                      & Slow & Higher \\\\\n\\bottomrule\n\\end{tabular}\n\\caption{Results.}\\label{tab:res}\n\\end{table}\n\nAligned derivations line up at the relation sign:\n\\begin{align*}\n(a+b)^2 &= a^2 + 2ab + b^2 \\\\\n        &= a^2 + b^2 + 2ab.\n\\end{align*}\nAnd a single numbered aligned block:\n\\begin{equation}\n\\begin{aligned}\nf(x) &= x^2 + 1 \\\\\ng(x) &= 2x.\n\\end{aligned}\n\\end{equation}\n\n\\begin{thebibliography}{9}\n\\bibitem{einstein1905} A. Einstein, \\emph{Zur Elektrodynamik}, 1905.\n\\bibitem{knuth1984} D. E. Knuth, \\emph{The TeXbook}, 1984.\n\\end{thebibliography}\n\n\\end{document}\n"
+},
+"base_dir": "base",
+"files": {
+"base/article.tex": "87624905f9cf28a555c592a7da4a62217e21c24302073c29651cc5c86fbdeac2",
+"base/features.tex": "d5dbc6cc5d5380d6a5559a55e0a44e844e9e16414ee66a837b9025a136fcfc2b",
+"base/longtable.tex": "cf5f7571135886dcd4623ab1a9ac79144f2a9b3d742f04b7c935a66cc20cdd5e",
+"base/macros.tex": "e8dc1859d18e565ab7f382cab75c0d7c2f3be4a958f6148cbe55c8d0bc14ffb0",
+"base/refs.bib": "8512b28a11946c1e708c6e3c1f29cdc25a6fb1e4a713f87d40366a8a78975e44",
+"base/tables.tex": "07b80cd35ce9917f1787c680911acd3a7afee17c204264a9534d2bb374ff73d4"
+},
+"tests": [
+"tests/test_benchmark.py::test_benchmark_over_corpus",
+"tests/test_benchmark.py::test_benchmark_report_is_json_serialisable_and_formats"
+]
+}

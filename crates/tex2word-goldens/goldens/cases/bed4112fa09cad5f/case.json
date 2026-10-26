@@ -1,0 +1,13 @@
+{
+"api": "convert_source",
+"args": {
+"source": "\\begin{document}\\section{S}Hello $x^2$. \\cite{a}\\begin{figure}\\caption{C}\\label{f}\\end{figure}\\end{document}"
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_reproducible.py::test_invalid_source_date_epoch_falls_back",
+"tests/test_reproducible.py::test_manifest_timestamp_follows_source_date_epoch",
+"tests/test_reproducible.py::test_output_is_byte_identical_with_source_date_epoch"
+]
+}

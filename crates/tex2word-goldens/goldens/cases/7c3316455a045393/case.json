@@ -1,0 +1,12 @@
+{
+"api": "convert_source",
+"args": {
+"source": "\\begin{document}\\begin{table}\\begin{tabular}{ll}a & b\\\\\\end{tabular}\\caption{Unnumbered}\\end{table}\\end{document}"
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_caption_star.py::test_numbered_caption_keeps_seq_field",
+"tests/test_caption_star.py::test_table_caption_plain_is_numbered"
+]
+}

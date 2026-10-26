@@ -1,0 +1,13 @@
+{
+"api": "validate_docx",
+"args": {
+"docx_bytes": {
+"@blob": "680a43971e176b74b00a79593389bde0d1fca787b60f9d0ab1de391a61bbb00e"
+}
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_corpus_harness.py::test_corpus_file_converts_cleanly[longtable.tex]"
+]
+}

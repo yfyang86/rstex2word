@@ -1,0 +1,12 @@
+{
+"api": "convert_source",
+"args": {
+"embed_manifest": false,
+"source": "\\begin{document}\\tableofcontents\\listoffigures\\listoftables\\section{Intro}\\label{s:i} Hi.\\end{document}"
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_toc.py::test_foreign_reader_recovers_toc_without_duplicate_title"
+]
+}

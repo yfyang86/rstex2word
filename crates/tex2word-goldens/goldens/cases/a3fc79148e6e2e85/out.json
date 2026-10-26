@@ -1,0 +1,1 @@
+{"value":"\\documentclass{article}\n\\usepackage[utf8]{inputenc}\n\\usepackage{hyperref}\n\\begin{document}\n\\section{S}\\label{s}\n\nAs shown in \\ref{s}, it holds.\n\\end{document}"}

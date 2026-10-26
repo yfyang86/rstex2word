@@ -1,0 +1,23 @@
+{
+"api": "convert_source",
+"args": {
+"source": "\\documentclass{article}\n\\usepackage[letterpaper,portrait,margin=1in]{geometry}\n\\usepackage{amsmath}\n\\usepackage{amsthm}\n\\usepackage{fancyhdr}\n\\usepackage{lastpage}\n\n\\pagestyle{fancy}\n\\fancyhf{} %Clear the header and footer (don't use the default plain page style).\n\\renewcommand{\\footrulewidth}{0.4pt}\n\\lhead{CLASS -- \\textbf{Assignment Name}} %Print text on the left side of the header.\n\\rhead{Author Name} %Print text on the right side of the header.\n\\rfoot{Page \\thepage \\ of \\pageref{LastPage}} %Print the page on the right side of the footer.\n%Optional: Can print text in the center of the header with \\chead{}.\n%\\chead{Center test}\n\n\\title{\\vspace*{-1cm} CLASS NAME \\\\* \\textbf{Assignment Name}}\n\\author{Author Name \\\\* \\\\* \\textit{Collaborators: Names}}\n\\date{Due date, or some other relevant date}\n\n%Define commands\n\\newtheorem*{claim}{Claim}\n\n\\theoremstyle{definition}\n\\newtheorem*{example}{Example}\n\n\\theoremstyle{plain}\n\\newtheorem*{lemma}{Lemma}\n\n\\newtheorem*{remark}{Remark}\n\n\\begin{document}\n\n\\maketitle\n\\thispagestyle{fancy}\n\n%Reminder: Remove the * at the end for automatic numbering.\n\\section*{Problem 13.3 of A\\&A}\n\\subsection*{Part a)}\n\\begin{claim}\n\\(\\sqrt{2}\\) is irrational.\n\\end{claim}\n\\begin{proof}\nSuppose that \\(\\sqrt{2}\\) were rational. There there exist some non-zero integers \\(p\\) and \\(q\\) such that \\[\\sqrt{2} = \\frac{p}{q}.\\] Without loss of generality, we can assume that this fraction is simplified so that \\(p\\) and \\(q\\) have no common divisors. Then,\n\\begin{align*}\n    \\sqrt{2}q &= p \\\\\n    2q^{2} &= p^{2}.\n\\end{align*}\nThis implies (by the fundamental theorem of arithmetic) that 2 divides \\(p^{2}\\) and, hence, 2 divides \\(p.\\) Therefore, \\(p = 2r\\) for some (non-zero) integer \\(r.\\) Therefore,\n\\begin{align*}\n    2q^{2} &= p^{2} \\\\\n    2q^{2} &= (2r)^{2} \\\\\n    2q^{2} &= 4r^{2} \\\\\n    q^{2} &= 2r^{2}.\n\\end{align*}\nFrom this, we conclude that 2 divides \\(q^{2}\\) and, hence, 2 divides \\(q.\\) This is a contradiction as we assumed \\(p\\) and \\(q\\) were written so that they share no common divisors (other than the trivial divisor 1, of course). Therefore, \\(\\sqrt{2}\\) is not a rational number.\n\\end{proof}\n\n\\subsection*{Part b)}\nTo prove the claim of the problem, note that...\n\\end{document}"
+},
+"base_dir": "base",
+"files": {
+"base/ams-article.tex": "297bf3106f4ffb91c3dcadcea0e101b99971a1ded4babd07c5a08cb8f39b330d",
+"base/cheetsheet-colored-results/cheetsheet-colored.docx": "eb093dde12ff1becd11f2e6def1883a3cf3ec3cd33d1e262795ccaa8ec64ceb8",
+"base/cheetsheet-colored-results/report.json": "1916e974c07e20d334a4a29afd4e1e475df8f1548911a1b5d651170bea5df6f7",
+"base/cheetsheet-colored.tex": "097a5bebfc9978133422d568db0d56f15a9f107faff05567e092cb0a2cc45eb8",
+"base/cheetsheet-results/cheetsheet.docx": "6bb27ad0b3b459d0a982a3f61c363ecd67c1e63392f31cc9393b11d9a3752e0a",
+"base/cheetsheet-results/report.json": "7396825d61ca1957a254db803bc7852bd06755140195cba4ea8a05b7c967258e",
+"base/cheetsheet.tex": "2a9c569839f403315e1ff9982f35b8525082bd07c30bdd5556436ab7c47d102e",
+"base/exam.tex": "f80c574180469bda523446526a2b2ec1f6fc6b395b02934ff5cf304805a9e7f8",
+"base/homework.tex": "b3a59161bf6be230862db5543651023d07cc523c44a8a2c54cffda583839be06",
+"base/scribe1.tex": "0585a97b7eb57f0b64cc435978179f597908eb75b91b01ed8aa69e6e712e6836",
+"base/sribe2.tex": "71e0595bc00fc6e91d2f6a4f296b97457a66ab25d04a23b2a9e70f147e76870c"
+},
+"tests": [
+"tests/test_uat_bundle.py::test_uat_bundle_converts_cleanly[bundle:homework.tex]"
+]
+}

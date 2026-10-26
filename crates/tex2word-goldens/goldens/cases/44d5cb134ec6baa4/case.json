@@ -1,0 +1,11 @@
+{
+"api": "parse_document",
+"args": {
+"source": "\\begin{document}\\raisebox{-0.5\\height}{M}\\end{document}"
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_boxes_verbatim.py::test_mbox_and_raisebox_are_transparent"
+]
+}

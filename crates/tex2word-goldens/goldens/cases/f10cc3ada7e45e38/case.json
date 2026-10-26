@@ -1,0 +1,15 @@
+{
+"api": "convert_source",
+"args": {
+"source": "\n\\begin{document}\nPlain paragraph.\n\\begin{center}\nCentered text.\n\\end{center}\n\\begin{flushright}\nRight text.\n\\end{flushright}\n\\end{document}\n"
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_alignment.py::test_alignment_roundtrips",
+"tests/test_alignment.py::test_alignment_valid",
+"tests/test_alignment.py::test_center_sets_paragraph_align",
+"tests/test_alignment.py::test_jc_emitted_in_docx",
+"tests/test_alignment.py::test_manifest_preserves_align"
+]
+}

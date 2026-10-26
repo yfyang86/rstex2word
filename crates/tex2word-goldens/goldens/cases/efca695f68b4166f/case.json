@@ -1,0 +1,11 @@
+{
+"api": "convert_source",
+"args": {
+"source": "\\begin{document}Intro.\\blockquote{A quoted passage.}After.\\end{document}"
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_csquotes_block.py::test_blockquote_becomes_quote_block"
+]
+}

@@ -1,0 +1,13 @@
+{
+"api": "convert_source",
+"args": {
+"source": "\\begin{document}\\tableofcontents\\listoffigures\\listoftables\\section{Intro}\\label{s:i} Hi.\\end{document}"
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_toc.py::test_toc_emits_field_instructions",
+"tests/test_toc.py::test_toc_field_is_a_complex_field",
+"tests/test_toc.py::test_toc_output_is_valid"
+]
+}

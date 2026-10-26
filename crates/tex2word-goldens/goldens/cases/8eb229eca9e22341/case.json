@@ -1,0 +1,11 @@
+{
+"api": "parse_document",
+"args": {
+"source": "\\begin{document}\\begin{figure}\\includegraphics{a.png}\\caption{C}\\label{fig:real}\\end{figure}\\label{fig:stray}See \\ref{fig:real}.\\end{document}"
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_robustness.py::test_figure_label_not_overwritten_by_trailing_label"
+]
+}

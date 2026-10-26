@@ -1,0 +1,11 @@
+{
+"api": "convert_source",
+"args": {
+"source": "\\begin{document}\\begin{wrapfigure}{r}{3cm}\\includegraphics{x.png}\\caption{C}\\end{wrapfigure}\\end{document}"
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_wrapfloat.py::test_valid"
+]
+}

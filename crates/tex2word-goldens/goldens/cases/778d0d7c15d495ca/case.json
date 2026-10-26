@@ -1,0 +1,11 @@
+{
+"api": "convert_source",
+"args": {
+"source": "\\documentclass{article}\\usepackage{amsmath,amssymb}\\begin{document}\\[\\begin{aligned}x &= a \\\\ y &= b\\end{aligned}\\]\\end{document}"
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_aligned_envs.py::test_wrapped_align_is_column_justified"
+]
+}

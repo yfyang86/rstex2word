@@ -1,0 +1,12 @@
+{
+"api": "convert_source",
+"args": {
+"source": "\\begin{document}\\begin{tabular}{ll}a & \\cellcolor{yellow} b \\\\\\end{tabular}\\end{document}"
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_tables.py::test_cell_shade_renders_w_shd",
+"tests/test_tables.py::test_table_colour_roundtrips"
+]
+}

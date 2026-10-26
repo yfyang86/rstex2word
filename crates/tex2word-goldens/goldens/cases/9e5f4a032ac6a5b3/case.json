@@ -1,0 +1,11 @@
+{
+"api": "convert_source",
+"args": {
+"source": "\\begin{document}x {\\rm plain} y\\end{document}"
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_font_declarations.py::test_rm_reset_passes_content_through"
+]
+}

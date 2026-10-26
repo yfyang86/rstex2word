@@ -1,0 +1,11 @@
+{
+"api": "parse_document",
+"args": {
+"source": "\\definecolor{brand}{RGB}{10,20,30}\\begin{document}\\textcolor{brand}{x}\\end{document}"
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_color.py::test_definecolor_in_preamble_resolves"
+]
+}

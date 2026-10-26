@@ -1,0 +1,69 @@
+{
+"api": "write_latex",
+"args": {
+"doc": {
+"@ir": {
+"@type": "Document",
+"blocks": [
+{
+"@type": "Heading",
+"appendix": false,
+"inlines": [
+{
+"@type": "Text",
+"value": "Intro"
+}
+],
+"label": null,
+"level": 1,
+"numbered": true,
+"part": false
+},
+{
+"@type": "Paragraph",
+"align": null,
+"inlines": [
+{
+"@type": "Text",
+"value": "Body."
+}
+]
+}
+],
+"book": false,
+"labels": {},
+"meta": {
+"@type": "DocumentMeta",
+"abstract": null,
+"affiliations": [],
+"authors": [],
+"cjk_main_font": null,
+"cjk_mono_font": null,
+"cjk_sans_font": null,
+"columns": 1,
+"date": [
+{
+"@type": "Text",
+"value": "January 2, 2026"
+}
+],
+"keywords": null,
+"language": null,
+"main_font": null,
+"running_head": "Short Head",
+"title": [
+{
+"@type": "Text",
+"value": "A Long Full Title"
+}
+]
+}
+}
+}
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_running_head.py::test_running_head_roundtrips_to_latex"
+]
+}

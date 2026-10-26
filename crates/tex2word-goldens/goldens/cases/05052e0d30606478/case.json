@@ -1,0 +1,11 @@
+{
+"api": "convert_source",
+"args": {
+"source": "\\begin{document}\\begin{lstlisting}[language=R]\ny <- a$b + temp$jump\n\\end{lstlisting}\\end{document}"
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_listing_dollar.py::test_listing_code_with_dollars_preserved_literally"
+]
+}

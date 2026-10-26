@@ -1,0 +1,11 @@
+{
+"api": "parse_document",
+"args": {
+"source": "\\documentclass{article}\n\\usepackage[utf8]{inputenc}\n\\usepackage{amsmath}\n\\usepackage{amssymb}\n\\usepackage{hyperref}\n\\begin{document}\n\\section{Intro}\\label{s:i}\n\nText \\textbf{bold} and $x^2$ and \\eqref{eq:e}.\n\n\\begin{equation}\nE=mc^2\n\\label{eq:e}\n\\end{equation}\n\n\\begin{itemize}\n\\item one\n\\item two\n\\end{itemize}\n\\end{document}"
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_latex_writer.py::test_roundtrip_block_structure"
+]
+}

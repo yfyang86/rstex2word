@@ -1,0 +1,1 @@
+{"value":"\\documentclass{article}\n\\usepackage[utf8]{inputenc}\n\\usepackage{amsmath}\n\\usepackage{amssymb}\n\\begin{document}\nThe result $x^2+1$ is positive.\n\\end{document}"}

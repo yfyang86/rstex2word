@@ -1,0 +1,88 @@
+{
+  "generated": "2026-01-02T00:00:00+00:00",
+  "ir": {
+    "@type": "Document",
+    "blocks": [
+      {
+        "@type": "Quote",
+        "blocks": [
+          {
+            "@type": "Paragraph",
+            "align": null,
+            "inlines": [
+              {
+                "@type": "Text",
+                "value": "X"
+              }
+            ]
+          },
+          {
+            "@type": "Paragraph",
+            "align": "right",
+            "inlines": [
+              {
+                "@type": "Emphasis",
+                "inlines": [
+                  {
+                    "@type": "Text",
+                    "value": "Y"
+                  }
+                ],
+                "kind_": "italic"
+              }
+            ]
+          }
+        ],
+        "border": null,
+        "shade": null,
+        "title": null,
+        "title_shade": null
+      },
+      {
+        "@type": "Heading",
+        "appendix": false,
+        "inlines": [
+          {
+            "@type": "Text",
+            "value": "S"
+          }
+        ],
+        "label": null,
+        "level": 1,
+        "numbered": true,
+        "part": false
+      },
+      {
+        "@type": "Paragraph",
+        "align": null,
+        "inlines": [
+          {
+            "@type": "Text",
+            "value": "Body."
+          }
+        ]
+      }
+    ],
+    "book": false,
+    "labels": {},
+    "meta": {
+      "@type": "DocumentMeta",
+      "abstract": null,
+      "affiliations": [],
+      "authors": [],
+      "cjk_main_font": null,
+      "cjk_mono_font": null,
+      "cjk_sans_font": null,
+      "columns": 1,
+      "date": null,
+      "keywords": null,
+      "language": null,
+      "main_font": null,
+      "running_head": null,
+      "title": null
+    }
+  },
+  "labels": {},
+  "manifest_version": 1,
+  "tool": "tex2word"
+}

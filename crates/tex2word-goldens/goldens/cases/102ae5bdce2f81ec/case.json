@@ -1,0 +1,11 @@
+{
+"api": "parse_document",
+"args": {
+"source": "\\begin{document}\\begin{tikzpicture}\\draw (0,0)--(1,1);\\end{tikzpicture}\\end{document}"
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_robustness.py::test_opaque_environment_becomes_placeholder"
+]
+}

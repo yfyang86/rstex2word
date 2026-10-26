@@ -1,0 +1,11 @@
+{
+"api": "convert_source",
+"args": {
+"source": "\\documentclass{article}\\usepackage{xeCJK}\\setCJKmainfont{WenQuanYi Zen Hei}\\setCJKsansfont{WenQuanYi Zen Hei}\\begin{document}\\begin{tabular}{ll}\\hline \\multicolumn{2}{c}{合并单元格} \\\\ 甲 & 乙 \\\\\\hline\\end{tabular}\\end{document}"
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_cjk_context.py::test_chinese_multicolumn_cell"
+]
+}

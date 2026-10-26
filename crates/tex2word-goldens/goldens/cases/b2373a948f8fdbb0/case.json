@@ -1,0 +1,11 @@
+{
+"api": "convert_source",
+"args": {
+"source": "\\begin{document}见 \\mbox{参数真值} 。\\end{document}"
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_structural_drops.py::test_mbox_outside_math_renders_its_argument"
+]
+}

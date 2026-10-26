@@ -1,0 +1,11 @@
+{
+"api": "parse_document",
+"args": {
+"source": "\\documentclass{article}\\begin{document}\\twocolumn x\\end{document}"
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_columns.py::test_twocolumn_command_detected"
+]
+}

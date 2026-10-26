@@ -1,0 +1,4 @@
+
+@article{e1905, author={Einstein, Albert}, title={Zur Elektrodynamik},
+  journal={Ann. Phys.}, volume={17}, year={1905}}
+@book{k1984, author={Knuth, Donald E.}, title={The TeXbook}, year={1984}}

@@ -1,0 +1,1 @@
+{"value":"\\documentclass{article}\n\\usepackage[utf8]{inputenc}\n\\begin{document}\nPlain paragraph.\n\n\\begin{center}\nCentered text.\n\\end{center}\n\n\\begin{flushright}\nRight text.\n\\end{flushright}\n\\end{document}"}

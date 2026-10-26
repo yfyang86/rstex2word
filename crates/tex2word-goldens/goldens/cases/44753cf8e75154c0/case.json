@@ -1,0 +1,12 @@
+{
+"api": "convert_source",
+"args": {
+"source": "\\begin{document}\n\\section{Intro}\nThe first paragraph is unchanged.\n\\begin{equation}E = mc^2\\end{equation}\nThe second paragraph stays too.\n\\end{document}"
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_reconcile.py::test_default_is_manifest_faithful",
+"tests/test_reconcile.py::test_reconcile_keeps_unchanged_uses_exact_source"
+]
+}

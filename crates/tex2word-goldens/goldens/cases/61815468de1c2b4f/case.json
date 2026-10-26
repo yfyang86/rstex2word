@@ -1,0 +1,12 @@
+{
+"api": "convert_source",
+"args": {
+"embed_manifest": false,
+"source": "\\begin{document}\\begin{proof}It follows.\\end{proof}\\end{document}"
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_docx_reader.py::test_reader_recovers_proof_and_strips_qed"
+]
+}

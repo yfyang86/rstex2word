@@ -1,0 +1,11 @@
+{
+"api": "parse_document",
+"args": {
+"source": "\\begin{document}\\begin{longtable}{@{}ll@{}}\\caption{My long table}\\label{tab:lt}\\\\\\toprule A & B \\\\\\midrule\\endfirsthead\\toprule A & B \\\\\\midrule\\endhead\\bottomrule\\endfootx & 1 \\\\ y & 2 \\\\\\end{longtable}\\end{document}"
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_tables.py::test_longtable_caption_and_single_header"
+]
+}

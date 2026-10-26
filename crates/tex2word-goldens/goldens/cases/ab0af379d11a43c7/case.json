@@ -1,0 +1,13 @@
+{
+"api": "read_docx",
+"args": {
+"docx_bytes": {
+"@blob": "c7c349880192f5941ad4c1b6ab6de6917ef3e6b18a8741830d53194e178d7ef1"
+}
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_docx_reader.py::test_reader_recovers_theorem_with_title_and_math"
+]
+}

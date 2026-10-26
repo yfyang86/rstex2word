@@ -1,0 +1,13 @@
+{
+"api": "convert_source",
+"args": {
+"embed_manifest": false,
+"source": "\\begin{document}\\begin{tabular}{ll}a & b\\\\ c & d\\\\\\end{tabular}\\end{document}"
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_docx_reader.py::test_reads_table",
+"tests/test_docx_reader.py::test_real_table_is_not_mistaken_for_an_algorithm"
+]
+}

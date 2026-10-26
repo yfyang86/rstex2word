@@ -1,0 +1,13 @@
+{
+"api": "read_docx",
+"args": {
+"docx_bytes": {
+"@blob": "8b9cdd187752d656b5151007a03ca4f576c9df7d367bce4ce189f737ba7cdb32"
+}
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_docx_reader.py::test_reader_recovers_proof_and_strips_qed"
+]
+}

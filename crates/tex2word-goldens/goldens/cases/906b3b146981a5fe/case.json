@@ -1,0 +1,11 @@
+{
+"api": "convert_source",
+"args": {
+"source": "\\begin{document}\\begin{itemize}\\item[!] bang item\\end{itemize}\\end{document}"
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_custom_item_label.py::test_custom_label_is_rendered_without_bullet"
+]
+}

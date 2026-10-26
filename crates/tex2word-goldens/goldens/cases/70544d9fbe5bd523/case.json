@@ -1,0 +1,15 @@
+{
+"api": "convert_source",
+"args": {
+"source": "\\documentclass{article}\\usepackage{xeCJK}\\setmainfont{Times New Roman}\\setCJKmainfont{SimSun}\\setCJKsansfont{SimHei}\\begin{document}测试中文字体。Formula $\\sum E=m c^2$.\\section{中文标题 Heading}更多中文内容。\\end{document}"
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_cjk.py::test_chinese_body_text_preserved",
+"tests/test_cjk.py::test_cjk_output_is_valid",
+"tests/test_cjk.py::test_cjk_sans_applied_to_headings",
+"tests/test_cjk.py::test_docdefaults_get_latin_and_eastasia_fonts",
+"tests/test_cjk.py::test_fonts_round_trip_to_latex"
+]
+}

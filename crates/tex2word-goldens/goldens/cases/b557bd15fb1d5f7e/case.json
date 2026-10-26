@@ -1,0 +1,14 @@
+{
+"api": "parse_document",
+"args": {
+"source": "% UAT fixture: a representative, trimmed excerpt of arXiv:2507.17026v2\n% (ICML 2026). The point is fidelity, not completeness: it loads the paper's\n% real local style file (style.sty) via \\usepackage, and uses the same custom\n% math macros (\\cM, \\bI, \\EE, \\RR, \\var, \\E, \\abs, \\norm, ...), the run-in\n% \\paragraph headings, and the math constructs (\\{ \\}, \\Big, \\xrightarrow,\n% \\overset) that the full paper exposed. See tests/test_uat_arxiv.py.\n\\documentclass{article}\n\\usepackage{amsmath,amsthm,amssymb}\n\\usepackage{style}\n\n\\newtheorem{theorem}{Theorem}\n\n\\title{The Conformal Classifier Two-Sample Test}\n\\author{UAT Fixture}\n\n\\begin{document}\n\\maketitle\n\n\\begin{abstract}\nWe study the $\\cM$-closed validation of a generative model $q$ against a\ntarget $p$ over the space $\\cX$. Conformal calibration turns a weak plug-in\nclassifier into a powerful two-sample test with finite-sample type-I control.\n\\end{abstract}\n\n\\section{Introduction}\nA popular tool for evaluating generative models is the classifier two-sample\ntest (C2ST). It reframes distributional comparison between $p(x)$ and $q(x)$ as\na classification task over the space $\\cX$, with the Bayes-optimal classifier\nbisecting $\\RR^2$ between the two means.\n\n\\paragraph{Summary of contributions.} We introduce the Conformal C2ST and give\na robustness theory for weak classifiers. We show that conformal calibration\ndecouples type-I error control from discriminative accuracy.\n\n\\paragraph{A toy example.} Consider $\\cN(\\mathbf{0}, I_2)$ versus a mean shift,\nso that $q$ is $\\cN([0.5, 0]^\\top, I_2)$. The rank statistic\n\\[\n  r = \\sum_{i=1}^{M} \\bI\\{\\theta \\le \\tilde\\theta_i\\}\n\\]\nis uniform over $\\{0, 1, \\dots, M\\}$ when $q$ matches $p$.\n\n\\section{Robustness of the uniform test}\nLet $\\cO$ denote an oracle and write the conformal $p$-value as a function of\nthe score. We control the variance $\\var[r]$ and the expectation $\\EE[r]$ of\nthe rank statistic under the null.\n\n\\begin{theorem}[Decoupling]\n\\label{thm:decouple}\nFor any plug-in classifier with score $s$, the conformal calibration map\nsatisfies\n\\[\n  \\Big| \\EE\\big[ \\phi(s) \\big] - \\alpha \\Big| \\le \\norm{s - s^\\star}\n  \\xrightarrow{\\;n \\to \\infty\\;} 0 ,\n\\]\nwhere $s^\\star$ is the Bayes-optimal score and $\\abs{\\alpha} \\le 1$.\n\\end{theorem}\n\nAs shown in Theorem~\\ref{thm:decouple}, the conformal test maintains validity\neven when the classifier is weak, since the ranking signal\n$\\overset{\\text{rank}}{\\longrightarrow}$ aggregates across draws.\n\n\\end{document}\n"
+},
+"base_dir": "base",
+"files": {
+"base/main.tex": "e2df32183b9ef98853b92d97d0cfd5cd326c9870202717d6a8579eb94e09b7fd",
+"base/style.sty": "d0eb9945622880b1a39140782a712661de664233dc4ff4803ba571f0dc5a755a"
+},
+"tests": [
+"tests/test_uat_arxiv.py::test_uat_headings_recovered"
+]
+}

@@ -1,0 +1,11 @@
+{
+"api": "convert_source",
+"args": {
+"source": "\\documentclass{article}\\usepackage{amsmath,amssymb}\\begin{document}\\begin{align*}a &= b \\\\ c &= d\\end{align*}\\end{document}"
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_aligned_envs.py::test_plain_align_block_still_collapses"
+]
+}

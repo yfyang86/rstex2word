@@ -1,0 +1,11 @@
+{
+"api": "convert_source",
+"args": {
+"source": "\\documentclass{article}\\usepackage{xeCJK}\\setCJKmainfont{WenQuanYi Zen Hei}\\setCJKsansfont{WenQuanYi Zen Hei}\\begin{document}This 是 a mixed 段落 with math $x^2$ 和中文。\\end{document}"
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_cjk_context.py::test_mixed_chinese_latin_and_math_paragraph"
+]
+}

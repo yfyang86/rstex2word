@@ -1,0 +1,11 @@
+{
+"api": "convert_source",
+"args": {
+"source": "\\begin{document}\\begin{theorem}\\label{t}Body.\\end{theorem}As in \\nameref{t}.\\end{document}"
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_nameref.py::test_nameref_to_theorem_uses_kind_or_title"
+]
+}

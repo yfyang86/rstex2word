@@ -1,0 +1,11 @@
+{
+"api": "convert_source",
+"args": {
+"source": "\\begin{document}plain \\color{red} tinted\\end{document}"
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_block_level_scope.py::test_block_level_color_only_tints_text_after_it"
+]
+}

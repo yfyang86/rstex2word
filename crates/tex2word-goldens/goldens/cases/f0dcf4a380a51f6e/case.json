@@ -1,0 +1,11 @@
+{
+"api": "convert_source",
+"args": {
+"source": "\\begin{document}The value $x^2+1$ is positive.\\end{document}"
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_reconcile.py::test_inline_reconcile_keeps_exact_math_on_a_prose_edit"
+]
+}

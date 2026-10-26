@@ -1,0 +1,11 @@
+{
+"api": "parse_document",
+"args": {
+"source": "\\begin{document}\\begin{figure}\\subfloat[Left]{\\includegraphics{a.png}\\label{fig:l}}\\subfloat[Right]{\\includegraphics{b.png}\\label{fig:r}}\\caption{C}\\label{fig:c}\\end{figure}\\end{document}"
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_subfigures.py::test_subfloat_command_parsed"
+]
+}

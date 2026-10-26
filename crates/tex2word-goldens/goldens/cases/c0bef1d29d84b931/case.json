@@ -1,0 +1,24 @@
+{
+"api": "convert_source",
+"args": {
+"citation_mode": "static",
+"columns": 1,
+"csl": null,
+"embed_manifest": true,
+"frontend": "pure",
+"language": null,
+"math_image_fallback": false,
+"number_by_section": false,
+"reference_doc": null,
+"source": "\\begin{document}\\includegraphics[trim=10pt 0pt 10pt 0pt,clip]{pic.png}\\end{document}"
+},
+"base_dir": "base",
+"files": {
+"base/main.tex": "ae8f3e3379a4bc342995fcff642715a7a26fb3002f0a636f31c396da75b026fe",
+"base/pic.png": "f2bd9e9c0b02324a558424863b28d6d088a08d4ea04a2d9f57d08f660468e128"
+},
+"tests": [
+"tests/test_images.py::test_trim_clip_sets_srcrect",
+"tests/test_images.py::test_trim_with_clip_crops"
+]
+}

@@ -1,0 +1,11 @@
+{
+"api": "parse_document",
+"args": {
+"source": "\\ang{30;15;0}"
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_siunitx.py::test_ang"
+]
+}

@@ -1,0 +1,11 @@
+{
+"api": "parse_document",
+"args": {
+"source": "\\begin{document}\\begin{fancybox}kept content\\end{fancybox}\\end{document}"
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_robustness.py::test_unknown_environment_is_transparent"
+]
+}

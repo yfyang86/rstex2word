@@ -1,0 +1,11 @@
+{
+"api": "convert_source",
+"args": {
+"source": "\\documentclass{article}\\usepackage{amsmath,amssymb}\\begin{document}\\[\\begin{aligned}& a=b \\\\ & c=d\\end{aligned}\\]\\end{document}"
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_aligned_envs.py::test_aligned_inside_bracket_display_renders"
+]
+}

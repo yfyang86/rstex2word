@@ -1,0 +1,15 @@
+{
+"api": "convert_source",
+"args": {
+"source": "\\begin{document}\nText.\\footnote{First note.}\nMore.\\footnote{Second with $x^2$.}\n\\end{document}"
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_footnotes.py::test_body_has_footnote_references",
+"tests/test_footnotes.py::test_footnote_content_rendered",
+"tests/test_footnotes.py::test_footnote_reference_uses_style",
+"tests/test_footnotes.py::test_footnotes_part_created",
+"tests/test_footnotes.py::test_footnotes_xml_has_separators_and_notes"
+]
+}

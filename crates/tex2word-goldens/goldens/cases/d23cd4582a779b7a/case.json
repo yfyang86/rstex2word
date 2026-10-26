@@ -1,0 +1,11 @@
+{
+"api": "convert_source",
+"args": {
+"source": "\\begin{document}\\begin{equation}\\label{eq:e}E=mc^2\\end{equation}See \\eqref{eq:e}.\\end{document}"
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_backend.py::test_eqref_emits_ref_field"
+]
+}

@@ -1,0 +1,11 @@
+{
+"api": "parse_document",
+"args": {
+"source": "\\begin{document}a \\sfrac{3}{4} b\\end{document}"
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_nicefrac.py::test_sfrac"
+]
+}

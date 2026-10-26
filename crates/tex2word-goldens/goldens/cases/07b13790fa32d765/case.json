@@ -1,0 +1,11 @@
+{
+"api": "convert_source",
+"args": {
+"source": "\\begin{document}\\begin{shaded} Boxed text. \\end{shaded}\\end{document}"
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_box_environments.py::test_framed_and_shaded_become_quote"
+]
+}

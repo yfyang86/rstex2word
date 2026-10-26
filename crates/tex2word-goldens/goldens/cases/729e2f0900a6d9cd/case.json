@@ -1,0 +1,11 @@
+{
+"api": "convert_source",
+"args": {
+"source": "\\newacronym{ml}{ML}{machine learning}\\newacronym{ai}{AI}{artificial intelligence}\\begin{document}We study \\gls{ml} via \\gls{ai}; later \\gls{ml} and \\gls{ai}.\\end{document}"
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_glossaries.py::test_acronyms_valid_and_warning_free"
+]
+}

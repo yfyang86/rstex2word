@@ -1,0 +1,23 @@
+{
+"api": "convert_source",
+"args": {
+"source": "\\documentclass[11pt]{article}\n\n%Include packages here.\n\\usepackage{graphicx}\n\\usepackage{amssymb}\n\n%Customize the document appearance.\n\\setlength{\\topmargin}{0pt}\n\\setlength{\\textwidth}{6in}\n\\setlength{\\textheight}{9in}\n\\setlength{\\headheight}{0pt}\n\\setlength{\\headsep}{0pt}\n\\setlength{\\oddsidemargin}{0.25in}\n\n%Create a draft notice command to signal when the scribe notes are not finished.\n\\newcommand{\\draftnotice}\n{\n    \\vbox to 0.25in\n    {\n        \\noindent\n        \\raisebox{0.6in}[0in][0in]{\\makebox[\\textwidth][r]{\\it DRAFT VERSION}}\n    }\n    \\vspace{-.25in}\\vspace{-\\baselineskip}\n}\n\n\\begin{document}\n\n%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%\n% BODY OF HEADER INFO STARTS HERE\n%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%\n\n%Show draft notice initially. Remove or comment out when finished.\n\\draftnotice\n\n\\begin{center}\n\\bf\\large\nMATH 101: Introduction to Calculus %Supply a title here.\n\\end{center}\n\n\\noindent\nLecturer: John Smith %Replace with lecturer/speaker name.\n\\hfill\nLecture 1 %Replace with relevant lecture number.\n\\\\\nScribe: James Smith %Replace with scribe name.\n\\hfill\nJanuary 1, 2021 %Replace with relevant date(s).\n\n\\noindent\n\\rule{\\textwidth}{1pt}\n\n\\medskip\n\n%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%\n% BODY OF SCRIBE NOTES STARTS HERE\n%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%\n\\section{Choose a section header}\n\nWrite here.\n\n\\section{Another section header}\n\nWrite more here.\n\n%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%\n% BODY OF SCRIBE NOTES ENDS HERE\n%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%\n\\end{document}"
+},
+"base_dir": "base",
+"files": {
+"base/ams-article.tex": "297bf3106f4ffb91c3dcadcea0e101b99971a1ded4babd07c5a08cb8f39b330d",
+"base/cheetsheet-colored-results/cheetsheet-colored.docx": "eb093dde12ff1becd11f2e6def1883a3cf3ec3cd33d1e262795ccaa8ec64ceb8",
+"base/cheetsheet-colored-results/report.json": "1916e974c07e20d334a4a29afd4e1e475df8f1548911a1b5d651170bea5df6f7",
+"base/cheetsheet-colored.tex": "097a5bebfc9978133422d568db0d56f15a9f107faff05567e092cb0a2cc45eb8",
+"base/cheetsheet-results/cheetsheet.docx": "6bb27ad0b3b459d0a982a3f61c363ecd67c1e63392f31cc9393b11d9a3752e0a",
+"base/cheetsheet-results/report.json": "7396825d61ca1957a254db803bc7852bd06755140195cba4ea8a05b7c967258e",
+"base/cheetsheet.tex": "2a9c569839f403315e1ff9982f35b8525082bd07c30bdd5556436ab7c47d102e",
+"base/exam.tex": "f80c574180469bda523446526a2b2ec1f6fc6b395b02934ff5cf304805a9e7f8",
+"base/homework.tex": "b3a59161bf6be230862db5543651023d07cc523c44a8a2c54cffda583839be06",
+"base/scribe1.tex": "0585a97b7eb57f0b64cc435978179f597908eb75b91b01ed8aa69e6e712e6836",
+"base/sribe2.tex": "71e0595bc00fc6e91d2f6a4f296b97457a66ab25d04a23b2a9e70f147e76870c"
+},
+"tests": [
+"tests/test_uat_bundle.py::test_uat_bundle_converts_cleanly[bundle:sribe2.tex]"
+]
+}

@@ -1,0 +1,23 @@
+{
+"api": "convert_source",
+"args": {
+"citation_mode": "static",
+"columns": 1,
+"csl": null,
+"embed_manifest": true,
+"frontend": "pure",
+"language": null,
+"math_image_fallback": false,
+"number_by_section": false,
+"reference_doc": null,
+"source": "\\begin{document}\\includegraphics[angle=90]{pic.png}\\end{document}"
+},
+"base_dir": "base",
+"files": {
+"base/main.tex": "6f76257c30deb723188e66d11f3566fb9b7f0ccb6826f0134179244a3f0fff51",
+"base/pic.png": "f2bd9e9c0b02324a558424863b28d6d088a08d4ea04a2d9f57d08f660468e128"
+},
+"tests": [
+"tests/test_images.py::test_angle_sets_rotation"
+]
+}

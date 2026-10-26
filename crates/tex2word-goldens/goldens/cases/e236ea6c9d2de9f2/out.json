@@ -1,0 +1,1 @@
+{"value":"\\documentclass{article}\n\\usepackage[utf8]{inputenc}\n\\begin{document}\n\\begin{description}\n\\item[Key] val\n\\end{description}\n\\end{document}"}

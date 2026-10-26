@@ -1,0 +1,14 @@
+
+\begin{document}
+\begin{figure}
+  \centering
+  \begin{subfigure}[b]{0.45\textwidth}
+    \includegraphics{a.png}\caption{First}\label{fig:a}
+  \end{subfigure}
+  \begin{subfigure}[b]{0.45\textwidth}
+    \includegraphics{b.png}\caption{Second}\label{fig:b}
+  \end{subfigure}
+  \caption{Both}\label{fig:both}
+\end{figure}
+See \ref{fig:both}, \ref{fig:a}, \ref{fig:b}.
+\end{document}

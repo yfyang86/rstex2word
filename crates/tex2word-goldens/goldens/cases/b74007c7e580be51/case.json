@@ -1,0 +1,12 @@
+{
+"api": "convert_source",
+"args": {
+"source": "\\begin{document}\n\\begin{tabular}{lll}\n\\toprule\nGroup & A & B \\\\\n\\midrule\n\\multirow{2}{*}{Pair} & 1 & 2 \\\\\n & 3 & 4 \\\\\n\\bottomrule\n\\end{tabular}\n\\end{document}"
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_tables.py::test_backend_emits_vmerge_restart_and_continue",
+"tests/test_tables.py::test_backend_marks_repeating_header"
+]
+}

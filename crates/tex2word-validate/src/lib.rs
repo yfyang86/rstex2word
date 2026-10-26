@@ -1,201 +1,44 @@
-//! Pragmatic structural validation of a tex2word `.docx` — a Rust port of the
-//! Python `tex2word.validate`.
+//! Pragmatic OOXML/OPC validation of a generated `.docx` (port of
+//! `validate.py`).
 //!
-//! Full ECMA-376 XSD validation is impractical offline; this instead enforces
-//! the invariants that catch *our* bugs:
+//! Full ECMA-376 XSD validation needs the large transitional schema set; this
+//! instead enforces the invariants that catch real bugs:
 //!
-//! 1. **OPC structure** — the package opens, the required parts exist, every XML
-//!    part is well-formed, every part has a declared content type, and every
-//!    relationship target resolves to a real part.
-//! 2. **Content model** — the child ordering of the property complex types we
-//!    emit (`w:rPr`/`w:pPr`/`w:tblPr`/`w:trPr`/`w:tcPr` follow the schema
-//!    sequence — the exact defect class Word silently repairs), plus field and
-//!    bookmark pairing.
+//! 1. **OPC structure**: the package opens, the required parts exist, every
+//!    XML part is well-formed, every part has a declared content type, and
+//!    every relationship target resolves to a real part.
+//! 2. **Content model**: the child order of the property complex types
+//!    (`w:rPr`/`w:pPr`/`w:tblPr`/`w:trPr`/`w:tcPr` follow the schema
+//!    sequence, the defect class Word silently repairs), plus a few
+//!    enumerated attribute values.
 //!
-//! The reader handles the STORE (uncompressed) entries tex2word writes; a
-//! DEFLATE-compressed entry (from a foreign `.docx`) is enumerated but its
-//! content is not inspected.
+//! Python walks the part names as a `set`, so the order of problems from
+//! different parts varies between runs there; here parts are visited in zip
+//! order.
 
-mod zipread;
+use std::fmt;
 
-use std::collections::HashSet;
+use tex2word_ir::{pyos, pystr};
+use tex2word_ooxml::parse::fromstring;
+use tex2word_ooxml::xml::Element;
+use tex2word_ooxml::zip::Archive;
 
-const CT_PART: &str = "[Content_Types].xml";
-const REQUIRED: &[&str] = &[
+const CT_NS: &str = "http://schemas.openxmlformats.org/package/2006/content-types";
+const REL_NS: &str = "http://schemas.openxmlformats.org/package/2006/relationships";
+const W: &str = "http://schemas.openxmlformats.org/wordprocessingml/2006/main";
+
+const REQUIRED: [&str; 4] = [
     "[Content_Types].xml",
     "_rels/.rels",
     "word/document.xml",
     "word/styles.xml",
 ];
 
-/// Validate a `.docx` byte buffer. Returns a list of human-readable violations
-/// (empty ⇒ the package passes the structural checks).
-pub fn validate_docx(bytes: &[u8]) -> Vec<String> {
-    let mut out = Vec::new();
-    let entries = match zipread::read(bytes) {
-        Ok(e) => e,
-        Err(e) => return vec![format!("not a readable ZIP/OPC package: {e}")],
-    };
-    let names: HashSet<&str> = entries.iter().map(|e| e.name.as_str()).collect();
-
-    for req in REQUIRED {
-        if !names.contains(req) {
-            out.push(format!("missing required part '{req}'"));
-        }
-    }
-
-    // Well-formedness of every XML/rels part we can read.
-    for e in &entries {
-        if !(e.name.ends_with(".xml") || e.name.ends_with(".rels")) {
-            continue;
-        }
-        if let Some(data) = &e.data {
-            if let Some(err) = wellformed(&String::from_utf8_lossy(data)) {
-                out.push(format!("{}: not well-formed: {err}", e.name));
-            }
-        }
-    }
-
-    check_content_types(&entries, &names, &mut out);
-    check_relationships(&entries, &names, &mut out);
-
-    // Content-model checks on the main document part.
-    if let Some(doc) = entries
-        .iter()
-        .find(|e| e.name == "word/document.xml")
-        .and_then(|e| e.data.as_ref())
-    {
-        let xml = String::from_utf8_lossy(doc);
-        check_child_order(&xml, &mut out);
-        check_fields_and_bookmarks(&xml, &mut out);
-    }
-    out
-}
-
-/// A minimal XML well-formedness check: element open/close nesting must balance.
-/// (Skips PIs/comments/doctype; not a full parser, but catches the realistic
-/// breakage — mismatched or unclosed tags.) Returns `Some(error)` if malformed.
-fn wellformed(xml: &str) -> Option<String> {
-    let mut stack: Vec<String> = Vec::new();
-    let mut rest = xml;
-    while let Some(lt) = rest.find('<') {
-        rest = &rest[lt..];
-        if let Some(r) = rest.strip_prefix("<?") {
-            let Some(end) = r.find("?>") else {
-                return Some("unterminated processing instruction".into());
-            };
-            rest = &r[end + 2..];
-            continue;
-        }
-        if let Some(r) = rest.strip_prefix("<!--") {
-            let Some(end) = r.find("-->") else {
-                return Some("unterminated comment".into());
-            };
-            rest = &r[end + 3..];
-            continue;
-        }
-        if rest.starts_with("<!") {
-            let Some(end) = rest.find('>') else {
-                return Some("unterminated declaration".into());
-            };
-            rest = &rest[end + 1..];
-            continue;
-        }
-        let Some(end) = rest.find('>') else {
-            return Some("unterminated tag".into());
-        };
-        let inner = &rest[1..end];
-        let self_closing = inner.ends_with('/');
-        let inner = inner.trim_end_matches('/').trim();
-        if let Some(close) = inner.strip_prefix('/') {
-            let name = close.split_whitespace().next().unwrap_or("");
-            match stack.pop() {
-                Some(top) if top == name => {}
-                Some(top) => return Some(format!("</{name}> closes <{top}>")),
-                None => return Some(format!("stray close </{name}>")),
-            }
-        } else if !self_closing {
-            let name = inner
-                .split(|c: char| c.is_whitespace())
-                .next()
-                .unwrap_or("");
-            stack.push(name.to_string());
-        }
-        rest = &rest[end + 1..];
-    }
-    stack.pop().map(|top| format!("unclosed element <{top}>"))
-}
-
-/// Every part must have a declared content type (a `Default` for its extension
-/// or an `Override` for its full part name).
-fn check_content_types(entries: &[zipread::Entry], names: &HashSet<&str>, out: &mut Vec<String>) {
-    let Some(ct) = entries
-        .iter()
-        .find(|e| e.name == CT_PART)
-        .and_then(|e| e.data.as_ref())
-    else {
-        return; // the missing-part check already reported it
-    };
-    let ct = String::from_utf8_lossy(ct);
-    let defaults: HashSet<String> = attr_values(&ct, "Default", "Extension")
-        .into_iter()
-        .map(|s| s.to_ascii_lowercase())
-        .collect();
-    let overrides: HashSet<String> = attr_values(&ct, "Override", "PartName")
-        .into_iter()
-        .collect();
-    for name in names {
-        if *name == CT_PART || name.ends_with('/') {
-            continue;
-        }
-        let ext = name.rsplit('.').next().unwrap_or("").to_ascii_lowercase();
-        let part = format!("/{name}");
-        if !defaults.contains(&ext) && !overrides.contains(&part) {
-            out.push(format!("part '{name}' has no declared content type"));
-        }
-    }
-}
-
-/// Every internal relationship `Target` must resolve to a real part.
-fn check_relationships(entries: &[zipread::Entry], names: &HashSet<&str>, out: &mut Vec<String>) {
-    for e in entries {
-        if !e.name.ends_with(".rels") {
-            continue;
-        }
-        let Some(data) = e.data.as_ref() else {
-            continue;
-        };
-        let text = String::from_utf8_lossy(data);
-        // rels at "A/_rels/B.rels" resolve targets relative to "A/".
-        let base = e
-            .name
-            .rsplit_once("_rels/")
-            .map(|(dir, _)| dir.to_string())
-            .unwrap_or_default();
-        // Walk each <Relationship .../> and check Target unless it's External.
-        for tag in element_tags(&text, "Relationship") {
-            if attr(&tag, "TargetMode").as_deref() == Some("External") {
-                continue;
-            }
-            let Some(target) = attr(&tag, "Target") else {
-                continue;
-            };
-            let resolved = normalize_join(&base, &target);
-            if !names.contains(resolved.as_str()) {
-                out.push(format!(
-                    "{}: relationship target '{target}' → '{resolved}' does not exist",
-                    e.name
-                ));
-            }
-        }
-    }
-}
-
-/// The ECMA-376 child-order sequences for the property elements we emit. A
-/// parent's direct children must appear as a subsequence of this order.
-const CHILD_ORDER: &[(&str, &[&str])] = &[
+/// ECMA-376 child order for the property complex types we emit (a subset:
+/// children not listed carry no ordering constraint).
+const CHILD_ORDER: [(&str, &[&str]); 5] = [
     (
-        "w:rPr",
+        "rPr",
         &[
             "rStyle",
             "rFonts",
@@ -207,315 +50,373 @@ const CHILD_ORDER: &[(&str, &[&str])] = &[
             "smallCaps",
             "strike",
             "dstrike",
+            "outline",
+            "shadow",
+            "emboss",
+            "imprint",
+            "noProof",
+            "snapToGrid",
+            "vanish",
+            "webHidden",
             "color",
             "spacing",
             "w",
+            "kern",
             "position",
             "sz",
             "szCs",
             "highlight",
             "u",
+            "effect",
+            "bdr",
+            "shd",
+            "fitText",
             "vertAlign",
             "rtl",
+            "cs",
+            "em",
             "lang",
+            "eastAsianLayout",
+            "specVanish",
+            "oMath",
         ],
     ),
     (
-        "w:pPr",
+        "pPr",
         &[
             "pStyle",
             "keepNext",
             "keepLines",
+            "pageBreakBefore",
+            "framePr",
+            "widowControl",
             "numPr",
+            "suppressLineNumbers",
+            "pBdr",
+            "shd",
             "tabs",
+            "suppressAutoHyphens",
+            "kinsoku",
+            "wordWrap",
+            "overflowPunct",
+            "topLinePunct",
+            "autoSpaceDE",
+            "autoSpaceDN",
+            "bidi",
+            "adjustRightInd",
+            "snapToGrid",
             "spacing",
             "ind",
+            "contextualSpacing",
+            "mirrorIndents",
+            "suppressOverlap",
             "jc",
-            "sectPr",
+            "textDirection",
+            "textAlignment",
+            "textboxTightWrap",
+            "outlineLvl",
+            "divId",
+            "cnfStyle",
             "rPr",
+            "sectPr",
+            "pPrChange",
         ],
     ),
     (
-        "w:tblPr",
-        &["tblStyle", "tblW", "jc", "tblBorders", "tblLook"],
+        "tblPr",
+        &[
+            "tblStyle",
+            "tblpPr",
+            "tblOverlap",
+            "bidiVisual",
+            "tblStyleRowBandSize",
+            "tblStyleColBandSize",
+            "tblW",
+            "jc",
+            "tblCellSpacing",
+            "tblInd",
+            "tblBorders",
+            "shd",
+            "tblLayout",
+            "tblCellMar",
+            "tblLook",
+            "tblCaption",
+            "tblDescription",
+            "tblPrChange",
+        ],
     ),
-    ("w:trPr", &["tblHeader"]),
-    ("w:tcPr", &["tcW", "gridSpan", "vMerge"]),
+    (
+        "trPr",
+        &[
+            "cnfStyle",
+            "divId",
+            "gridBefore",
+            "gridAfter",
+            "wBefore",
+            "wAfter",
+            "cantSplit",
+            "trHeight",
+            "tblHeader",
+            "tblCellSpacing",
+            "jc",
+            "hidden",
+            "ins",
+            "del",
+            "trPrChange",
+        ],
+    ),
+    (
+        "tcPr",
+        &[
+            "cnfStyle",
+            "tcW",
+            "gridSpan",
+            "hMerge",
+            "vMerge",
+            "tcBorders",
+            "shd",
+            "noWrap",
+            "tcMar",
+            "textDirection",
+            "tcFitText",
+            "vAlign",
+            "hideMark",
+            "cellIns",
+            "cellDel",
+            "cellMerge",
+            "tcPrChange",
+        ],
+    ),
 ];
 
-fn check_child_order(xml: &str, out: &mut Vec<String>) {
-    for (parent, order) in CHILD_ORDER {
-        for children in direct_children_of(xml, parent) {
-            let mut last = 0usize;
-            for child in &children {
-                match order.iter().position(|o| o == child) {
-                    Some(pos) if pos >= last => last = pos,
-                    Some(pos) => out.push(format!(
-                        "{parent}: child <w:{child}> is out of schema order (after position {last}, expected ≥ it; got {pos})"
-                    )),
-                    None => {} // an element we don't constrain — no ordering claim
+const ST_HIGHLIGHT: [&str; 17] = [
+    "black",
+    "blue",
+    "cyan",
+    "darkBlue",
+    "darkCyan",
+    "darkGray",
+    "darkGreen",
+    "darkMagenta",
+    "darkRed",
+    "darkYellow",
+    "green",
+    "lightGray",
+    "magenta",
+    "none",
+    "red",
+    "white",
+    "yellow",
+];
+const ST_VERTALIGN: [&str; 3] = ["baseline", "superscript", "subscript"];
+
+/// An exception the reference lets escape: reading a damaged zip member, or
+/// a malformed `[Content_Types].xml` / `.rels` part.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct ValidateError {
+    /// the Python exception type (`BadZipFile`, `XMLSyntaxError`, ...)
+    pub type_name: String,
+    pub message: String,
+}
+
+impl fmt::Display for ValidateError {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{}: {}", self.type_name, self.message)
+    }
+}
+
+impl std::error::Error for ValidateError {}
+
+fn read_err(message: String) -> ValidateError {
+    let type_name = if message.starts_with("compression type") {
+        "NotImplementedError"
+    } else if message.starts_with("Error ") {
+        "zlib.error"
+    } else {
+        "BadZipFile"
+    };
+    ValidateError {
+        type_name: type_name.into(),
+        message,
+    }
+}
+
+fn read(zf: &Archive, name: &str) -> Result<Vec<u8>, ValidateError> {
+    zf.read(name).map_err(read_err)
+}
+
+fn parse_xml(data: &[u8]) -> Result<Element, ValidateError> {
+    fromstring(data).map_err(|e| ValidateError {
+        type_name: "XMLSyntaxError".into(),
+        message: e.0,
+    })
+}
+
+/// Return the validation problems (empty == valid).
+pub fn validate_docx(docx_bytes: &[u8]) -> Result<Vec<String>, ValidateError> {
+    let zf = match Archive::new(docx_bytes) {
+        Ok(z) => z,
+        Err(e) => return Ok(vec![format!("not a valid zip: {e}")]),
+    };
+    let mut names: Vec<&str> = Vec::new();
+    for n in zf.names() {
+        if !names.contains(&n) {
+            names.push(n);
+        }
+    }
+    let mut problems = Vec::new();
+    for required in REQUIRED {
+        if !names.contains(&required) {
+            problems.push(format!("missing required part: {required}"));
+        }
+    }
+    // every xml/rels part must be well-formed
+    for name in &names {
+        if name.ends_with(".xml") || name.ends_with(".rels") {
+            let root = match fromstring(&read(&zf, name)?) {
+                Ok(r) => r,
+                Err(e) => {
+                    problems.push(format!("malformed XML in {name}: {}", e.0));
+                    continue;
                 }
+            };
+            if name.starts_with("word/") && name.ends_with(".xml") {
+                check_content_model(name, &root, &mut problems);
             }
         }
     }
+    check_content_types(&zf, &names, &mut problems)?;
+    check_relationships(&zf, &names, &mut problems)?;
+    Ok(problems)
 }
 
-/// `fldChar` begin/end must balance; every `bookmarkStart` id needs a `bookmarkEnd`.
-fn check_fields_and_bookmarks(xml: &str, out: &mut Vec<String>) {
-    let begins = xml.matches("w:fldCharType=\"begin\"").count();
-    let ends = xml.matches("w:fldCharType=\"end\"").count();
-    if begins != ends {
-        out.push(format!(
-            "unbalanced complex fields: {begins} begin vs {ends} end"
-        ));
-    }
-    let starts: HashSet<String> = element_tags(xml, "w:bookmarkStart")
-        .iter()
-        .filter_map(|t| attr(t, "w:id"))
-        .collect();
-    let ends_ids: HashSet<String> = element_tags(xml, "w:bookmarkEnd")
-        .iter()
-        .filter_map(|t| attr(t, "w:id"))
-        .collect();
-    for id in starts.difference(&ends_ids) {
-        out.push(format!("bookmarkStart id={id} has no matching bookmarkEnd"));
-    }
-    for id in ends_ids.difference(&starts) {
-        out.push(format!("bookmarkEnd id={id} has no matching bookmarkStart"));
-    }
-}
-
-// ---- small XML helpers (string-level; the parts are our own emitted XML) ---- #
-
-/// The full text of each `<tag …>` (attributes included), self-closing or open.
-fn element_tags(xml: &str, tag: &str) -> Vec<String> {
-    let mut out = Vec::new();
-    let open = format!("<{tag}");
-    let mut rest = xml;
-    while let Some(p) = rest.find(&open) {
-        let after = &rest[p + open.len()..];
-        // the char after the name must be whitespace, '>' or '/'
-        if !after
-            .chars()
-            .next()
-            .is_some_and(|c| c.is_whitespace() || c == '>' || c == '/')
-        {
-            rest = after;
+/// Schema-aware checks on WordprocessingML property elements.
+fn check_content_model(part: &str, root: &Element, problems: &mut Vec<String>) {
+    for el in root.iter(None) {
+        if !el.is_element() || el.ns.as_deref() != Some(W) {
             continue;
         }
-        let Some(end) = after.find('>') else { break };
-        out.push(format!("<{tag}{}", &after[..end + 1]));
-        rest = &after[end + 1..];
+        let local = el.local.as_str();
+        if let Some((_, order)) = CHILD_ORDER.iter().find(|(k, _)| *k == local) {
+            check_order(part, local, el, order, problems);
+        } else if local == "highlight" {
+            check_enum(part, el, &ST_HIGHLIGHT, "highlight", problems);
+        } else if local == "vertAlign" {
+            check_enum(part, el, &ST_VERTALIGN, "vertAlign", problems);
+        } else if local == "sz" || local == "szCs" {
+            if let Some(val) = el.get(&format!("{{{W}}}val")) {
+                if val.is_empty() || !val.chars().all(pystr::is_digit) {
+                    problems.push(format!(
+                        "{part}: w:{local}@w:val must be an integer, got {}",
+                        py_repr(val)
+                    ));
+                }
+            }
+        }
     }
-    out
 }
 
-/// A single attribute's value from a tag string.
-fn attr(tag: &str, name: &str) -> Option<String> {
-    let key = format!("{name}=\"");
-    let start = tag.find(&key)? + key.len();
-    let end = tag[start..].find('"')? + start;
-    Some(tag[start..end].to_string())
-}
-
-/// All values of `attr` across every `<element …>` occurrence.
-fn attr_values(xml: &str, element: &str, attr_name: &str) -> Vec<String> {
-    element_tags(xml, element)
+fn check_order(part: &str, parent: &str, el: &Element, order: &[&str], problems: &mut Vec<String>) {
+    let seen: Vec<(usize, &str)> = el
+        .children
         .iter()
-        .filter_map(|t| attr(t, attr_name))
-        .collect()
+        .filter(|c| c.is_element() && c.ns.as_deref() == Some(W))
+        .filter_map(|c| {
+            order
+                .iter()
+                .position(|o| *o == c.local)
+                .map(|r| (r, c.local.as_str()))
+        })
+        .collect();
+    for w in seen.windows(2) {
+        let ((a_rank, a_name), (b_rank, b_name)) = (w[0], w[1]);
+        if b_rank < a_rank {
+            problems.push(format!(
+                "{part}: w:{parent} children out of ECMA-376 order: w:{b_name} must precede w:{a_name}"
+            ));
+            return;
+        }
+    }
 }
 
-/// The ordered direct-child local names of every `<parent>…</parent>` block.
-fn direct_children_of(xml: &str, parent: &str) -> Vec<Vec<String>> {
-    let open = format!("<{parent}>");
-    let open_attr = format!("<{parent} ");
-    let close = format!("</{parent}>");
-    let mut blocks = Vec::new();
-    let mut rest = xml;
-    loop {
-        // find the next opening tag of `parent` (with or without attributes)
-        let (pos, taglen) = match (rest.find(&open), rest.find(&open_attr)) {
-            (Some(a), Some(b)) if a <= b => (a, tag_len(&rest[a..])),
-            (Some(a), None) => (a, tag_len(&rest[a..])),
-            (_, Some(b)) => (b, tag_len(&rest[b..])),
-            (None, None) => break,
+fn check_enum(part: &str, el: &Element, allowed: &[&str], name: &str, problems: &mut Vec<String>) {
+    if let Some(val) = el.get(&format!("{{{W}}}val")) {
+        if !allowed.contains(&val) {
+            problems.push(format!(
+                "{part}: w:{name}@w:val={} is not a valid ST value",
+                py_repr(val)
+            ));
+        }
+    }
+}
+
+fn check_content_types(
+    zf: &Archive,
+    names: &[&str],
+    problems: &mut Vec<String>,
+) -> Result<(), ValidateError> {
+    if !names.contains(&"[Content_Types].xml") {
+        return Ok(());
+    }
+    let root = parse_xml(&read(zf, "[Content_Types].xml")?)?;
+    let tag = |local: &str| format!("{{{CT_NS}}}{local}");
+    let defaults: Vec<String> = root
+        .findall(&tag("Default"))
+        .into_iter()
+        .map(|e| pystr::lower(e.get("Extension").unwrap_or("")))
+        .collect();
+    let overrides: Vec<Option<&str>> = root
+        .findall(&tag("Override"))
+        .into_iter()
+        .map(|e| e.get("PartName"))
+        .collect();
+    for name in names {
+        if *name == "[Content_Types].xml" || name.ends_with('/') {
+            continue;
+        }
+        let ext = match name.rsplit_once('.') {
+            Some((_, e)) => pystr::lower(e),
+            None => String::new(),
         };
-        let body_start = pos + taglen;
-        let mut depth = 1usize;
-        let mut i = body_start;
-        let mut children = Vec::new();
-        let bytes = rest.as_bytes();
-        while i < rest.len() {
-            if bytes[i] != b'<' {
-                i += 1;
+        let partname = format!("/{name}");
+        if !defaults.contains(&ext) && !overrides.contains(&Some(partname.as_str())) {
+            problems.push(format!("no declared content type for part: {name}"));
+        }
+    }
+    Ok(())
+}
+
+fn check_relationships(
+    zf: &Archive,
+    names: &[&str],
+    problems: &mut Vec<String>,
+) -> Result<(), ValidateError> {
+    for name in names {
+        if !name.ends_with(".rels") {
+            continue;
+        }
+        let base = pyos::dirname(&pyos::dirname(name)); // strip "_rels/x.rels"
+        let root = parse_xml(&read(zf, name)?)?;
+        for rel in root.findall(&format!("{{{REL_NS}}}Relationship")) {
+            let mode = rel
+                .get("TargetMode")
+                .filter(|m| !m.is_empty())
+                .unwrap_or("Internal");
+            if mode == "External" {
                 continue;
             }
-            let tail = &rest[i..];
-            if tail.starts_with(&close) {
-                depth = depth.saturating_sub(1);
-                if depth == 0 {
-                    break;
-                }
-                i += close.len();
-                continue;
+            let target = rel.get("Target").unwrap_or("");
+            let resolved = pyos::normpath(&pyos::join2(&base, target));
+            let resolved = resolved.trim_start_matches('/');
+            if !names.contains(&resolved) {
+                problems.push(format!("{name}: relationship target not found: {target}"));
             }
-            let end = match tail.find('>') {
-                Some(k) => k,
-                None => break,
-            };
-            let inner = &tail[1..end];
-            if inner.starts_with('/') {
-                // a nested close tag of some other element; more closes than
-                // opens means malformed input — stop scanning this parent.
-                depth = depth.saturating_sub(1);
-                if depth == 0 {
-                    break;
-                }
-            } else {
-                let self_closing = inner.ends_with('/');
-                let name = local_name(inner.trim_end_matches('/').trim());
-                if depth == 1 {
-                    children.push(name);
-                }
-                if !self_closing {
-                    depth += 1;
-                }
-            }
-            i += end + 1;
-        }
-        blocks.push(children);
-        rest = &rest[body_start..];
-    }
-    blocks
-}
-
-fn tag_len(s: &str) -> usize {
-    s.find('>').map(|k| k + 1).unwrap_or(s.len())
-}
-
-/// `w:pStyle` → `pStyle` (strip the namespace prefix).
-fn local_name(tag_inner: &str) -> String {
-    let name = tag_inner
-        .split(|c: char| c.is_whitespace())
-        .next()
-        .unwrap_or("");
-    name.rsplit(':').next().unwrap_or(name).to_string()
-}
-
-/// Join `target` onto the rels `base` directory and normalize `.`/`..`. A
-/// leading `/` on `target` is a package-root-absolute OPC part name, so the base
-/// is ignored in that case.
-fn normalize_join(base: &str, target: &str) -> String {
-    let combined = if let Some(abs) = target.strip_prefix('/') {
-        abs.to_string()
-    } else {
-        format!("{base}{target}")
-    };
-    let mut parts: Vec<&str> = Vec::new();
-    for seg in combined.split('/') {
-        match seg {
-            "" | "." => {}
-            ".." => {
-                parts.pop();
-            }
-            s => parts.push(s),
         }
     }
-    parts.join("/")
+    Ok(())
 }
 
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn wellformed_detects_mismatch() {
-        assert!(wellformed("<a><b/></a>").is_none());
-        assert!(wellformed("<a><b></a>").is_some()); // unclosed b
-        assert!(wellformed("<a></b>").is_some()); // mismatched
-        assert!(wellformed("<?xml?><a><!-- c --><b/></a>").is_none());
-    }
-
-    #[test]
-    fn wellformed_flags_truncated_constructs() {
-        // A truncated PI/comment/tag must be reported, not silently accepted.
-        assert!(wellformed("<w:document><?trunc").is_some());
-        assert!(wellformed("<a><!-- unterminated").is_some());
-        assert!(wellformed("<a><b").is_some());
-    }
-
-    #[test]
-    fn malformed_zip_bytes_do_not_panic() {
-        // Fuzzed/truncated archives must return violations, never panic.
-        let mut eocd = vec![0u8; 22];
-        eocd[0..4].copy_from_slice(&[0x50, 0x4b, 0x05, 0x06]);
-        eocd[10..12].copy_from_slice(&1u16.to_le_bytes());
-        eocd[16..20].copy_from_slice(&0x00FF_FFFFu32.to_le_bytes()); // bogus CD offset
-        let mut buf = b"PK\x03\x04".to_vec();
-        buf.extend_from_slice(&eocd);
-        let _ = validate_docx(&buf);
-        for n in [0usize, 1, 4, 21, 22, 23, 50] {
-            let _ = validate_docx(&vec![0x50u8; n]);
-        }
-    }
-
-    #[test]
-    fn child_scan_does_not_underflow_on_extra_closes() {
-        // More close-tags than opens inside a tracked block must not underflow.
-        let _ = direct_children_of("<w:pPr></a></b></c>", "w:pPr");
-    }
-
-    #[test]
-    fn normalize_join_handles_absolute_target() {
-        // A leading `/` is a package-root-absolute OPC part name.
-        assert_eq!(
-            normalize_join("word/", "/word/styles.xml"),
-            "word/styles.xml"
-        );
-    }
-
-    #[test]
-    fn direct_children_skips_nested_same_named() {
-        // pPr contains a nested rPr; its children must not leak into pPr's list
-        let xml = "<w:pPr><w:pStyle/><w:rPr><w:b/></w:rPr><w:jc/></w:pPr>";
-        let blocks = direct_children_of(xml, "w:pPr");
-        assert_eq!(blocks, vec![vec!["pStyle", "rPr", "jc"]]);
-    }
-
-    #[test]
-    fn child_order_flags_out_of_sequence() {
-        let mut v = Vec::new();
-        // jc (pos 6) before numPr (pos 3) -> violation
-        check_child_order("<w:pPr><w:jc/><w:numPr/></w:pPr>", &mut v);
-        assert_eq!(v.len(), 1);
-        let mut ok = Vec::new();
-        check_child_order("<w:pPr><w:numPr/><w:jc/></w:pPr>", &mut ok);
-        assert!(ok.is_empty());
-    }
-
-    #[test]
-    fn field_and_bookmark_pairing() {
-        let mut v = Vec::new();
-        check_fields_and_bookmarks(
-            "<w:fldChar w:fldCharType=\"begin\"/><w:bookmarkStart w:id=\"1\"/>",
-            &mut v,
-        );
-        // missing fldChar end + missing bookmarkEnd
-        assert!(v.iter().any(|s| s.contains("unbalanced complex fields")));
-        assert!(v.iter().any(|s| s.contains("no matching bookmarkEnd")));
-    }
-
-    #[test]
-    fn normalize_join_resolves_dotdot() {
-        assert_eq!(
-            normalize_join("word/", "media/image1.png"),
-            "word/media/image1.png"
-        );
-        assert_eq!(
-            normalize_join("word/", "../customXml/item.xml"),
-            "customXml/item.xml"
-        );
-        assert_eq!(normalize_join("", "word/document.xml"), "word/document.xml");
-    }
+/// Python `repr()` of a string.
+fn py_repr(s: &str) -> String {
+    tex2word_ir::json::py_str_repr(s)
 }

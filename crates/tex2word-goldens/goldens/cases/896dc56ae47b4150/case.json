@@ -1,0 +1,11 @@
+{
+"api": "convert_source",
+"args": {
+"source": "\\begin{document}Gravity is \\SI{9.81}{\\meter\\per\\second\\squared}; density \\qty{1.0e3}{\\kilo\\gram\\per\\cubic\\metre}.\\end{document}"
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_siunitx.py::test_siunitx_is_valid_and_warning_free"
+]
+}

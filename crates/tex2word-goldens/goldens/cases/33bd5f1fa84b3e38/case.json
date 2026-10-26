@@ -1,0 +1,11 @@
+{
+"api": "parse_document",
+"args": {
+"source": "\\begin{document}\\begin{tabular}{ll}a & b\\\\ c & d\\\\\\end{tabular}\\end{document}"
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_tables.py::test_plain_table_has_no_header"
+]
+}

@@ -1,0 +1,11 @@
+{
+"api": "parse_document",
+"args": {
+"source": "\\documentclass{article}\\title{T}\\date{}\\begin{document}\\maketitle\\end{document}"
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_authors_keywords.py::test_empty_date_stays_empty"
+]
+}

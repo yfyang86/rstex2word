@@ -1,0 +1,11 @@
+{
+"api": "convert_source",
+"args": {
+"source": "\\documentclass{article}\\begin{document}\\begin{enumerate}\\item\\label{rq:base}A \\item\\label{rq:prod}B \\item\\label{rq:abla}C\\end{enumerate}See RQ\\ref{rq:base}, RQ\\ref{rq:prod}, RQ\\ref{rq:abla}.\\end{document}"
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_crossref.py::test_enumerate_item_ref_end_to_end"
+]
+}
