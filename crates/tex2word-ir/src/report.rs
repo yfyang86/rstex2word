@@ -5,6 +5,8 @@
 //! an unknown construct, and every fallback is logged here so per-construct
 //! coverage can be reported.
 
+use std::fmt::Write;
+
 use crate::dict::Dict;
 use crate::json::{dumps, DumpOptions, Value};
 
@@ -139,25 +141,20 @@ impl ConversionReport {
     pub fn to_html(&self) -> String {
         let total = self.math_omml + self.math_image + self.math_raw;
         let pct = 100.0 * self.math_omml as f64 / total.max(1) as f64;
-        let rows: String = self
-            .entries
-            .iter()
-            .map(|e| {
-                format!(
-                    "<tr class='{}'><td>{}</td><td><code>{}</code></td><td>{}</td></tr>",
-                    e.severity,
-                    e.severity,
-                    esc(&e.construct),
-                    esc(&e.message)
-                )
-            })
-            .collect();
+        let rows = self.entries.iter().fold(String::new(), |mut out, e| {
+            let _ = write!(
+                out,
+                "<tr class='{}'><td>{}</td><td><code>{}</code></td><td>{}</td></tr>",
+                e.severity,
+                e.severity,
+                esc(&e.construct),
+                esc(&e.message)
+            );
+            out
+        });
         let mut counts: Vec<(String, i64)> = self.construct_counts().into_iter().collect();
         counts.sort();
-        let constructs: String = counts
-            .iter()
-            .map(|(k, v)| format!("<tr><td><code>{}</code></td><td>{v}</td></tr>", esc(k)))
-            .collect();
+        let constructs = construct_rows(counts.iter());
         let constructs = if constructs.is_empty() {
             "<tr><td colspan=2>none</td></tr>".to_string()
         } else {
@@ -196,6 +193,14 @@ impl ConversionReport {
             raw = self.math_raw,
         )
     }
+}
+
+/// `<tr>` rows of `(construct, count)` pairs.
+fn construct_rows<'a>(items: impl Iterator<Item = &'a (String, i64)>) -> String {
+    items.fold(String::new(), |mut out, (k, v)| {
+        let _ = write!(out, "<tr><td><code>{}</code></td><td>{v}</td></tr>", esc(k));
+        out
+    })
 }
 
 fn esc(text: &str) -> String {
@@ -237,11 +242,7 @@ pub fn aggregate_html(results: &[(String, ConversionReport)]) -> String {
     // Counter.most_common: by count, descending; ties keep first-seen order.
     let mut common: Vec<(String, i64)> = construct_totals.into_iter().collect();
     common.sort_by_key(|c| std::cmp::Reverse(c.1));
-    let constructs: String = common
-        .iter()
-        .take(40)
-        .map(|(k, v)| format!("<tr><td><code>{}</code></td><td>{v}</td></tr>", esc(k)))
-        .collect();
+    let constructs = construct_rows(common.iter().take(40));
     let constructs = if constructs.is_empty() {
         "<tr><td colspan=2>none</td></tr>".to_string()
     } else {

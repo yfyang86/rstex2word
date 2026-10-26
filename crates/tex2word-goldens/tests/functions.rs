@@ -116,6 +116,8 @@ fn first_diff(a: &str, b: &str) -> String {
 
 #[test]
 fn frontend_functions_match_python() {
+    // \today is frozen to the capture date (2026-01-02), as in the recording
+    std::env::set_var("SOURCE_DATE_EPOCH", "1767312000");
     let text = std::fs::read_to_string(root().join("fn.jsonl")).expect("fn.jsonl");
     let mut failures = Vec::new();
     let mut n = 0;

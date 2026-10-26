@@ -191,27 +191,27 @@ fn block(
 ) -> Result<(), String> {
     loop {
         let sym = lit.decode(r)? as usize;
-        if sym < 256 {
-            out.push(sym as u8);
-        } else if sym == 256 {
-            return Ok(());
-        } else {
-            let k = sym - 257;
-            if k >= 29 {
-                return Err("invalid length symbol".into());
-            }
-            let len = LEN_BASE[k] as usize + r.bits(LEN_EXTRA[k] as u32)? as usize;
-            let d = dist.decode(r)? as usize;
-            if d >= 30 {
-                return Err("invalid distance symbol".into());
-            }
-            let distance = DIST_BASE[d] as usize + r.bits(DIST_EXTRA[d] as u32)? as usize;
-            if distance > out.len() {
-                return Err("distance too far back".into());
-            }
-            let start = out.len() - distance;
-            for k in 0..len {
-                out.push(out[start + k]);
+        match sym.cmp(&256) {
+            std::cmp::Ordering::Less => out.push(sym as u8),
+            std::cmp::Ordering::Equal => return Ok(()),
+            std::cmp::Ordering::Greater => {
+                let k = sym - 257;
+                if k >= 29 {
+                    return Err("invalid length symbol".into());
+                }
+                let len = LEN_BASE[k] as usize + r.bits(LEN_EXTRA[k] as u32)? as usize;
+                let d = dist.decode(r)? as usize;
+                if d >= 30 {
+                    return Err("invalid distance symbol".into());
+                }
+                let distance = DIST_BASE[d] as usize + r.bits(DIST_EXTRA[d] as u32)? as usize;
+                if distance > out.len() {
+                    return Err("distance too far back".into());
+                }
+                let start = out.len() - distance;
+                for k in 0..len {
+                    out.push(out[start + k]);
+                }
             }
         }
     }

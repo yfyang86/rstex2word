@@ -6,6 +6,7 @@
 //! `goldens/cases/<id>/` (`case.json` = inputs, `out.json` = Python's result);
 //! binary payloads are content-addressed under `goldens/blobs/<sha256>`.
 
+use std::fmt::Write;
 use std::fs;
 use std::path::{Path, PathBuf};
 
@@ -280,7 +281,10 @@ pub fn sha256_hex(data: &[u8]) -> String {
             h[i] = h[i].wrapping_add(v[i]);
         }
     }
-    h.iter().map(|x| format!("{x:08x}")).collect()
+    h.iter().fold(String::new(), |mut out, x| {
+        let _ = write!(out, "{x:08x}");
+        out
+    })
 }
 
 /// The `convert_source` keyword arguments a case recorded.

@@ -25,7 +25,21 @@ import resource
 import signal
 import sys
 
-from pylatexenc.latex2text import LatexNodes2Text
+import datetime as _datetime
+
+
+class _FrozenDateTime(_datetime.datetime):
+    """pylatexenc's \\today reads the clock; freeze it at the capture date
+    (SOURCE_DATE_EPOCH=1767312000), as capture_plugin does for tex2word."""
+
+    @classmethod
+    def now(cls, tz=None):
+        return cls(2026, 1, 2)
+
+
+_datetime.datetime = _FrozenDateTime  # before pylatexenc builds its specs
+
+from pylatexenc.latex2text import LatexNodes2Text  # noqa: E402
 
 from tex2word import ir
 from tex2word.bib.bbl import parse_bbl
