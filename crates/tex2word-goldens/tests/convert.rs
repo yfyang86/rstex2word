@@ -12,6 +12,11 @@ use tex2word_ooxml::zip::Archive;
 static ENV: std::sync::Mutex<()> = std::sync::Mutex::new(());
 
 /// `None` when everything matches.
+///
+/// With `T2W_GOLDEN_UPDATE=1`, cases whose IR and report still match but
+/// whose `docx` parts differ have the new part hashes written back to
+/// `out.json` (an intentional, documented divergence from the Python
+/// reference; see CHANGELOG.md). Everything else still fails the test.
 fn check(case: &Case, dump: Option<&std::path::Path>) -> Option<String> {
     let source = case.arg("source").and_then(Value::as_str)?.to_string();
     let m = materialize(case);
@@ -32,6 +37,8 @@ fn check(case: &Case, dump: Option<&std::path::Path>) -> Option<String> {
     if let Some(d) = json_diff(case.out.get("report").unwrap(), &got_report, "report") {
         return Some(d);
     }
+    let update = std::env::var_os("T2W_GOLDEN_UPDATE").is_some()
+        && std::env::var_os("T2W_GOLDEN_DUMP").is_none();
     let want = case.out.get("docx").unwrap();
     let archive = match Archive::new(&r.docx) {
         Ok(a) => a,
@@ -50,10 +57,16 @@ fn check(case: &Case, dump: Option<&std::path::Path>) -> Option<String> {
     }
     let parts = want.get("parts").unwrap();
     let mut bad = Vec::new();
+    let mut reshard = Vec::new();
     for name in &names {
         let data = archive.read(name).unwrap();
         let want_sha = parts.get(name).and_then(Value::as_str).unwrap();
-        if sha256_hex(&data) != want_sha {
+        let got_sha = sha256_hex(&data);
+        if got_sha != want_sha {
+            if update {
+                reshard.push((want_sha.to_string(), got_sha, data));
+                continue;
+            }
             if let Some(dir) = dump {
                 let d = dir.join(&case.id);
                 let flat = name.replace('/', "_");
@@ -63,6 +76,26 @@ fn check(case: &Case, dump: Option<&std::path::Path>) -> Option<String> {
             }
             bad.push(name.clone());
         }
+    }
+    if bad.is_empty() && !reshard.is_empty() {
+        // surgical: swap each old hash for the new one, keeping the rest of
+        // out.json byte-identical to what the Python capture wrote
+        let out_path = tex2word_goldens::root()
+            .join("cases")
+            .join(&case.id)
+            .join("out.json");
+        let mut text = std::fs::read_to_string(&out_path).unwrap();
+        for (old, new, _) in &reshard {
+            assert_eq!(
+                text.matches(old.as_str()).count(),
+                1,
+                "hash {old} not unique"
+            );
+            text = text.replace(old.as_str(), new.as_str());
+        }
+        std::fs::write(&out_path, text).unwrap();
+        eprintln!("updated {} docx parts in {}", reshard.len(), case.id);
+        return None;
     }
     if bad.is_empty() {
         None

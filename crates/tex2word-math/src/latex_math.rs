@@ -109,6 +109,12 @@ pub enum MNode {
     Fenced(String, String, Row),
     /// function/operator with a lower limit, e.g. lim_{x\to0}
     LimLow(Box<MNode>, Box<MNode>),
+    /// operator with an upper limit, e.g. \overset{a}{=}
+    LimUpp(Box<MNode>, Box<MNode>),
+    /// pre-scripts (m:sPre): (base, sub, sup)
+    SPre(Box<MNode>, Option<Box<MNode>>, Option<Box<MNode>>),
+    /// a boxed expression (m:borderBox)
+    BorderBox(Row),
     /// an over/under brace group: (body, char, pos "top"/"bot")
     GroupChr(Row, String, String),
     /// rows of cells; `aligned` renders column-justified
@@ -124,10 +130,51 @@ fn is_limit_func(s: &str) -> bool {
 }
 
 /// \big \Big \bigg \Bigg (+ l/r/m variants): manual delimiter sizing.
-fn is_big_delim(name: &str) -> bool {
-    ["bigg", "Bigg", "big", "Big"].iter().any(|size| {
-        name.strip_prefix(size)
-            .is_some_and(|rest| matches!(rest, "" | "l" | "r" | "m"))
+///
+/// Returns (size, suffix); the sizing itself is visual-only, but the `l`/`r`
+/// suffixes mark opening/closing delimiters that pair into an `m:d`.
+fn big_delim(name: &str) -> Option<(&str, &str)> {
+    for size in ["bigg", "Bigg", "big", "Big"] {
+        if let Some(rest) = name.strip_prefix(size) {
+            if matches!(rest, "" | "l" | "r" | "m") {
+                return Some((size, rest));
+            }
+        }
+    }
+    None
+}
+
+/// `\not <cmd>`: the precomposed negated glyph for common relations.
+fn negation(name: &str) -> Option<&'static str> {
+    Some(match name {
+        "le" | "leq" | "leqslant" => "≰",
+        "ge" | "geq" | "geqslant" => "≱",
+        "sim" => "≁",
+        "cong" => "≇",
+        "equiv" => "≢",
+        "approx" => "≉",
+        "in" => "∉",
+        "ni" | "owns" => "∌",
+        "subset" => "⊄",
+        "supset" => "⊅",
+        "subseteq" => "⊈",
+        "supseteq" => "⊉",
+        "mid" | "shortmid" => "∤",
+        "parallel" | "shortparallel" => "∦",
+        "preceq" => "⋠",
+        "succeq" => "⋡",
+        "models" | "vDash" => "⊭",
+        _ => return None,
+    })
+}
+
+/// `\not <char>`: precomposed negations for the single-char relations.
+fn negation_char(c: char) -> Option<&'static str> {
+    Some(match c {
+        '<' => "≮",
+        '>' => "≯",
+        '=' => "≠",
+        _ => return None,
     })
 }
 
@@ -229,6 +276,8 @@ pub enum Tok {
     Amp,
     Num(String),
     Char(char),
+    /// a blank; ignored in math mode, significant inside `\text{...}`
+    Space,
     Eof,
 }
 
@@ -244,6 +293,7 @@ impl Tok {
             Tok::Amp => "&",
             Tok::Num(_) => "num",
             Tok::Char(_) => "char",
+            Tok::Space => "space",
             Tok::Eof => "eof",
         }
     }
@@ -292,7 +342,10 @@ pub fn tokenize(s: &str) -> Vec<Tok> {
         } else if c == '&' {
             toks.push(Tok::Amp);
             i += 1;
-        } else if matches!(c, ' ' | '\n' | '\t') {
+        } else if c == ' ' {
+            toks.push(Tok::Space);
+            i += 1;
+        } else if matches!(c, '\n' | '\t') {
             i += 1;
         } else if pystr::is_digit(c) {
             let mut k = i;
@@ -388,6 +441,58 @@ impl Parser {
         Ok(Row(self.parse_atom()?.into_iter().collect()))
     }
 
+    /// A `\text{...}`-style group: blanks between atoms become blank runs.
+    fn parse_text_group(&mut self) -> R<Vec<MNode>> {
+        if self.peek() != Tok::LBrace {
+            return Ok(self.parse_atom()?.into_iter().collect());
+        }
+        self.next();
+        let mut items = Vec::new();
+        loop {
+            match self.peek() {
+                Tok::RBrace | Tok::Eof => break,
+                Tok::Space => {
+                    self.next();
+                    items.push(MNode::Lit(Lit::upright(" ")));
+                    continue;
+                }
+                _ => {}
+            }
+            if let Some(atom) = self.parse_atom()? {
+                items.push(self.maybe_scripts(atom)?);
+            }
+        }
+        self.expect("}")?;
+        Ok(items)
+    }
+
+    /// A group holding only `_{x}^{y}` scripts on an implicit empty base
+    /// (the two arguments of `\sideset`).
+    fn parse_scripts_group(&mut self) -> R<(Option<MNode>, Option<MNode>)> {
+        if self.peek() == Tok::LBrace {
+            self.next();
+        }
+        let mut sub = None;
+        let mut sup = None;
+        loop {
+            match self.peek() {
+                Tok::Underscore => {
+                    self.next();
+                    sub = Some(flatten(self.parse_group()?));
+                }
+                Tok::Caret => {
+                    self.next();
+                    sup = Some(flatten(self.parse_group()?));
+                }
+                _ => break,
+            }
+        }
+        if self.peek() == Tok::RBrace {
+            self.next();
+        }
+        Ok((sub, sup))
+    }
+
     fn maybe_scripts(&mut self, base: MNode) -> R<MNode> {
         let mut sub: Option<MNode> = None;
         let mut sup: Option<MNode> = None;
@@ -446,6 +551,7 @@ impl Parser {
             Tok::Newline | Tok::Amp => {
                 return Err(MathError::unsupported("alignment", "stray & or \\\\"))
             }
+            // blanks are skipped in math mode (kept only by parse_text_group)
             _ => None,
         };
         self.depth -= 1;
@@ -475,7 +581,7 @@ impl Parser {
                 "bot".into(),
             ));
         }
-        if name == "binom" {
+        if matches!(name, "binom" | "dbinom" | "tbinom") {
             let a = self.parse_group()?;
             let b = self.parse_group()?;
             let inner = MNode::Matrix(vec![vec![a], vec![b]], false);
@@ -505,9 +611,14 @@ impl Parser {
         if let Some(l) = cmd_literal(name) {
             return Ok(MNode::Lit(Lit::upright(l)));
         }
-        if is_big_delim(name) {
-            // delimiter sizing is visual-only; the next delimiter renders itself
-            return Ok(MNode::Lit(Lit::new("")));
+        if let Some((_, suffix)) = big_delim(name) {
+            match suffix {
+                // an opening `\bigl <delim>` pairs with a closing `\bigr`/`\right`
+                "l" => return self.parse_fenced(),
+                "r" => return Err(MathError::unsupported("delimiter", "stray \\bigr")),
+                // \big / \bigm: sizing is visual-only, the delimiter renders itself
+                _ => return Ok(MNode::Lit(Lit::upright(self.read_delim()?))),
+            }
         }
         if let Some((open, close)) = paired_delim(name) {
             if self.peek() == Tok::Char('*') {
@@ -528,12 +639,106 @@ impl Parser {
         if name == "overset" || name == "stackrel" {
             let top = self.parse_group()?;
             let base = self.parse_group()?;
-            return Ok(MNode::Matrix(vec![vec![top], vec![base]], false));
+            return Ok(MNode::LimUpp(
+                Box::new(flatten(base)),
+                Box::new(flatten(top)),
+            ));
         }
         if name == "underset" {
             let bot = self.parse_group()?;
             let base = self.parse_group()?;
-            return Ok(MNode::Matrix(vec![vec![base], vec![bot]], false));
+            return Ok(MNode::LimLow(
+                Box::new(flatten(base)),
+                Box::new(flatten(bot)),
+            ));
+        }
+        if name == "overunderset" {
+            let top = self.parse_group()?;
+            let bot = self.parse_group()?;
+            let base = self.parse_group()?;
+            return Ok(MNode::LimUpp(
+                Box::new(MNode::LimLow(
+                    Box::new(flatten(base)),
+                    Box::new(flatten(bot)),
+                )),
+                Box::new(flatten(top)),
+            ));
+        }
+        if name == "boxed" {
+            return Ok(MNode::BorderBox(self.parse_group()?));
+        }
+        if name == "genfrac" {
+            let open = row_text(&self.parse_group()?);
+            let close = row_text(&self.parse_group()?);
+            self.parse_group()?; // rule thickness
+            self.parse_group()?; // math style
+            let frac = MNode::Frac(self.parse_group()?, self.parse_group()?);
+            if open.is_empty() && close.is_empty() {
+                return Ok(frac);
+            }
+            return Ok(MNode::Fenced(open, close, Row(vec![frac])));
+        }
+        if name == "prescript" {
+            let sub = flatten(self.parse_group()?);
+            let sup = flatten(self.parse_group()?);
+            let base = flatten(self.parse_group()?);
+            return Ok(MNode::SPre(
+                Box::new(base),
+                Some(Box::new(sub)),
+                Some(Box::new(sup)),
+            ));
+        }
+        if name == "sideset" {
+            let (lsub, lsup) = self.parse_scripts_group()?;
+            let (rsub, rsup) = self.parse_scripts_group()?;
+            let Some(op) = self.parse_atom()? else {
+                return Err(MathError::unsupported("sideset", "missing operator"));
+            };
+            let base = match (op, rsub, rsup) {
+                (MNode::Nary(mut n), s, p) => {
+                    n.sub = s.map(Box::new);
+                    n.sup = p.map(Box::new);
+                    MNode::Nary(n)
+                }
+                (b, Some(s), Some(p)) => MNode::SubSup(Box::new(b), Box::new(s), Box::new(p)),
+                (b, Some(s), None) => MNode::Sub(Box::new(b), Box::new(s)),
+                (b, None, Some(p)) => MNode::Sup(Box::new(b), Box::new(p)),
+                (b, None, None) => b,
+            };
+            return Ok(MNode::SPre(
+                Box::new(base),
+                lsub.map(Box::new),
+                lsup.map(Box::new),
+            ));
+        }
+        if name == "pod" {
+            return Ok(MNode::Fenced("(".into(), ")".into(), self.parse_group()?));
+        }
+        if name == "smash" {
+            if self.peek() == Tok::Char('[') {
+                self.parse_optional()?; // [t]/[b]/[tb]: vertical extent only
+            }
+            return Ok(MNode::Group(self.parse_group()?));
+        }
+        if name == "idotsint" {
+            return Ok(MNode::Row(Row(vec![
+                MNode::Lit(Lit::upright("∫")),
+                MNode::Lit(Lit::upright("⋯")),
+                MNode::Lit(Lit::upright("∫")),
+            ])));
+        }
+        if name == "not" {
+            let neg = match self.peek() {
+                Tok::Cmd(v) => negation(&v).map(str::to_string),
+                Tok::Char(c) => negation_char(c).map(str::to_string),
+                _ => None,
+            };
+            if let Some(glyph) = neg {
+                self.next();
+                return Ok(MNode::Lit(Lit::upright(glyph)));
+            }
+            // no precomposed glyph: overlay a combining long solidus
+            return Ok(MNode::Accent(self.parse_group()?, "\u{338}".into()));
         }
         if matches!(
             name,
@@ -550,14 +755,13 @@ impl Parser {
                 | "texttt"
                 | "textsc"
         ) {
-            let row = self.parse_group()?;
-            return Ok(styled(row, true, false, None));
+            return Ok(styled(Row(self.parse_text_group()?), true, false, None));
         }
         if name == "textbf" {
-            return Ok(styled(self.parse_group()?, true, true, None));
+            return Ok(styled(Row(self.parse_text_group()?), true, true, None));
         }
         if matches!(name, "textit" | "textsl" | "emph") {
-            return Ok(MNode::Group(self.parse_group()?));
+            return Ok(MNode::Group(Row(self.parse_text_group()?)));
         }
         if matches!(name, "mathbf" | "boldsymbol" | "bm") {
             return Ok(styled(self.parse_group()?, false, true, None));
@@ -627,6 +831,10 @@ impl Parser {
         }
         if let Some(v) = S::get(S::SYMBOLS, name) {
             return Ok(MNode::Lit(Lit::upright(v)));
+        }
+        // bare delimiter commands (\lvert, \lceil, …) render as their char
+        if let Some(d) = S::get(S::DELIMITERS, name) {
+            return Ok(MNode::Lit(Lit::upright(d)));
         }
         if name == "begin" {
             return self.parse_environment();
@@ -745,9 +953,10 @@ impl Parser {
                 let s = c.to_string();
                 Ok(S::get(S::DELIMITERS, &s).map_or(s.clone(), str::to_string))
             }
-            Tok::Cmd(v) => Ok(S::get(S::DELIMITERS, &v)
+            Tok::Cmd(v) => S::get(S::DELIMITERS, &v)
                 .or_else(|| S::get(S::SYMBOLS, &v))
-                .map_or(v.clone(), str::to_string)),
+                .map(str::to_string)
+                .ok_or_else(|| MathError::unsupported(format!("delimiter \\{v}"), "")),
             _ => Err(MathError::unsupported("delimiter", "")),
         }
     }
@@ -758,7 +967,9 @@ impl Parser {
         loop {
             match self.peek() {
                 Tok::Eof => return Err(MathError::unsupported("delimiter", "unclosed \\left")),
-                Tok::Cmd(v) if v == "right" => {
+                Tok::Cmd(v)
+                    if v == "right" || big_delim(&v).is_some_and(|(_, suffix)| suffix == "r") =>
+                {
                     self.next();
                     let close = self.read_delim()?;
                     return Ok(MNode::Fenced(open, close, Row(items)));

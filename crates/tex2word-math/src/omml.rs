@@ -198,6 +198,24 @@ fn emit_single(node: &MNode) -> Element {
             ll.append(fill("m:lim", Some(lim)));
             ll
         }
+        MNode::LimUpp(base, over) => {
+            let mut lu = el("m:limUpp", &[]);
+            lu.append(fill("m:e", Some(base)));
+            lu.append(fill("m:lim", Some(over)));
+            lu
+        }
+        MNode::SPre(base, sub, sup) => {
+            let mut sp = el("m:sPre", &[]);
+            sp.append(fill("m:sub", sub.as_deref()));
+            sp.append(fill("m:sup", sup.as_deref()));
+            sp.append(fill("m:e", Some(base)));
+            sp
+        }
+        MNode::BorderBox(body) => {
+            let mut b = el("m:borderBox", &[]);
+            b.append(fill_row("m:e", body));
+            b
+        }
         MNode::GroupChr(body, ch, pos) => {
             let mut g = el("m:groupChr", &[]);
             let gpr = sub(&mut g, "m:groupChrPr", &[]);

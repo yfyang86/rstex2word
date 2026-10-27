@@ -57,12 +57,15 @@ fn reverse_path_matches_python() {
     // goldens recorded with the Python core install (no TeX / rasteriser)
     std::env::set_var("TEX2WORD_NO_EXTERNAL_TOOLS", "1");
     std::env::set_var("SOURCE_DATE_EPOCH", "1767312000");
+    let update = std::env::var_os("T2W_GOLDEN_UPDATE").is_some();
     let text = std::fs::read_to_string(root().join("reverse.jsonl")).unwrap();
     let mut failures = Vec::new();
+    let mut out_lines = Vec::new();
     let mut n = 0;
+    let mut n_updated = 0;
     for line in text.lines() {
         n += 1;
-        let row = json::parse(line).unwrap();
+        let mut row = json::parse(line).unwrap();
         let case = load(row.get("case").and_then(Value::as_str).unwrap());
         if case
             .tests()
@@ -148,15 +151,36 @@ fn reverse_path_matches_python() {
             .map(|(k, v)| (k.to_string(), v))
             .chain(edited_checks)
             .collect();
+        let mut row_updated = false;
         for (key, got) in checks {
             let want = row.get(&key).unwrap();
             if &got != want {
-                failures.push(format!("{} {:?}: {key}", case.id, case.tests().first()));
+                if update {
+                    if let Value::Object(pairs) = &mut row {
+                        for (k, v) in pairs.iter_mut() {
+                            if *k == key {
+                                *v = got.clone();
+                            }
+                        }
+                    }
+                    row_updated = true;
+                } else {
+                    failures.push(format!("{} {:?}: {key}", case.id, case.tests().first()));
+                }
             }
         }
+        if row_updated {
+            n_updated += 1;
+        }
+        out_lines.push(json::dumps(&row, Default::default()));
     }
     std::env::set_var("SOURCE_DATE_EPOCH", "1767312000");
     assert!(n > 400, "only {n} rows");
+    if update && n_updated > 0 {
+        std::fs::write(root().join("reverse.jsonl"), out_lines.join("\n") + "\n").unwrap();
+        eprintln!("updated {n_updated} reverse.jsonl rows");
+        return;
+    }
     assert!(
         failures.is_empty(),
         "{} differ:\n{}",

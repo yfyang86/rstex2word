@@ -2,6 +2,11 @@
 ``mathml/symbols.py`` (the tables are full of combining marks and special
 spaces, so they are copied mechanically rather than retyped).
 
+Manual coverage extensions beyond the Python 1.0.9 reference (amssymb,
+amsmath, base symbols) live between ``EXTENSIONS begin`` / ``EXTENSIONS end``
+markers in the emitted file; this script preserves them verbatim, so editing
+those sections in ``symbols.rs`` survives a regeneration.
+
     /home/user/py-core/bin/python tools/golden/gen_math_tables.py
 """
 
@@ -29,9 +34,52 @@ def rs(s: str) -> str:
     return '"' + "".join(out) + '"'
 
 
+EXT_BEGIN = "    // ---- EXTENSIONS begin (manual additions beyond the reference) ---- //"
+EXT_END = "    // ---- EXTENSIONS end ---- //"
+
+# tables the generator emits, in file order; EXTENSIONS blocks map onto them
+# by position (FUNCTIONS carries no extensions)
+EXT_TABLES = ["SYMBOLS", "NARY", "ACCENTS", "DELIMITERS", "MATHBB", "SPACING"]
+
+
+def saved_extensions():
+    """The manual EXTENSIONS blocks from the existing symbols.rs, in order.
+
+    ``table()`` re-attaches each block inside its table's array literal, so
+    hand-added entries survive a regeneration.
+    """
+    try:
+        current = open(OUT, encoding="utf-8").read()
+    except FileNotFoundError:
+        return []
+    blocks, i = [], 0
+    while True:
+        try:
+            s = current.index(EXT_BEGIN, i)
+            e = current.index(EXT_END, s) + len(EXT_END)
+        except ValueError:
+            return blocks
+        blocks.append(current[s:e])
+        i = e
+
+
+_EXT_BLOCKS = None
+
+
+def extensions(name):
+    global _EXT_BLOCKS
+    if _EXT_BLOCKS is None:
+        _EXT_BLOCKS = saved_extensions()
+    idx = EXT_TABLES.index(name)
+    if idx < len(_EXT_BLOCKS):
+        return _EXT_BLOCKS[idx]
+    return EXT_BEGIN + "\n" + EXT_END
+
+
 def table(name, doc, d):
     lines = [f"/// {doc}", f"pub static {name}: &[(&str, &str)] = &["]
     lines += [f"    ({rs(k)}, {rs(v)})," for k, v in d.items()]
+    lines.append(extensions(name))
     lines.append("];")
     return "\n".join(lines)
 

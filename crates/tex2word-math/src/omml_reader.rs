@@ -143,6 +143,20 @@ fn parse(e: &Element) -> Result<Option<MNode>, String> {
             Box::new(flat(find(e, "e"))?),
             Box::new(flat(find(e, "lim"))?),
         ),
+        "limUpp" => MNode::LimUpp(
+            Box::new(flat(find(e, "e"))?),
+            Box::new(flat(find(e, "lim"))?),
+        ),
+        "sPre" => MNode::SPre(
+            Box::new(flat(find(e, "e"))?),
+            has_children(find(e, "sub"))
+                .map(|s| flat(Some(s)).map(Box::new))
+                .transpose()?,
+            has_children(find(e, "sup"))
+                .map(|s| flat(Some(s)).map(Box::new))
+                .transpose()?,
+        ),
+        "borderBox" => MNode::BorderBox(children_to_row(find(e, "e"))?),
         "groupChr" => {
             let pr = find(e, "groupChrPr");
             MNode::GroupChr(
@@ -297,6 +311,20 @@ pub fn ast_to_latex(node: &MNode) -> String {
             )
         }
         MNode::LimLow(base, lim) => format!("{}_{}", ast_to_latex(base), arg(lim)),
+        MNode::LimUpp(base, over) => {
+            format!(
+                "\\overset{{{}}}{{{}}}",
+                ast_to_latex(over),
+                ast_to_latex(base)
+            )
+        }
+        MNode::SPre(base, sub, sup) => format!(
+            "\\prescript{{{}}}{{{}}}{{{}}}",
+            sub.as_deref().map(ast_to_latex).unwrap_or_default(),
+            sup.as_deref().map(ast_to_latex).unwrap_or_default(),
+            ast_to_latex(base)
+        ),
+        MNode::BorderBox(r) => format!("\\boxed{{{}}}", row_latex(r)),
         MNode::GroupChr(body, _, pos) => {
             let cmd = if pos == "top" {
                 "overbrace"
