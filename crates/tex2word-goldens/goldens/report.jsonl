@@ -351,7 +351,7 @@
 {"case": "d2a4b7685bee00ae", "json": "9071677f1bf0efa72d408dda678f1952dc895ea9cea65688abb94187fe10d31a", "summary": "math: 0 OMML / 0 image / 0 raw; 0 warning(s), 0 error(s)", "html": "425aa4decc4dd01030a42d3a53aba86fb09c8743251ff8e93d149e5bdbcfc24f"}
 {"case": "d317bb15a2879ea7", "json": "9071677f1bf0efa72d408dda678f1952dc895ea9cea65688abb94187fe10d31a", "summary": "math: 0 OMML / 0 image / 0 raw; 0 warning(s), 0 error(s)", "html": "425aa4decc4dd01030a42d3a53aba86fb09c8743251ff8e93d149e5bdbcfc24f"}
 {"case": "d4219a8410a81b08", "json": "9071677f1bf0efa72d408dda678f1952dc895ea9cea65688abb94187fe10d31a", "summary": "math: 0 OMML / 0 image / 0 raw; 0 warning(s), 0 error(s)", "html": "425aa4decc4dd01030a42d3a53aba86fb09c8743251ff8e93d149e5bdbcfc24f"}
-{"case": "d5a7e26ecd8b90b0", "json": "23d8c3f139dd465de7b8aca6951e1bbe3ce12c9443ac41566d8af5e4fcb4ca76", "summary": "math: 8 OMML / 0 image / 1 raw; 1 warning(s), 0 error(s)", "html": "4803afe781c8f72fc47ab24b2221ecce28a44514d9cdcb89d1a8bd070d50e906"}
+{"case": "d5a7e26ecd8b90b0", "json": "63370994a32615c1deeca2f3fe848247f03c9861a80c019fc68ca182aefcc1d7", "summary": "math: 9 OMML / 0 image / 0 raw; 0 warning(s), 0 error(s)", "html": "a82709e562b8c6a358ce4deabe8fbf191344e6df94409f7383f654802f5ed0c3"}
 {"case": "d668b85093283c91", "json": "9071677f1bf0efa72d408dda678f1952dc895ea9cea65688abb94187fe10d31a", "summary": "math: 0 OMML / 0 image / 0 raw; 0 warning(s), 0 error(s)", "html": "425aa4decc4dd01030a42d3a53aba86fb09c8743251ff8e93d149e5bdbcfc24f"}
 {"case": "d6cd62fd19249a66", "json": "4c19ea4cd65d94357da953c3837746ba11b190562589927eaf0b781c3a49f643", "summary": "math: 1 OMML / 0 image / 0 raw; 0 warning(s), 0 error(s)", "html": "675865a9e21cf5104fd9fb2c134e1f62c261b9c0c77cb3fb411709537aa36d3a"}
 {"case": "d80b4384233251b8", "json": "9071677f1bf0efa72d408dda678f1952dc895ea9cea65688abb94187fe10d31a", "summary": "math: 0 OMML / 0 image / 0 raw; 0 warning(s), 0 error(s)", "html": "425aa4decc4dd01030a42d3a53aba86fb09c8743251ff8e93d149e5bdbcfc24f"}
@@ -429,4 +429,4 @@
 {"case": "fe0b6b41c2e15c8f", "json": "9071677f1bf0efa72d408dda678f1952dc895ea9cea65688abb94187fe10d31a", "summary": "math: 0 OMML / 0 image / 0 raw; 0 warning(s), 0 error(s)", "html": "425aa4decc4dd01030a42d3a53aba86fb09c8743251ff8e93d149e5bdbcfc24f"}
 {"case": "fe467e557d3f756a", "json": "9071677f1bf0efa72d408dda678f1952dc895ea9cea65688abb94187fe10d31a", "summary": "math: 0 OMML / 0 image / 0 raw; 0 warning(s), 0 error(s)", "html": "425aa4decc4dd01030a42d3a53aba86fb09c8743251ff8e93d149e5bdbcfc24f"}
 {"case": "ff2faf88a2674dd2", "json": "9071677f1bf0efa72d408dda678f1952dc895ea9cea65688abb94187fe10d31a", "summary": "math: 0 OMML / 0 image / 0 raw; 0 warning(s), 0 error(s)", "html": "425aa4decc4dd01030a42d3a53aba86fb09c8743251ff8e93d149e5bdbcfc24f"}
-{"aggregate": "2dca12bd8e35e81b45e969182892f190bacdcfcebec0b676b2cd2f1bd451f2ba"}
+{"aggregate": "983296334c084a9171f8682eb3c28056ad13cced70d16b2cc978c2fe6a7856a0"}

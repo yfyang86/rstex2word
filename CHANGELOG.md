@@ -7,6 +7,67 @@ tracks the reference implementation and shares its version numbers; see
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 2.1.0 — 2026-10-27 — math coverage beyond the 1.0.9 reference
+
+The math engine now covers the standard LaTeX + amsmath + amssymb symbol set
+instead of the reference's smaller tables. This is a deliberate, documented
+divergence from byte-parity: one unsupported command used to demote the whole
+equation to raw LaTeX text, so a single `\leqslant` made `\mathcal` and `\le`
+in the same equation look broken. In a 544-command probe (every math command
+in `amssymb`, `amsmath` and `fontmath` of TeX Live), fallbacks drop from 293
+to 41 — and those 41 are internal TeX machinery (`\bfdefault`, brace
+extension pieces, …) that documents never use.
+
+### Fixed
+
+- `\bigl<delim> … \bigr<delim>` now pairs into an `m:d` delimiter, so the
+  delimiters stretch in Word; plain `\big`/`\bigm` render their delimiter.
+- `\left\lvert`/`\lVert`/`\rvert`/`\rVert` (and bare `\lvert x \rvert`)
+  render as `|`/`‖` instead of leaking the command name into the document as
+  the literal text "lvert"; unknown delimiters now fail cleanly to the raw
+  fallback instead of rendering garbage.
+- `\text{…}`-style groups keep their inner blanks (`$a \text{ if } b$` no
+  longer renders "aifb").
+- `\overset`/`\stackrel` render as `m:limUpp` and `\underset` as `m:limLow`
+  instead of a 2-row matrix hack.
+
+### Added
+
+- amssymb symbols: negated relations (`\nleq`, `\nsim`, `\nsubseteqq`, …),
+  `\leqslant`/`\geqslant` and the slanted family, `\therefore`/`\because`,
+  boxed/circled operators, `\Vdash`/`\vDash` negations, `\Subset`,
+  `\square`/`\blacksquare`/`\lozenge`, `\beth`/`\gimel`/`\daleth`/`\Bbbk`,
+  the tail/harpoon/loop arrow families, and the rest (~185 commands).
+- Base LaTeX symbols missing from the reference tables: `\imath`/`\jmath`
+  (so `\hat{\imath}` works), `\nearrow`-family diagonals, `\updownarrow`
+  family, `\Diamond`, `\triangleleft`/`\triangleright`, `\sqsubset`,
+  harpoons, `\lgroup`/`\rgroup`, `\lmoustache`/`\rmoustache`, `\mho`,
+  `\owns`, `\amalg`, `\wr`, `\frown`/`\smile`, `\leadsto`, `\Join`.
+- amsmath constructs: `\boxed` (m:borderBox), `\not <rel>` (precomposed
+  negations, combining-solidus accent otherwise), `\dbinom`/`\tbinom`,
+  `\genfrac`, `\prescript` and `\sideset` (m:sPre), `\pod`, `\smash`,
+  `\overunderset`, `\idotsint`, the `\dots` variants (`\dotsc`, `\dotsb`,
+  `\dotsm`, `\dotso`, `\dotsi`), the long arrows (`\Longrightarrow`,
+  `\longmapsto`, …) and the italic capital Greeks (`\varGamma`…).
+- Round trip: the OMML reader understands `m:borderBox`, `m:sPre` and
+  `m:limUpp`, so those equations come back as `\boxed{…}`, `\prescript…` and
+  `\overset…` from foreign documents too.
+- Coverage tests (`tex2word-math/tests/math_coverage.rs`) assert that every
+  entry of every symbol table parses, plus an end-to-end test
+  (`tex2word/tests/math_coverage.rs`) that a document exercising all of the
+  above converts with zero raw-LaTeX fallbacks and round-trips.
+
+### Golden parity
+
+The goldens still pin Python 1.0.9 byte for byte, except for the inputs
+where this change makes the Rust output *better* (7 recorded conversions:
+preserved `\text{}` blanks, `\overset` as `m:limUpp`, and an `ams-article`
+case whose `\not` fallback is gone). Their expected values were regenerated
+with `T2W_GOLDEN_UPDATE=1 cargo test -p tex2word-goldens` (the update modes
+only touch `docx` parts / report digests; IR parity is still asserted
+first). `gen_math_tables.py` preserves the hand-written `EXTENSIONS`
+sections of `symbols.rs` when regenerating from a future Python reference.
+
 ## 2.0.0 — a faithful port of tex2word 1.0.9
 
 The Rust line is rewritten as a port of the Python `tex2word` **1.0.9** core

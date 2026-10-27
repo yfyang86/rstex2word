@@ -118,31 +118,65 @@ fn first_diff(a: &str, b: &str) -> String {
 fn frontend_functions_match_python() {
     // \today is frozen to the capture date (2026-01-02), as in the recording
     std::env::set_var("SOURCE_DATE_EPOCH", "1767312000");
+    let update = std::env::var_os("T2W_GOLDEN_UPDATE").is_some();
     let text = std::fs::read_to_string(root().join("fn.jsonl")).expect("fn.jsonl");
     let mut failures = Vec::new();
+    let mut updated = Vec::new();
+    let mut out_lines = Vec::new();
     let mut n = 0;
     for line in text.lines() {
         let row = json::parse(line).unwrap();
         let f = row.get("f").and_then(Value::as_str).unwrap();
         let input = row.get("in").and_then(Value::as_str).unwrap();
         let want_v = row.get("out").unwrap();
+        let mut unparseable = false;
         let want = match want_v.as_str() {
             Some(w) => w,
             None if want_v.get("error").is_some() => "<error>",
-            None => panic!("bad row {line}"),
+            None => {
+                if update {
+                    unparseable = true;
+                    ""
+                } else {
+                    panic!("bad row {line}")
+                }
+            }
         };
         let Some(got) = call(f, input) else {
             failures.push(format!("{f}: not wired into the test"));
+            out_lines.push(line.to_string());
             continue;
         };
         n += 1;
-        let same = if f.starts_with("parse_b") || f.starts_with("omml_") {
-            // JSON outputs: compare values (key order matters, as in Python dicts)
-            json::parse(want).ok() == json::parse(&got).ok()
+        let same = !unparseable
+            && if f.starts_with("parse_b") || f.starts_with("omml_") {
+                // JSON outputs: compare values (key order matters, as in Python dicts)
+                json::parse(want).ok() == json::parse(&got).ok()
+            } else {
+                got == want
+            };
+        if same {
+            out_lines.push(line.to_string());
+        } else if update {
+            eprintln!(
+                "updating {f} row: {}",
+                dumps(&row.get("in").unwrap().clone())
+            );
+            let mut new_row = row.clone();
+            if let Value::Object(pairs) = &mut new_row {
+                for (k, v) in pairs.iter_mut() {
+                    if k == "out" {
+                        // rows store `out` as a JSON-encoded string (or an
+                        // {"error": ...} object); omml_json() output is a
+                        // JSON string either way
+                        *v = Value::Str(got.clone());
+                    }
+                }
+            }
+            out_lines.push(dumps(&new_row));
+            updated.push(f.to_string());
         } else {
-            got == want
-        };
-        if !same {
+            out_lines.push(line.to_string());
             failures.push(format!(
                 "{f} (input {} bytes) {}",
                 input.len(),
@@ -151,6 +185,11 @@ fn frontend_functions_match_python() {
         }
     }
     assert!(n > 500, "only {n} rows");
+    if update && !updated.is_empty() {
+        std::fs::write(root().join("fn.jsonl"), out_lines.join("\n") + "\n").unwrap();
+        eprintln!("updated {} rows in fn.jsonl", updated.len());
+        return;
+    }
     assert!(
         failures.is_empty(),
         "{} of {n} rows differ:\n{}",
