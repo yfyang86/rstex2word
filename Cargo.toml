@@ -3,7 +3,7 @@ resolver = "2"
 members = ["crates/*"]
 
 [workspace.package]
-version = "2.0.1"
+version = "2.1.0"
 edition = "2021"
 rust-version = "1.82"
 license = "MIT"
@@ -18,16 +18,16 @@ categories = ["command-line-utilities", "text-processing"]
 # and a version (required by `cargo publish`). Members opt in with
 # `<crate>.workspace = true`. Listed in publish (dependency) order.
 [workspace.dependencies]
-tex2word-ir = { path = "crates/tex2word-ir", version = "2.0.1" }
-tex2word-ooxml = { path = "crates/tex2word-ooxml", version = "2.0.1" }
-tex2word-latexwalker = { path = "crates/tex2word-latexwalker", version = "2.0.1" }
-tex2word-math = { path = "crates/tex2word-math", version = "2.0.1" }
-tex2word-bib = { path = "crates/tex2word-bib", version = "2.0.1" }
-tex2word-frontend = { path = "crates/tex2word-frontend", version = "2.0.1" }
-tex2word-backend = { path = "crates/tex2word-backend", version = "2.0.1" }
-tex2word-latex = { path = "crates/tex2word-latex", version = "2.0.1" }
-tex2word-validate = { path = "crates/tex2word-validate", version = "2.0.1" }
-tex2word = { path = "crates/tex2word", version = "2.0.1" }
+tex2word-ir = { path = "crates/tex2word-ir", version = "2.1.0" }
+tex2word-ooxml = { path = "crates/tex2word-ooxml", version = "2.1.0" }
+tex2word-latexwalker = { path = "crates/tex2word-latexwalker", version = "2.1.0" }
+tex2word-math = { path = "crates/tex2word-math", version = "2.1.0" }
+tex2word-bib = { path = "crates/tex2word-bib", version = "2.1.0" }
+tex2word-frontend = { path = "crates/tex2word-frontend", version = "2.1.0" }
+tex2word-backend = { path = "crates/tex2word-backend", version = "2.1.0" }
+tex2word-latex = { path = "crates/tex2word-latex", version = "2.1.0" }
+tex2word-validate = { path = "crates/tex2word-validate", version = "2.1.0" }
+tex2word = { path = "crates/tex2word", version = "2.1.0" }
 
 [profile.release]
 opt-level = 3

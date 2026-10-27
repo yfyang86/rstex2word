@@ -10,9 +10,13 @@ has **no crate dependencies**: the XML parser, ZIP container, zlib-compatible
 compressor, regex engine, LaTeX walker and the LaTeX→OMML math engine are all
 in the workspace.
 
-> **Version 2.0.0.** For the inputs recorded from the Python test suite, the
-> Rust port produces the same IR, the same conversion report and a
-> **byte-identical `.docx`**. See [Parity with Python](#parity-with-python).
+> **Version 2.1.0.** The math engine now covers the standard LaTeX +
+> amsmath + amssymb symbol set beyond the Python 1.0.9 reference (full
+> details in [`CHANGELOG.md`](CHANGELOG.md)). For the inputs recorded from
+> the Python test suite, the Rust port still produces the same IR, the same
+> conversion report and a **byte-identical `.docx`**, except seven recorded
+> equations that Python dumped as raw LaTeX and the Rust engine now
+> converts. See [Parity with Python](#parity-with-python).
 
 ## Install
 
@@ -78,9 +82,11 @@ Everything the Python 1.0.9 core install converts, including:
   with auto-numbered multilevel headings, `\appendix`, book/report classes,
   running heads, multi-column layout with full-width starred floats.
 - **Math**: inline and display math, `equation`/`align`/`gather`/`cases`/
-  matrices as native OMML, with live `SEQ Equation` numbers; a fallback cascade
-  (image via TeX + dvipng with `--math-image-fallback`, then raw LaTeX)
-  recorded per equation in the report.
+  matrices as native OMML, with live `SEQ Equation` numbers; the full
+  amsmath/amssymb symbol set (`\boxed`, `\not`, `\bigl…\bigr` stretching
+  delimiters, `\lvert`/`\lVert`, `\prescript`/`\sideset`, …); a fallback
+  cascade (image via TeX + dvipng with `--math-image-fallback`, then raw
+  LaTeX) recorded per equation in the report.
 - **Live fields**: `\ref`/`\eqref`/`\pageref`/`\cref`/`\autoref`/`\nameref`,
   `SEQ` captions, `\tableofcontents`/`\listoffigures`/`\listoftables`,
   `\index`/`\printindex`, footnotes and endnotes.
