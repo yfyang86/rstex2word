@@ -794,7 +794,7 @@ impl<'r> DocumentWriter<'r> {
             }
         } else if block.image.is_none() {
             // no convertible graphic: try compiling TikZ, else caption-only
-            if let Some(rendered) = self.render_tikz(block) {
+            for rendered in self.render_tikz(block) {
                 content.append(rendered);
             }
         } else if let Some(img) = &block.image {
@@ -816,42 +816,78 @@ impl<'r> DocumentWriter<'r> {
         body.append(sdt);
     }
 
-    /// Compile a figure's TikZ/PGF source to an embedded PNG, or `None`.
-    fn render_tikz(&mut self, block: &Figure) -> Option<Element> {
+    /// Compile a figure's TikZ/PGF pictures to embedded PNGs, one centred
+    /// paragraph per picture (stacked in source order); empty if none render.
+    fn render_tikz(&mut self, block: &Figure) -> Vec<Element> {
         if block.source.is_empty() {
-            return None;
+            return Vec::new();
         }
-        match tikz::render(&block.source, &self.preamble) {
-            None => {
-                let reason = if tikz::extract_picture(&block.source).is_none() {
-                    "no recognised TikZ/PGF picture in the figure"
-                } else if tikz::available_engines().is_empty() {
-                    "no TeX engine on PATH (install e.g. xelatex/pdflatex)"
-                } else if !raster::has_pdf_support() {
-                    "install tex2word[pdf] (pypdfium2) to rasterise the compiled figure"
+        let pictures = tikz::extract_pictures(&block.source);
+        let reason = if pictures.is_empty() {
+            Some("no recognised TikZ/PGF picture in the figure")
+        } else if tikz::available_engines().is_empty() {
+            Some("no TeX engine on PATH (install e.g. xelatex/pdflatex)")
+        } else if !raster::has_pdf_support() {
+            Some("install poppler (pdftoppm) to rasterise the compiled figure")
+        } else {
+            None
+        };
+        if let Some(reason) = reason {
+            self.report
+                .warn("figure", format!("TikZ figure not rendered: {reason}"));
+            return Vec::new();
+        }
+        let mut out: Vec<Element> = Vec::new();
+        let total = pictures.len();
+        for (k, picture) in pictures.iter().enumerate() {
+            let Some((data, w, h)) =
+                tikz::render_picture(picture, &block.source, &self.preamble, &self.base_dir)
+            else {
+                let which = if total > 1 {
+                    format!(" (picture {} of {total})", k + 1)
                 } else {
-                    "the TikZ compile failed (set TEX2WORD_TIKZ_DEBUG=1 to see the log)"
+                    String::new()
                 };
-                self.report
-                    .warn("figure", format!("TikZ figure not rendered: {reason}"));
-                None
-            }
-            Some((data, w, h)) => {
-                self.report
-                    .info("figure", "rendered TikZ figure to an image");
-                let mut p = styled_paragraph("Normal");
-                set_align(&mut p, "center");
-                let mut r = el("w:r", &[]);
-                let info = images::ImageInfo {
-                    fmt: "png".into(),
-                    width_px: w,
-                    height_px: h,
-                };
-                r.append(self.register_and_draw(&data, &info, "tikz.png", None, None));
-                p.append(r);
-                Some(p)
+                self.report.warn(
+                    "figure",
+                    format!(
+                        "TikZ figure not rendered{which}: the TikZ compile failed \
+                         (set TEX2WORD_TIKZ_DEBUG=1 to see the log)"
+                    ),
+                );
+                continue;
+            };
+            self.report
+                .info("figure", "rendered TikZ figure to an image");
+            let mut p = styled_paragraph("Normal");
+            set_align(&mut p, "center");
+            let mut r = el("w:r", &[]);
+            let info = images::ImageInfo {
+                fmt: "png".into(),
+                width_px: w,
+                height_px: h,
+            };
+            // the PNG is rasterised at DEFAULT_DPI: show it at its printed
+            // size, shrunk to the text width when wider
+            let physical = w * images::EMU_PER_INCH / i64::from(raster::DEFAULT_DPI);
+            let limit = physical.min(self.text_width_emu).max(1);
+            r.append(self.register_and_draw(&data, &info, "tikz.png", Some(limit), None));
+            p.append(r);
+            out.push(p);
+        }
+        if !out.is_empty() {
+            // the parser flagged this figure as having no convertible graphic
+            // before knowing a TeX engine would render it: retract that note
+            let stale = self.report.entries.iter().position(|e| {
+                e.severity == "warning"
+                    && e.construct == "figure"
+                    && e.message == "figure without convertible graphics (e.g. TikZ)"
+            });
+            if let Some(i) = stale {
+                self.report.entries.remove(i);
             }
         }
+        out
     }
 
     fn subfigures(&mut self, block: &Figure, body: &mut Element) {

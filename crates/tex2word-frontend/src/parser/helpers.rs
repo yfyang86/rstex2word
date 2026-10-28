@@ -494,6 +494,10 @@ pub(crate) fn is_ignore_macro(name: &str) -> bool {
             | "authornote"
             | "authornotemark"
             | "balance"
+            | "nobalance"
+            | "onecolumn"
+            | "twocolumn"
+            | "typeout"
             | "acmnote"
             | "institution"
             | "department"
@@ -1975,6 +1979,23 @@ pub(crate) fn font_cmd(preamble: &str, cmd: &str) -> Option<String> {
 }
 
 pub use tex2word_ir::pyos::today_text;
+
+/// Block-level bibliography commands; a `{\small ...}` group around them is
+/// descended into instead of being read as inline text.
+pub(crate) fn is_block_macro_node(node: &Node) -> bool {
+    matches!(
+        node.macroname(),
+        Some("bibliography" | "printbibliography" | "bibliographystyle")
+    )
+}
+
+/// Drawing environments compiled as pictures (`tikzpicture` & co.).
+pub(crate) fn is_drawing_env(name: &str) -> bool {
+    matches!(
+        name,
+        "tikzpicture" | "pgfpicture" | "circuitikz" | "tikzcd" | "forest" | "pspicture"
+    )
+}
 
 #[cfg(test)]
 mod tests {

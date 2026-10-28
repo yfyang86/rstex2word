@@ -62,6 +62,12 @@ pub fn build_context(
         m("hl", "{"),
         m("href", "{{"),
         m("url", "{"),
+        // url package: verbatim paths without a link
+        m("path", "{"),
+        m("nolinkurl", "{"),
+        // console/layout commands whose argument must not leak into the text
+        m("typeout", "{"),
+        m("twocolumn", "["),
         m("hyperref", "[{"),
         m("multicolumn", "{{{"),
         m("multirow", "{{{"),
@@ -439,6 +445,13 @@ fn collect_bib_resources(preamble: &str, builder: &mut Builder) {
 /// no `\bibliographystyle` set it.
 fn detect_bib_style(preamble: &str, builder: &mut Builder) {
     if builder.bibstyle_set {
+        // natbib's `numbers` option makes citations numeric whatever the
+        // (natbib-compatible) .bst, e.g. [numbers]{natbib} + plainnat
+        if let Some(nb) = NATBIB_RE.search(preamble) {
+            if NUMBERS_RE.is_match(&pystr::lower(nb.group_str(1))) {
+                builder.bib_style = "numeric".into();
+            }
+        }
         return;
     }
     const AY: &[&str] = &[

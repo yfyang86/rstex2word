@@ -87,6 +87,33 @@ fn png_size(data: &[u8]) -> Option<(i64, i64)> {
     Some((w, h))
 }
 
+/// A fresh private directory for one rasterisation; the caller removes it.
+/// Output never lands next to the source figure (that is the user's tree).
+fn scratch_dir() -> Option<std::path::PathBuf> {
+    static SEQ: std::sync::atomic::AtomicU64 = std::sync::atomic::AtomicU64::new(0);
+    let seq = SEQ.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
+    let dir = std::env::temp_dir().join(format!("tex2word-raster-{}-{seq}", std::process::id()));
+    std::fs::create_dir_all(&dir).ok()?;
+    Some(dir)
+}
+
+/// Run `cmd` (which writes `out`), read the PNG back, drop the scratch dir.
+fn read_png(
+    cmd: Command,
+    dir: &std::path::Path,
+    out: &std::path::Path,
+) -> Option<(Vec<u8>, i64, i64)> {
+    let png = if run_quiet(cmd) {
+        std::fs::read(out).ok()
+    } else {
+        None
+    };
+    let _ = std::fs::remove_dir_all(dir);
+    let png = png?;
+    let (w, h) = png_size(&png)?;
+    Some((png, w, h))
+}
+
 fn run_quiet(mut cmd: Command) -> bool {
     cmd.stdin(std::process::Stdio::null());
     cmd.stdout(std::process::Stdio::null());
@@ -98,22 +125,16 @@ fn run_quiet(mut cmd: Command) -> bool {
 pub fn rasterize_pdf(path: &str, dpi: u32) -> Option<(Vec<u8>, i64, i64)> {
     match pdf_backend()? {
         PdfBackend::Pdftoppm => {
-            let dir = std::path::Path::new(path).parent()?;
-            let base = dir.join(format!("tw-raster-{}", std::process::id()));
-            let mut cmd = Command::new(which("pdftoppm")?);
+            let exe = which("pdftoppm")?;
+            let dir = scratch_dir()?;
+            let mut cmd = Command::new(exe);
             cmd.arg("-png")
                 .arg("-r")
                 .arg(dpi.to_string())
                 .arg("-singlefile")
                 .arg(path)
-                .arg(&base);
-            if !run_quiet(cmd) {
-                return None;
-            }
-            let png =
-                std::fs::read(dir.join(format!("tw-raster-{}.png", std::process::id()))).ok()?;
-            let (w, h) = png_size(&png)?;
-            Some((png, w, h))
+                .arg(dir.join("page"));
+            read_png(cmd, &dir, &dir.join("page.png"))
         }
         #[cfg(target_os = "macos")]
         PdfBackend::Sips => {
@@ -122,10 +143,11 @@ pub fn rasterize_pdf(path: &str, dpi: u32) -> Option<(Vec<u8>, i64, i64)> {
             // (typical figure ≈ 6in wide → dpi × 6 px). The destination must
             // go through `--out`: positionally it is read as a second input,
             // and sips still exits 0 without writing anything.
-            let dir = std::path::Path::new(path).parent()?;
-            let out = dir.join(format!("tw-raster-{}.png", std::process::id()));
+            let exe = which("sips")?;
+            let dir = scratch_dir()?;
+            let out = dir.join("page.png");
             let max_px = (dpi as u64).saturating_mul(6).clamp(72, 2400).to_string();
-            let mut cmd = Command::new(which("sips")?);
+            let mut cmd = Command::new(exe);
             cmd.arg("-s")
                 .arg("format")
                 .arg("png")
@@ -134,12 +156,7 @@ pub fn rasterize_pdf(path: &str, dpi: u32) -> Option<(Vec<u8>, i64, i64)> {
                 .arg(path)
                 .arg("--out")
                 .arg(&out);
-            if !run_quiet(cmd) {
-                return None;
-            }
-            let png = std::fs::read(&out).ok()?;
-            let (w, h) = png_size(&png)?;
-            Some((png, w, h))
+            read_png(cmd, &dir, &out)
         }
     }
 }
@@ -149,9 +166,10 @@ pub fn rasterize(path: &str, fmt: &str, dpi: u32) -> Option<(Vec<u8>, i64, i64)>
     match fmt {
         "pdf" => rasterize_pdf(path, dpi),
         "eps" | "ps" if has_gs() => {
-            let dir = std::path::Path::new(path).parent()?;
-            let out = dir.join(format!("tw-raster-{}.png", std::process::id()));
-            let mut cmd = Command::new(which("gs")?);
+            let exe = which("gs")?;
+            let dir = scratch_dir()?;
+            let out = dir.join("page.png");
+            let mut cmd = Command::new(exe);
             cmd.arg("-dNOPAUSE")
                 .arg("-dBATCH")
                 .arg("-dSAFER")
@@ -161,12 +179,7 @@ pub fn rasterize(path: &str, fmt: &str, dpi: u32) -> Option<(Vec<u8>, i64, i64)>
                 .arg("-sOutputFile")
                 .arg(&out)
                 .arg(path);
-            if !run_quiet(cmd) {
-                return None;
-            }
-            let png = std::fs::read(&out).ok()?;
-            let (w, h) = png_size(&png)?;
-            Some((png, w, h))
+            read_png(cmd, &dir, &out)
         }
         _ => None,
     }
