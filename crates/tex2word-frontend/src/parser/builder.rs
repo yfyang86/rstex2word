@@ -86,6 +86,11 @@ pub(crate) struct Builder {
     labelable: Option<usize>,
     id: usize,
     labels: Vec<Option<String>>,
+    /// true while scanning inside a TikZ/PGF picture of a figure
+    in_picture: bool,
+    /// extra `\label`s on an already-labelled target -> the label it kept;
+    /// `\ref`s to them are redirected so every alias resolves
+    label_aliases: HashMap<String, String>,
     footmarks: Vec<Option<Vec<Inline>>>,
 }
 
@@ -121,6 +126,8 @@ impl Builder {
             labelable: None,
             id: BUILDER_IDS.fetch_add(1, Ordering::Relaxed),
             labels: Vec::new(),
+            in_picture: false,
+            label_aliases: HashMap::new(),
             footmarks: Vec::new(),
         }
     }
@@ -188,6 +195,15 @@ impl Builder {
 
     pub fn resolve_inlines(&self, inlines: &mut [Inline]) {
         for node in inlines.iter_mut() {
+            if let Inline::Ref(r) = node {
+                // follow alias chains (bounded: a cycle can't hang us)
+                for _ in 0..8 {
+                    match self.label_aliases.get(&r.key) {
+                        Some(k) if *k != r.key => r.key = k.clone(),
+                        _ => break,
+                    }
+                }
+            }
             if let Inline::Footnote(f) = node {
                 if let Some(n) = self.footmark_slot(f) {
                     f.inlines = self.footmarks[n].clone().unwrap_or_default();
@@ -475,6 +491,11 @@ impl Builder {
             let label = chars_of(&group_nodes(node));
             if let Some(n) = self.labelable {
                 if !label.is_empty() {
+                    if let Some(old) = self.labels[n].take() {
+                        if old != label {
+                            self.label_aliases.insert(old, label.clone());
+                        }
+                    }
                     self.labels[n] = Some(label);
                 }
             }
@@ -485,6 +506,17 @@ impl Builder {
         }
         if name == "href" || name == "url" {
             self.inline_link(node, out);
+            return;
+        }
+        if name == "path" || name == "nolinkurl" {
+            // url-package path: monospace text, no hyperlink
+            let text = chars_of(&group_nodes(node));
+            if !text.is_empty() {
+                out.push(Inline::Emphasis(Emphasis {
+                    inlines: vec![Inline::text(text)],
+                    kind: "typewriter".into(),
+                }));
+            }
             return;
         }
         if name == "hyperref" {
@@ -948,7 +980,11 @@ impl Builder {
                     continue;
                 }
                 // a bare {...} group wrapping a block environment -> descend
-                NodeKind::Group { nodelist, .. } if nodelist.iter().any(Node::is_environment) => {
+                NodeKind::Group { nodelist, .. }
+                    if nodelist
+                        .iter()
+                        .any(|n| n.is_environment() || is_block_macro_node(n)) =>
+                {
                     flush(&mut inline_buf, &mut scope_marks, &mut out);
                     let inner = self.blocks(nodelist);
                     out.extend(inner);
@@ -961,8 +997,16 @@ impl Builder {
                     let label = chars_of(&group_nodes(node));
                     // don't overwrite a label the target already captured
                     if let Some(n) = self.labelable {
-                        if !label.is_empty() && self.labels[n].is_none() {
-                            self.labels[n] = Some(label);
+                        if !label.is_empty() {
+                            match &self.labels[n] {
+                                None => self.labels[n] = Some(label),
+                                // a second \label on the same target (e.g. a
+                                // heading with several keys) becomes an alias
+                                Some(kept) if *kept != label => {
+                                    self.label_aliases.insert(label, kept.clone());
+                                }
+                                Some(_) => {}
+                            }
                         }
                     }
                     continue;
@@ -1846,6 +1890,13 @@ impl Builder {
                     if environmentname.trim_end_matches('*') == "subfigure" {
                         let s = self.subfigure_from_env(child);
                         fig.subfigures.push(s);
+                    } else if is_drawing_env(environmentname) {
+                        // a picture's own \label/\caption (e.g. a `\foreach
+                        // \label/\value in ...` loop variable) are not the
+                        // figure's; graphics inside nodes still count
+                        let prev = std::mem::replace(&mut self.in_picture, true);
+                        self.collect_figure_parts(nodelist, fig, panels.as_deref_mut());
+                        self.in_picture = prev;
                     } else {
                         self.collect_figure_parts(nodelist, fig, panels.as_deref_mut());
                     }
@@ -1870,6 +1921,7 @@ impl Builder {
                             });
                         }
                     }
+                    "caption" | "captionof" | "label" if self.in_picture => {}
                     "caption" | "captionof" => {
                         let cap = self.inlines(&group_nodes(child));
                         let numbered = !has_star(child);

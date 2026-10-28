@@ -10,13 +10,15 @@ has **no crate dependencies**: the XML parser, ZIP container, zlib-compatible
 compressor, regex engine, LaTeX walker and the LaTeX→OMML math engine are all
 in the workspace.
 
-> **Version 2.1.0.** The math engine now covers the standard LaTeX +
-> amsmath + amssymb symbol set beyond the Python 1.0.9 reference (full
-> details in [`CHANGELOG.md`](CHANGELOG.md)). For the inputs recorded from
-> the Python test suite, the Rust port still produces the same IR, the same
-> conversion report and a **byte-identical `.docx`**, except seven recorded
-> equations that Python dumped as raw LaTeX and the Rust engine now
-> converts. See [Parity with Python](#parity-with-python).
+> **Version 2.2.0.** TikZ-heavy papers convert cleanly: every picture of a
+> figure is compiled (also from `\input` files and stacked in one
+> `figure*`), nested `\input` paths resolve as in TeX, and `\path`,
+> multi-`\label` headings and two-column end matter are handled. 2.1.0
+> extended the math engine beyond the Python 1.0.9 reference. For the inputs
+> recorded from the Python test suite, the Rust port still produces the same
+> IR, the same conversion report and a **byte-identical `.docx`**, except a
+> few documented improvements. See [Parity with Python](#parity-with-python)
+> and [`CHANGELOG.md`](CHANGELOG.md).
 
 ## Install
 
@@ -92,6 +94,10 @@ Everything the Python 1.0.9 core install converts, including:
   `\index`/`\printindex`, footnotes and endnotes.
 - **Tables, figures, algorithms**: `tabular`/`longtable`/booktabs with spans,
   sub-figures, box-built figures, `algorithm`/`algorithmic`/`algorithm2e`.
+- **TikZ and vector figures** (with system tools, see below): every
+  `tikzpicture`/`pgfpicture`/`circuitikz`/`tikzcd`/`forest` in a figure is
+  compiled with TeX and embedded as an image at its printed size; PDF and
+  EPS figures are rasterised.
 - **Citations**: BibTeX and `.bbl` bibliographies, numeric and author-year
   styles, `\nocite`, and live Zotero/Mendeley fields.
 - **Macros and packages**: `\newcommand`/`\def`/`\newenvironment`, local
@@ -124,13 +130,30 @@ zlib 1.3):
   malformed XML (2,250 cases), zlib's compressed output, `validate_docx`, the
   report helpers and the CLI.
 
+**Figures through system tools.** Where the Python reference needs its
+optional `pdf` extra (pypdfium2), Rust drives tools that are usually already
+installed with TeX:
+
+| figure | needs |
+|--------|-------|
+| TikZ/PGF pictures | a TeX engine (`pdflatex`, `xelatex` or `lualatex`) with TikZ and `standalone`, plus `pdftoppm` (poppler) |
+| PDF figures | `pdftoppm` (on macOS `sips` is a fallback) |
+| EPS/PS figures | Ghostscript (`gs`) |
+
+pdflatex documents compile their pictures with pdflatex and the paper's text
+font; documents using `fontspec`/`unicode-math`/`polyglossia` prefer xelatex
+or lualatex. Without the tools a figure degrades to its caption plus a report
+warning. On Debian/Ubuntu:
+`apt install texlive-latex-extra texlive-pictures texlive-fonts-recommended poppler-utils`.
+`TEX2WORD_NO_EXTERNAL_TOOLS=1` hides all of them (the golden suite uses it);
+`TEX2WORD_TIKZ_DEBUG=1` keeps the TikZ compile directory and prints the log.
+
 **Not ported** (they need the optional Python extras, and Rust behaves like
-the core install without them): rasterizing PDF figures and TikZ output
-(pypdfium2), the CSL engine for `--csl` (citeproc-py; the built-in formatter
-is used with the same warning), the LaTeX→MathML secondary math path
-(latex2mathml), matplotlib math images, and `render_check` (LibreOffice +
-pypdfium2). External tools are used exactly as in Python: TeX engines for
-TikZ, `latexml` for `--frontend latexml`, and `latex` + `dvipng` for math
+the core install without them): the CSL engine for `--csl` (citeproc-py; the
+built-in formatter is used with the same warning), the LaTeX→MathML
+secondary math path (latex2mathml), matplotlib math images, and
+`render_check` (LibreOffice + pypdfium2). External tools are used as in
+Python: `latexml` for `--frontend latexml`, and `latex` + `dvipng` for math
 images.
 
 Where Python would crash with a traceback, the Rust CLI prints one
@@ -162,10 +185,16 @@ See [`DEVELOPMENT.md`](DEVELOPMENT.md) for the architecture and test workflow,
 ## Testing
 
 ```bash
-cargo test --workspace            # unit, API and golden parity tests
+cargo test --workspace            # unit, API, acceptance and golden parity tests
 cargo clippy --workspace --all-targets
 cargo fmt --all --check
 ```
+
+`crates/tex2word/tests/tikz_paper.rs` is the acceptance test for TikZ-heavy
+papers: a synthetic fixture always runs (it checks the rendered figures when
+TeX + poppler are present, the graceful path otherwise; `T2W_REQUIRE_TIKZ=1`
+makes missing tools an error). To also run it on arXiv:2610.32813, extract
+the paper's e-print and set `T2W_UAT_ARXIV_2610_32813` to that directory.
 
 ## License
 

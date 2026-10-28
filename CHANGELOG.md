@@ -7,6 +7,73 @@ tracks the reference implementation and shares its version numbers; see
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 2.2.0 — 2026-10-28 — TikZ-heavy papers
+
+Driven by arXiv:2610.32813, a two-column paper whose figures are TikZ files
+pulled in with `\input` — a pattern that is getting common as authors draw
+figures with AI help. 2.1.0 converted it with 32 warnings, lost one of the
+two stacked pictures in a figure, dropped two tables and left four broken
+references. 2.2.0 converts it with **0 warnings**: all six figures render,
+including both stacked TikZ pictures, and every reference resolves.
+
+### Fixed
+
+- **Every TikZ picture in a figure renders.** A `figure*` holding two
+  `\input` TikZ files used to compile only the first; each picture now gets
+  its own image, stacked in source order. Pictures nested in a node stay
+  part of their outer picture.
+- **TikZ text uses the paper's font.** A pdflatex document (no
+  `fontspec`/`unicode-math`/`polyglossia`, ASCII picture) now compiles with
+  pdflatex and keeps its text-font packages (`times`, `newtx*`, `lmodern`,
+  `fontenc`, …), so labels no longer overflow their boxes in Latin Modern.
+  Unicode documents still prefer xelatex/lualatex, now also keeping
+  `fontspec`/`xeCJK` (a pattern bug inherited from the reference dropped
+  them). If one engine fails, the next is tried.
+- **TikZ images keep their printed size**, shrunk only when wider than the
+  text column (they used to be blown up to 96-dpi pixel size, then capped).
+- Figure-local `\definecolor`/`\tikzset`/`\colorlet` lines that sit outside
+  the picture (e.g. just before an `\input`) reach the TikZ compile, and the
+  document's directory is on `TEXINPUTS` so pictures can `\input` files.
+- A picture's own `\label` (e.g. the `\foreach \label/\value in …` loop
+  variable) no longer replaces the figure's label.
+- When a TikZ figure renders, the parser's "figure without convertible
+  graphics (e.g. TikZ)" warning is withdrawn instead of contradicting the
+  output.
+- **Nested `\input` paths resolve like TeX**: relative to the main
+  document's directory first, then to the including file's directory.
+  `generated/a.tex` doing `\input{generated/b}` used to look for
+  `generated/generated/b` and silently drop the table it held.
+- `\protect\input{caption-file}` no longer glues the file's first word onto
+  the control word (`\protectQuality` was reported as an unknown macro and
+  the caption text lost).
+- A heading with several `\label`s (`\label{sec:a}\label{sec:b}`) resolves
+  references to every one of them, not only the first.
+- `{\small \bibliographystyle{…}\bibliography{…}}` — a bibliography inside a
+  font-size group — is now found; natbib's `[numbers]` option wins over an
+  author-year `.bst` such as `plainnat`, as in LaTeX.
+- Rasterising a PDF/EPS figure no longer leaves `tw-raster-<pid>.png` files
+  next to the source figure; it works in a private temp directory.
+
+### Added
+
+- url package `\path{…}` and `\nolinkurl{…}` render as monospace text.
+- `\onecolumn`, `\twocolumn[…]`, `\nobalance` and `\typeout{…}` are
+  accepted silently instead of being reported as unsupported.
+- Acceptance tests (`crates/tex2word/tests/tikz_paper.rs`): a synthetic
+  MIT-licensed fixture paper that reproduces all of the above, checked in
+  CI with and without TeX, and an opt-in run on the real arXiv:2610.32813
+  source (arXiv's license does not allow vendoring it):
+  `T2W_UAT_ARXIV_2610_32813=<extracted e-print> cargo test -p tex2word --test tikz_paper`.
+- CI job `tikz` installs TeX Live + poppler and requires the figures to
+  render (`T2W_REQUIRE_TIKZ=1`).
+
+### Golden parity
+
+One recorded `parse_document` case changes on purpose: `\twocolumn` was a
+raw "unsupported macro" passthrough and is now accepted silently. The goldens
+pin a machine without external tools (`TEX2WORD_NO_EXTERNAL_TOOLS`), so the
+TikZ work leaves every recorded `.docx` byte-identical.
+
 ## 2.1.0 — 2026-10-27 — math coverage beyond the 1.0.9 reference
 
 The math engine now covers the standard LaTeX + amsmath + amssymb symbol set
@@ -67,6 +134,20 @@ with `T2W_GOLDEN_UPDATE=1 cargo test -p tex2word-goldens` (the update modes
 only touch `docx` parts / report digests; IR parity is still asserted
 first). `gen_math_tables.py` preserves the hand-written `EXTENSIONS`
 sections of `symbols.rs` when regenerating from a future Python reference.
+
+## 2.0.1 — figures through system tools
+
+(Shipped inside the 2.1.0 release; recorded here for completeness.)
+
+- PDF figures are rasterised with `pdftoppm` (poppler; `sips` on macOS),
+  EPS/PS with Ghostscript, where the Python reference needs its optional
+  pypdfium2 extra.
+- TikZ/PGF pictures compile with the first TeX engine on `PATH` into a
+  cropped `standalone` PDF that is then rasterised.
+- `TEX2WORD_NO_EXTERNAL_TOOLS=1` hides all external tools (the golden suite
+  uses it to pin the Python core-install behavior);
+  `TEX2WORD_TIKZ_DEBUG=1` keeps the TikZ compile directory and prints the
+  engine log.
 
 ## 2.0.0 — a faithful port of tex2word 1.0.9
 

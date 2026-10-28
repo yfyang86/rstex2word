@@ -7,6 +7,8 @@ engagement (branching, commits, review), see [`CONTRIBUTING.md`](CONTRIBUTING.md
 
 - Rust **1.82 or newer** (the workspace MSRV), via [rustup](https://rustup.rs).
 - Nothing else to build or test: no system libraries, no network, no crates.
+  Optional: TeX Live + poppler for the TikZ/PDF figure paths (see
+  [Acceptance tests](#acceptance-tests-and-external-tools)).
 - To re-record goldens: the Python reference checked out next to this repo
   and a Python 3.12 environment with `tex2word` installed without extras (see
   [Goldens](#goldens)).
@@ -117,6 +119,20 @@ Unicode tables and the backend data (`gen_latex2text_specs.py`,
 
 Recordings freeze the clock: `\today` is January 2, 2026 and
 `SOURCE_DATE_EPOCH=1767312000`; the tests set the same values.
+
+## Acceptance tests and external tools
+
+`crates/tex2word/tests/tikz_paper.rs` converts `tests/fixtures/tikz_paper`, a
+synthetic paper with the constructs of TikZ-heavy arXiv papers. It always
+runs; with a TeX engine and `pdftoppm` on `PATH` it also checks that every
+figure renders (CI's `tikz` job installs them and sets `T2W_REQUIRE_TIKZ=1`
+so missing tools fail the job). Set `T2W_UAT_ARXIV_2610_32813` to an
+extracted copy of arXiv:2610.32813 to run the same checks on the real paper;
+its license does not allow keeping it in the repository.
+
+The golden tests set `TEX2WORD_NO_EXTERNAL_TOOLS=1`, so they never depend on
+the tools installed on the machine. `TEX2WORD_TIKZ_DEBUG=1` keeps each TikZ
+compile directory and prints the engine log.
 
 ## Changing behavior
 

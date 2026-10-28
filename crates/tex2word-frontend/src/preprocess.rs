@@ -38,11 +38,37 @@ pub fn strip_comments(source: &str) -> String {
 }
 
 /// Inline `\input`/`\include` (and import-package `\import`) files.
+///
+/// As in TeX, an `\input` path is relative to the main document's directory,
+/// also inside nested files; the including file's own directory is tried
+/// next, for projects that rely on that.
 pub fn flatten_inputs(source: &str, base_dir: &str) -> io::Result<String> {
-    flatten_inputs_depth(source, base_dir, 0)
+    flatten_inputs_depth(source, base_dir, base_dir, 0)
 }
 
-fn flatten_inputs_depth(source: &str, base_dir: &str, depth: usize) -> io::Result<String> {
+/// True if `source[..at]` ends in a control word (`\protect`), whose name
+/// would otherwise swallow text inlined right after it.
+fn ends_in_control_word(source: &str, at: usize) -> bool {
+    let head = &source.as_bytes()[..at];
+    let letters = head
+        .iter()
+        .rev()
+        .take_while(|b| b.is_ascii_alphabetic())
+        .count();
+    if letters == 0 || letters >= head.len() {
+        return false;
+    }
+    let slash = head.len() - letters - 1;
+    // `\\name` is a line break followed by text, not a control word
+    head[slash] == b'\\' && (slash == 0 || head[slash - 1] != b'\\')
+}
+
+fn flatten_inputs_depth(
+    source: &str,
+    root_dir: &str,
+    base_dir: &str,
+    depth: usize,
+) -> io::Result<String> {
     if depth > 20 {
         return Ok(source.to_string());
     }
@@ -57,13 +83,21 @@ fn flatten_inputs_depth(source: &str, base_dir: &str, depth: usize) -> io::Resul
         } else {
             dir
         };
-        flatten_inputs_depth(&inner, &dir, depth + 1).map(Some)
+        flatten_inputs_depth(&inner, root_dir, &dir, depth + 1).map(Some)
     };
     let candidates = |name: &str| -> Vec<String> {
         if name.ends_with(".tex") {
             vec![name.to_string()]
         } else {
             vec![name.to_string(), format!("{name}.tex")]
+        }
+    };
+    // keep `\protect\input{x}` from gluing into `\protectText`
+    let separate = |src: &str, m: &re::Match, text: String| -> String {
+        if ends_in_control_word(src, m.start()) && !text.starts_with(char::is_whitespace) {
+            format!(" {text}")
+        } else {
+            text
         }
     };
     let mut err: Option<io::Error> = None;
@@ -73,7 +107,7 @@ fn flatten_inputs_depth(source: &str, base_dir: &str, depth: usize) -> io::Resul
         let name = pystr::strip(m.group_str(2));
         for cand in candidates(name) {
             match inline(&pyos::join(base_dir, &[directory, &cand])) {
-                Ok(Some(text)) => return text,
+                Ok(Some(text)) => return separate(source, m, text),
                 Ok(None) => {}
                 Err(e) => {
                     err.get_or_insert(e);
@@ -83,15 +117,21 @@ fn flatten_inputs_depth(source: &str, base_dir: &str, depth: usize) -> io::Resul
         }
         String::new()
     });
+    let mut dirs = vec![root_dir];
+    if base_dir != root_dir {
+        dirs.push(base_dir);
+    }
     let out = INPUT_RE.sub_fn(&source, |m| {
         let name = pystr::strip(m.group_str(1));
-        for cand in candidates(name) {
-            match inline(&pyos::join2(base_dir, &cand)) {
-                Ok(Some(text)) => return text,
-                Ok(None) => {}
-                Err(e) => {
-                    err.get_or_insert(e);
-                    return String::new();
+        for dir in &dirs {
+            for cand in candidates(name) {
+                match inline(&pyos::join2(dir, &cand)) {
+                    Ok(Some(text)) => return separate(&source, m, text),
+                    Ok(None) => {}
+                    Err(e) => {
+                        err.get_or_insert(e);
+                        return String::new();
+                    }
                 }
             }
         }
@@ -710,6 +750,38 @@ mod tests {
             replace_inline_tikz(r"see \tikz\node[circle]{3}; here"),
             "see ③ here"
         );
+    }
+
+    #[test]
+    fn control_word_detection() {
+        assert!(ends_in_control_word(r"x\protect", 9));
+        assert!(!ends_in_control_word("x protect", 9));
+        assert!(!ends_in_control_word(r"x\\protect", 10)); // \\ + text
+        assert!(!ends_in_control_word("", 0));
+    }
+
+    #[test]
+    fn nested_inputs_resolve_like_tex() {
+        let dir = std::env::temp_dir().join(format!("t2w-flatten-{}", std::process::id()));
+        let gen = dir.join("generated");
+        std::fs::create_dir_all(&gen).unwrap();
+        // generated/outer.tex inputs generated/inner (relative to the main
+        // file, as TeX does) and a sibling by its bare name (fallback)
+        std::fs::write(
+            gen.join("outer.tex"),
+            "A \\input{generated/inner} \\input{sibling}",
+        )
+        .unwrap();
+        std::fs::write(gen.join("inner.tex"), "B").unwrap();
+        std::fs::write(gen.join("sibling.tex"), "C").unwrap();
+        std::fs::write(gen.join("cap.tex"), "Quality").unwrap();
+        let base = dir.to_str().unwrap();
+        let out = flatten_inputs(r"\input{generated/outer}", base).unwrap();
+        assert_eq!(out, "A B C");
+        // \protect\input{x} must not glue into \protectQuality
+        let out = flatten_inputs(r"\caption{\protect\input{generated/cap}}", base).unwrap();
+        assert_eq!(out, r"\caption{\protect Quality}");
+        let _ = std::fs::remove_dir_all(&dir);
     }
 
     #[test]
