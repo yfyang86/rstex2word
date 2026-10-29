@@ -7,6 +7,73 @@ tracks the reference implementation and shares its version numbers; see
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 2.3.0 — 2026-10-29 — amsart manuscripts: tables, captions and formulas
+
+Driven by a 32-page `amsart` economics manuscript (behavioural model,
+Monte Carlo tables, TikZ and PDF figures). 2.2.0 converted it with 63
+warnings, left raw citation keys and `??` in every table that cited a
+source, printed `startsection…\baselineskip…` before each run-in heading,
+dumped the landscape results table's caption as raw LaTeX, and its
+formulas showed dotted placeholder boxes under every `\sum`. 2.3.0
+converts it with **0 warnings**, no raw keys, no `??`, and every formula
+renders.
+
+### Fixed
+
+- **Citations and cross-references inside tables, captions and
+  theorem-like blocks resolve.** `\citet{…}` in a table cell came out as the
+  bare key and `Section~\ref{…}` as `??`; the same for figure/table
+  captions and `\newtheorem` environments (and text inside
+  `\textcolor`/size switches). Inherited from the Python reference, whose
+  passes only walked paragraphs, headings, lists and figure bodies.
+- **Sums and integrals own their operand.** `\sum_{i} e_i\,\sigma` emitted
+  the operator with an empty body followed by the terms — Word draws an
+  empty body as a dotted placeholder box. The operand (up to the next `+`,
+  `−`, relation, comma or wide space at the same level, brackets balanced)
+  now sits inside the operator, nested sums included.
+- **Minus is a minus sign.** `-` in math is U+2212 (as TeX sets it), not a
+  hyphen; inside `\text{…}` it stays a hyphen. Reading a `.docx` back maps
+  it to `-`.
+- **`\\[2pt]` row spacing** in `cases`/`matrix`/`aligned` rows and between
+  `align` lines no longer leaks as `[2pt]` (also `\\*`).
+- **Words in math are one run.** `\mathrm{Beta}`, `\operatorname{…}` and
+  `\DeclareMathOperator` names were emitted letter by letter (shown spaced
+  out in some viewers, read back as italic letters); they are one upright
+  run, and come back as `\mathrm{Beta}`.
+- Digits, brackets, punctuation and `+`/`−` in math are plain math runs
+  rather than "normal text": Word gives binary operators their spacing, and
+  LibreOffice no longer shows brackets as `\(`. Relations, and an operator
+  alone in a slot (`x^{+}`), keep the normal-text flag LibreOffice needs.
+- `\def\paragraph{\@startsection…}` (or any structural command redefined
+  through LaTeX internals in a `\makeatletter` block) no longer replaces the
+  parser's native heading with raw markup.
+- A landscape table — `\rotatebox{90}{\begin{minipage}…\captionof{table}{…}
+  \label{…}…tabular…}` inside a `table` float — keeps its caption, label
+  and rows; `\rotatebox` is transparent elsewhere too.
+- The "image not embedded" warning names the tool to install (poppler's
+  `pdftoppm`, or Ghostscript for EPS) instead of the Python package extra.
+
+### Added
+
+- amsart `\subjclass[…]{…}` prints as "*JEL classification:* D91, …" (the
+  label from `\@namedef{subjclassname@JEL}{…}`, or amsart's
+  "Mathematics Subject Classification").
+- makecell `\makecell[…]{a\\b}` and `\thead` render as multi-line cells.
+- Acceptance tests (`crates/tex2word/tests/amsart_paper.rs`): a synthetic
+  MIT-licensed amsart fixture covering all of the above (on 2.2.0 it shows
+  every one of these defects), and an opt-in run on the original manuscript
+  (`T2W_UAT_SCISSORS=<dir>`). CI's figure job now runs both acceptance
+  suites.
+
+### Golden parity
+
+The math changes alter the OMML of every recorded conversion with sums,
+minus signs, digits or brackets in math (67 `.docx` files, 15 `omml_inline`
+function rows, and the reverse-path digests that read that OMML back). Their
+IR and reports are unchanged and still match Python; the expected values
+were regenerated with `T2W_GOLDEN_UPDATE=1`. One recorded report changes its
+missing-rasteriser hint.
+
 ## 2.2.0 — 2026-10-28 — TikZ-heavy papers
 
 Driven by arXiv:2610.32813, a two-column paper whose figures are TikZ files

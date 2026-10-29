@@ -714,8 +714,14 @@ fn local_package_sources_depth(
 pub fn expand_macros(source: &str, base_dir: &str) -> String {
     let mut merged = load_local_package_macros(source, base_dir, &mut HashSet::new(), 0);
     let (macros, stripped) = collect_macros(source);
-    // document-body definitions take precedence over package definitions
-    merged.extend(macros);
+    // document-body definitions take precedence over package definitions,
+    // except a redefinition of a structural command through LaTeX internals
+    // (`\def\paragraph{\@startsection...}` in a \makeatletter block): the
+    // parser handles those natively, and expanding the body would turn every
+    // heading into raw markup
+    merged.extend(macros.into_iter().filter(|(_, m)| {
+        !(PROTECTED_NAMES.contains(&m.name.as_str()) && AT_COMMAND_RE.is_match(&m.body))
+    }));
     expand(&stripped, &merged)
 }
 

@@ -991,10 +991,14 @@ impl<'r> DocumentWriter<'r> {
                     Some(image),
                 ));
             }
+            // name the system tool that would embed it (the Python
+            // reference points at its `pdf` extra instead)
             let hint = if fmt == "pdf" && !raster::has_pdf_support() {
-                "install tex2word[pdf]".to_string()
+                "install poppler (pdftoppm) to embed PDF figures".to_string()
+            } else if fmt != "pdf" && !raster::has_gs() {
+                "install Ghostscript (gs) to embed EPS figures".to_string()
             } else {
-                format!("{fmt} rasterisation not supported")
+                format!("{fmt} rasterisation failed")
             };
             self.report.warn(
                 "includegraphics",

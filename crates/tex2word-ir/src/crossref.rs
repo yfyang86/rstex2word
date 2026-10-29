@@ -169,6 +169,13 @@ fn collect(blocks: &[Block], labels: &mut Dict<LabelInfo>) {
             Block::Quote(q) => collect(&q.blocks, labels),
             Block::Theorem(t) => collect(&t.blocks, labels),
             Block::Figure(f) if !f.blocks.is_empty() => collect(&f.blocks, labels),
+            Block::Table(t) => {
+                for row in &t.rows {
+                    for cell in &row.cells {
+                        collect(&cell.blocks, labels);
+                    }
+                }
+            }
             Block::ItemList(list) => {
                 for item in &list.items {
                     if let Some(label) = item.label.as_deref().filter(|l| !l.is_empty()) {
@@ -233,6 +240,7 @@ fn rewrite_inlines(
             Inline::Footnote(n) => rewrite_inlines(&mut n.inlines, labels, report),
             Inline::Colored(n) => rewrite_inlines(&mut n.inlines, labels, report),
             Inline::FontSize(n) => rewrite_inlines(&mut n.inlines, labels, report),
+            Inline::Endnote(n) => rewrite_inlines(&mut n.inlines, labels, report),
             _ => {}
         }
     }
@@ -253,6 +261,13 @@ fn rewrite_blocks(blocks: &mut [Block], labels: &Dict<LabelInfo>, report: &mut C
             Block::Table(t) => {
                 if let Some(cap) = t.caption.as_mut().filter(|c| !c.is_empty()) {
                     rewrite_inlines(cap, labels, report);
+                }
+                // references inside cells (e.g. a "Basis" column citing
+                // Section~\ref{...}) resolve like body text
+                for row in t.rows.iter_mut() {
+                    for cell in row.cells.iter_mut() {
+                        rewrite_blocks(&mut cell.blocks, labels, report);
+                    }
                 }
             }
             Block::Figure(f) => {

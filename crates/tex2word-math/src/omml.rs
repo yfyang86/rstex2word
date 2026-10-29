@@ -57,7 +57,46 @@ pub fn tag_cjk_runs(root: &mut Element, east_asia_font: &str) {
 // Leaf runs
 // --------------------------------------------------------------------------- //
 
+/// Characters Word sets upright in a math run without any styling.
+fn plain_math_char(c: char) -> bool {
+    c.is_ascii_digit()
+        || matches!(
+            c,
+            '(' | ')'
+                | '['
+                | ']'
+                | '{'
+                | '}'
+                | '.'
+                | ','
+                | ';'
+                | '!'
+                | '\''
+                | '+'
+                | '/'
+                | '*'
+                | '\u{2212}'
+                | '±'
+                | '∓'
+                | '×'
+                | '·'
+                | '⋅'
+                | '∗'
+                | '′'
+                | '″'
+                | '|'
+                | '∣'
+                | '‖'
+        )
+}
+
 fn run(text: &str, upright: bool, bold: bool, script: Option<&str>) -> Element {
+    // digits, brackets, punctuation and binary + − are upright in math
+    // anyway; as normal text (`m:nor`) they lose Word's operator spacing and
+    // LibreOffice shows the brackets as `\(`. Relations keep `m:nor`:
+    // LibreOffice's importer rejects a relation without a left operand (an
+    // aligned `&= ...` cell).
+    let upright = upright && !text.chars().all(plain_math_char);
     let mut r = el("m:r", &[]);
     if upright || bold || script.is_some() {
         let rpr = sub(&mut r, "m:rPr", &[]);
@@ -101,10 +140,37 @@ fn emit_row(r: &Row) -> Vec<Element> {
     r.0.iter().flat_map(emit).collect()
 }
 
+/// A slot holding nothing but an operator (`x^{+}`, `x^{*}`) keeps it as
+/// normal text: an operator without operands is not an expression, and
+/// LibreOffice rejects it.
+fn lone_operator(nodes: &[MNode]) -> Option<Element> {
+    match nodes {
+        [MNode::Lit(l)]
+            if !l.text.is_empty() && l.text.chars().all(|c| "+\u{2212}±∓×·⋅∗*/".contains(c)) =>
+        {
+            let mut r = el("m:r", &[]);
+            let rpr = sub(&mut r, "m:rPr", &[]);
+            sub(rpr, "m:nor", &[]);
+            if l.bold {
+                sub(rpr, "m:sty", &[("m:val", "b")]);
+            }
+            let t = sub(&mut r, "m:t", &[]);
+            t.text = Some(l.text.clone());
+            preserve_space(t);
+            Some(r)
+        }
+        _ => None,
+    }
+}
+
 /// An OMML container element filled with the rendered node.
 fn fill(tag: &str, node: Option<&MNode>) -> Element {
     let mut c = el(tag, &[]);
     if let Some(n) = node {
+        if let Some(r) = lone_operator(std::slice::from_ref(n)) {
+            c.append(r);
+            return c;
+        }
         for child in emit(n) {
             c.append(child);
         }
@@ -114,6 +180,10 @@ fn fill(tag: &str, node: Option<&MNode>) -> Element {
 
 fn fill_row(tag: &str, row: &Row) -> Element {
     let mut c = el(tag, &[]);
+    if let Some(r) = lone_operator(&row.0) {
+        c.append(r);
+        return c;
+    }
     for child in emit_row(row) {
         c.append(child);
     }
@@ -434,7 +504,11 @@ pub fn render_block_lines(latex: &str, collapse_align: bool) -> Result<Vec<Eleme
     let cleaned = pystr::strip(&cleaned);
     let lines: Vec<String> = split_top_level(cleaned, "\\\\")
         .iter()
-        .map(|s| pystr::strip(s).to_string())
+        .enumerate()
+        .map(|(k, s)| {
+            let s = pystr::strip(s);
+            if k == 0 { s } else { strip_row_spacing(s) }.to_string()
+        })
         .filter(|l| !l.is_empty())
         .collect();
     if lines.is_empty() {
@@ -450,6 +524,20 @@ pub fn render_block_lines(latex: &str, collapse_align: bool) -> Result<Vec<Eleme
             Ok(omath(&L::parse(pystr::strip(&stripped))?))
         })
         .collect()
+}
+
+/// Drop the `*` / `[<dimen>]` left at the start of a line split on `\\`
+/// (`a \\[4pt] b`): row spacing, not content.
+fn strip_row_spacing(line: &str) -> &str {
+    let mut t = line.strip_prefix('*').unwrap_or(line).trim_start();
+    if let Some(rest) = t.strip_prefix('[') {
+        if let Some(close) = rest.find(']') {
+            if L::is_dimen(&rest[..close]) {
+                t = rest[close + 1..].trim_start();
+            }
+        }
+    }
+    t
 }
 
 /// `latex_to_omml(latex, display)`: an `m:oMathPara` of lines, or an inline

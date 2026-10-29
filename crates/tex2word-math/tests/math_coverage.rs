@@ -151,11 +151,49 @@ fn bare_big_renders_the_delimiter_character() {
 
 #[test]
 fn text_keeps_inner_blanks() {
+    // the text is one run, its blanks preserved around the word
     let x = inline(r"a \text{ if } b");
     assert!(
-        x.contains(r#"xml:space="preserve"> </m:t>"#),
+        x.contains(r#"xml:space="preserve"> if </m:t>"#),
         "blank runs lost: {x}"
     );
+}
+
+#[test]
+fn nary_operand_fills_the_body() {
+    // TeX's \sum_i e_i \sigma sums e_i \sigma; an empty m:e is a dotted box
+    let x = inline(r"\sum_{i} e_i \sigma + 1");
+    assert!(!x.contains("<m:e/>"), "empty n-ary body: {x}");
+    let body = &x[x.find("<m:sup/>").unwrap()..x.find("</m:nary>").unwrap()];
+    assert!(body.contains(">σ<") && !body.contains(">+<"), "{body}");
+    // a bracketed operand keeps its inner minus; nested sums nest
+    let y = inline(r"\sum_k (m_k - \bar m)\,y_k");
+    let body = &y[y.find("<m:sup/>").unwrap()..y.rfind("</m:nary>").unwrap()];
+    assert!(body.contains("\u{2212}") && body.contains(">y<"), "{body}");
+    let z = inline(r"\sum_i \sum_j a_{ij}");
+    assert_eq!(z.matches("<m:nary>").count(), 2);
+    assert!(!z.contains("<m:e/>"), "{z}");
+}
+
+#[test]
+fn minus_is_a_minus_sign_but_text_keeps_hyphens() {
+    let x = inline(r"a - b, \text{non-AI}");
+    assert!(x.contains(">\u{2212}<"), "{x}");
+    assert!(x.contains("non-AI"), "{x}");
+}
+
+#[test]
+fn row_spacing_does_not_leak() {
+    let x = inline(r"\begin{cases} a & b \\[2pt] 0 & c \end{cases}");
+    assert!(!x.contains("pt"), "{x}");
+    let y = tex2word_math::omml::render_block_lines(r"a &= b \\[4pt] c &= d", false).unwrap();
+    assert_eq!(y.len(), 2);
+}
+
+#[test]
+fn operator_names_are_one_run() {
+    let x = inline(r"\mathrm{Beta}(2,3) + \operatorname{rel}_t");
+    assert!(x.contains(">Beta<") && x.contains(">rel<"), "{x}");
 }
 
 #[test]

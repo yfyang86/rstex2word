@@ -109,6 +109,7 @@ pub fn build_context(
         m("rowcolor", "[{"),
         m("pagenumbering", "{"),
         m("keywords", "{"),
+        m("subjclass", "[{"),
         m("IEEEkeywords", "{"),
         m("endnote", "{"),
         m("index", "{"),
@@ -159,6 +160,11 @@ pub fn build_context(
         m("cline", "{"),
         m("resizebox", "{{{"),
         m("scalebox", "{{"),
+        m("rotatebox", "[{{"),
+        // makecell: multi-line cells, `\\` breaks the line
+        m("makecell", "[{"),
+        m("thead", "[{"),
+        m("makegapedcells", ""),
         m("setlength", "{{"),
         m("phantom", "{"),
         m("hphantom", "{"),
@@ -427,6 +433,21 @@ helpers::lazy_re!(BIBLATEX_RE, r"\\usepackage\[([^\]]*)\]\{biblatex\}");
 helpers::lazy_re!(BIBLATEX_STYLE_RE, r"\bstyle\s*=\s*([A-Za-z0-9\-]+)");
 helpers::lazy_re!(NATBIB_RE, r"\\usepackage\[([^\]]*)\]\{natbib\}");
 helpers::lazy_re!(NUMBERS_RE, r"\bnumbers\b");
+helpers::lazy_re!(
+    SUBJCLASSNAME_RE,
+    r"\\@namedef\s*\{subjclassname@([^}]*)\}\s*\{([^{}]*)\}"
+);
+
+/// amsart `\@namedef{subjclassname@JEL}{JEL classification}`: the label a
+/// `\subjclass[JEL]{...}` line is printed with.
+fn collect_subjclass_names(source: &str, out: &mut std::collections::HashMap<String, String>) {
+    for m in SUBJCLASSNAME_RE.find_iter(source) {
+        out.insert(
+            pystr::strip(m.group_str(1)).to_string(),
+            pystr::strip(m.group_str(2)).to_string(),
+        );
+    }
+}
 helpers::lazy_re!(AUTHORYEAR_RE, r"\bauthoryear\b");
 
 /// Pick up biblatex `\addbibresource{file.bib}` declared in the preamble.
@@ -630,6 +651,7 @@ pub fn parse_document(
     let styled: Vec<String> = builder.box_styles.keys().cloned().collect();
     builder.box_envs.extend(styled);
     builder.book_mode = is_book_class(&expanded);
+    collect_subjclass_names(source, &mut builder.subjclass_names); // amsart
     collect_color_defs(&expanded, &mut builder.colors); // \definecolor/\colorlet
     collect_acronyms(&expanded, &mut builder.acronyms); // \newacronym
     collect_glossary_entries(&expanded, &mut builder.glossary); // \newglossaryentry

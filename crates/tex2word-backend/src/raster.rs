@@ -72,7 +72,8 @@ pub fn has_pdf_support() -> bool {
     pdf_backend().is_some()
 }
 
-fn has_gs() -> bool {
+/// True if Ghostscript (EPS/PS rasteriser) is available.
+pub fn has_gs() -> bool {
     static G: OnceLock<bool> = OnceLock::new();
     *G.get_or_init(|| which("gs").is_some())
 }

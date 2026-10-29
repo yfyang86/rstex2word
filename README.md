@@ -10,15 +10,16 @@ has **no crate dependencies**: the XML parser, ZIP container, zlib-compatible
 compressor, regex engine, LaTeX walker and the LaTeX→OMML math engine are all
 in the workspace.
 
-> **Version 2.2.0.** TikZ-heavy papers convert cleanly: every picture of a
-> figure is compiled (also from `\input` files and stacked in one
-> `figure*`), nested `\input` paths resolve as in TeX, and `\path`,
-> multi-`\label` headings and two-column end matter are handled. 2.1.0
-> extended the math engine beyond the Python 1.0.9 reference. For the inputs
-> recorded from the Python test suite, the Rust port still produces the same
-> IR, the same conversion report and a **byte-identical `.docx`**, except a
-> few documented improvements. See [Parity with Python](#parity-with-python)
-> and [`CHANGELOG.md`](CHANGELOG.md).
+> **Version 2.3.0.** amsart manuscripts convert cleanly: citations and
+> references resolve inside tables, captions and theorem blocks, sums own
+> their operands (no placeholder boxes in Word), minus signs and operator
+> names render properly, and landscape `\rotatebox` tables keep their
+> captions. 2.2.0 added TikZ-heavy papers; 2.1.0 extended the math engine
+> beyond the Python 1.0.9 reference. For the inputs recorded from the Python
+> test suite the Rust port still produces the same IR and conversion report;
+> `.docx` bytes differ only where the documented improvements change them.
+> See [Parity with Python](#parity-with-python) and
+> [`CHANGELOG.md`](CHANGELOG.md).
 
 ## Install
 
@@ -118,8 +119,11 @@ The `tex2word-goldens` crate checks the port against outputs recorded from
 the Python reference (CPython 3.12, pylatexenc 2.11, lxml 6 / libxml2 2.14,
 zlib 1.3):
 
-- **Conversion**: all 431 recorded `convert_source` calls give the same IR,
-  report and `.docx` bytes; all 606 `parse_document` calls give the same IR
+- **Conversion**: all 431 recorded `convert_source` calls give the same IR
+  and report, and the same `.docx` bytes except where a documented
+  improvement changes the output on purpose (mostly math OMML: broader
+  symbol coverage, n-ary operands, minus signs; see the CHANGELOG's
+  "Golden parity" notes); all 606 `parse_document` calls give the same IR
   and report.
 - **Reverse path**: `read_docx`, `to_latex` (with and without reconciliation,
   and after simulated Word edits), `recover_ir` and `write_latex` match on
@@ -190,11 +194,16 @@ cargo clippy --workspace --all-targets
 cargo fmt --all --check
 ```
 
-`crates/tex2word/tests/tikz_paper.rs` is the acceptance test for TikZ-heavy
-papers: a synthetic fixture always runs (it checks the rendered figures when
-TeX + poppler are present, the graceful path otherwise; `T2W_REQUIRE_TIKZ=1`
-makes missing tools an error). To also run it on arXiv:2610.32813, extract
-the paper's e-print and set `T2W_UAT_ARXIV_2610_32813` to that directory.
+Acceptance tests convert synthetic fixture papers (MIT, in
+`crates/tex2word/tests/fixtures/`) that reproduce real-world failures:
+
+| test | covers | opt-in run on the original |
+|------|--------|----------------------------|
+| `tikz_paper.rs` | TikZ files via `\input`, stacked pictures, nested `\input`, `\protect\input` captions | `T2W_UAT_ARXIV_2610_32813=<extracted e-print>` |
+| `amsart_paper.rs` | cites/refs in tables and captions, `\@startsection` redefinitions, `\subjclass`, rotated `\captionof` tables, `\makecell`, sums/minus/row spacing in math | `T2W_UAT_SCISSORS=<manuscript dir>` |
+
+They check rendered figures when TeX + poppler are present and the graceful
+path otherwise; `T2W_REQUIRE_TIKZ=1` makes missing tools an error.
 
 ## License
 

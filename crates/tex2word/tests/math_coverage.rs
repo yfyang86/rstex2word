@@ -67,18 +67,18 @@ fn extended_math_converts_without_fallbacks() {
     let xml = String::from_utf8(archive.read("word/document.xml").unwrap().to_vec()).unwrap();
     // the structures behind the fixes
     for marker in [
-        "<m:borderBox>",                   // \boxed
-        "<m:limUpp>",                      // \overset
-        "<m:sPre>",                        // \prescript / \sideset
-        "≰",                               // \not\le
-        "⩽",                               // \leqslant
-        "∴",                               // \therefore
-        "𝛤",                               // \varGamma
-        "ℶ",                               // \beth
-        "ı",                               // \imath
-        r#"m:begChr m:val="(""#,           // \bigl( pairing
-        r#"m:begChr m:val="‖""#,           // \left\lVert
-        r#"xml:space="preserve"> </m:t>"#, // \text{ if }
+        "<m:borderBox>",                      // \boxed
+        "<m:limUpp>",                         // \overset
+        "<m:sPre>",                           // \prescript / \sideset
+        "≰",                                  // \not\le
+        "⩽",                                  // \leqslant
+        "∴",                                  // \therefore
+        "𝛤",                                  // \varGamma
+        "ℶ",                                  // \beth
+        "ı",                                  // \imath
+        r#"m:begChr m:val="(""#,              // \bigl( pairing
+        r#"m:begChr m:val="‖""#,              // \left\lVert
+        r#"xml:space="preserve"> if </m:t>"#, // \text{ if } keeps its blanks
     ] {
         assert!(xml.contains(marker), "document.xml lacks {marker}");
     }
