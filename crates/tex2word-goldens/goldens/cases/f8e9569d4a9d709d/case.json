@@ -1,0 +1,11 @@
+{
+"api": "convert_source",
+"args": {
+"source": "\\documentclass{article}\n\\usepackage{authblk}\\title{T}\\author[1]{A}\\author[2]{B}\\affil[1]{U1}\\affil[2]{U2}\n\\begin{document}\n\\maketitle\n\\end{document}\n"
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_front_matter_classes.py::test_authblk_preamble_lists_every_author_and_affil"
+]
+}

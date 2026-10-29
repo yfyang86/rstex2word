@@ -1,0 +1,94 @@
+{
+  "generated": "2026-10-29T12:36:19+00:00",
+  "ir": {
+    "@type": "Document",
+    "blocks": [
+      {
+        "@type": "Paragraph",
+        "align": null,
+        "inlines": [
+          {
+            "@type": "Text",
+            "value": "See "
+          },
+          {
+            "@type": "Cite",
+            "keys": [
+              "einstein1905"
+            ],
+            "mode": "paren",
+            "prefix": null,
+            "rendered": "[1]",
+            "suffix": null
+          },
+          {
+            "@type": "Text",
+            "value": " and "
+          },
+          {
+            "@type": "Cite",
+            "keys": [
+              "knuth1984"
+            ],
+            "mode": "paren",
+            "prefix": null,
+            "rendered": "[2]",
+            "suffix": null
+          },
+          {
+            "@type": "Text",
+            "value": "."
+          }
+        ]
+      },
+      {
+        "@type": "Bibliography",
+        "entries": [
+          {
+            "@type": "CSLItem",
+            "csl_fields": {
+              "_order": 1,
+              "note": "A. Einstein, Zur Elektrodynamik bewegter Körper, Annalen der Physik, 17(10):891–921, 1905."
+            },
+            "id": "einstein1905",
+            "type": "document"
+          },
+          {
+            "@type": "CSLItem",
+            "csl_fields": {
+              "_order": 2,
+              "note": "D. E. Knuth, The TeXbook, Addison-Wesley, 1984."
+            },
+            "id": "knuth1984",
+            "type": "document"
+          }
+        ],
+        "style": "numeric"
+      }
+    ],
+    "book": false,
+    "label_aliases": {},
+    "labels": {},
+    "meta": {
+      "@type": "DocumentMeta",
+      "abstract": null,
+      "affiliations": [],
+      "authors": [],
+      "cjk_main_font": null,
+      "cjk_mono_font": null,
+      "cjk_sans_font": null,
+      "columns": 1,
+      "date": null,
+      "front_notes": [],
+      "keywords": null,
+      "language": null,
+      "main_font": null,
+      "running_head": null,
+      "subtitle": null,
+      "title": null
+    }
+  },
+  "labels": {},
+  "manifest_version": 1,
+  "tool": "tex2word"
+}

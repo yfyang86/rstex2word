@@ -1,0 +1,13 @@
+{
+"api": "validate_docx",
+"args": {
+"docx_bytes": {
+"@blob": "d8b7c2c266d72b748ec5d2075f0629bce19a12b33f08f8ddc51e273303248719"
+}
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_boxes_verbatim.py::test_rule_and_font_macros_are_silent"
+]
+}

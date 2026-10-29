@@ -1,0 +1,13 @@
+{
+"api": "convert_source",
+"args": {
+"source": "\\documentclass{article}\n\\usepackage[authoryear]{natbib}\n\\newtheorem{theorem}{Theorem}\n\\begin{document}\n\\begin{theorem} As in \\citet{tk1991}. \\end{theorem}\n\\begin{figure}\\caption{Cap \\citep{tk1991}.}\\end{figure}\n\\begin{table}\\caption{T \\citep{tk1991}.}\\begin{tabular}{l} a \\\\ \\end{tabular}\\end{table}\n\\bibliographystyle{plainnat}\\bibliography{refs}\n\\end{document}\n"
+},
+"base_dir": "base",
+"files": {
+"base/refs.bib": "7bea53b88d8db7204b2a8893d7e0b258406713c7d58f6ae6136d0e8bf0672cbd"
+},
+"tests": [
+"tests/test_issue44_refs.py::test_cite_in_theorem_and_captions"
+]
+}

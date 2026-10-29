@@ -1,0 +1,11 @@
+{
+"api": "convert_source",
+"args": {
+"source": "\\documentclass{article}\\usepackage{threeparttable,subcaption,rotating}\\begin{document}\n\\begin{sidewaystable}\\caption{Wide}\\label{w}\\begin{tabular}{ll}a&b\\\\\\end{tabular}\\end{sidewaystable}\n\\end{document}"
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_table_floats.py::test_sidewaystable_is_a_table_float"
+]
+}

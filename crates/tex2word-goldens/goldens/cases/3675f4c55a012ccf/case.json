@@ -1,0 +1,11 @@
+{
+"api": "convert_source",
+"args": {
+"source": "\\documentclass{article}\n\\makeatletter\n\\def\\paragraph{\\@startsection{paragraph}{4}\\z@{0.6\\baselineskip}{-\\fontdimen2\\font}{\\normalfont\\bfseries}}\n\\makeatother\n\\begin{document}\n\\paragraph{Head.} Body.\n\\end{document}\n"
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_issue44_macros.py::test_startsection_redefinition_is_not_expanded"
+]
+}

@@ -1,0 +1,13 @@
+{
+"api": "validate_docx",
+"args": {
+"docx_bytes": {
+"@blob": "d2acd973ef4e85afbd2a66d32dd672048989c7a12408f587838bbda9a5212320"
+}
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_alignment.py::test_alignment_valid"
+]
+}

@@ -1,0 +1,11 @@
+{
+"api": "convert_source",
+"args": {
+"source": "\\documentclass{llncs}\n\n\\begin{document}\n\\title{T}\\author{A\\inst{1}\\orcidID{0000-0001} \\and B\\inst{2}}\\authorrunning{Short}\\institute{U1 \\email{a@b} \\and U2}\\maketitle\\begin{abstract}X \\keywords{k1 \\and k2}\\end{abstract}\n\\end{document}\n"
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_front_matter_classes.py::test_llncs_institutes_orcid_and_keywords"
+]
+}

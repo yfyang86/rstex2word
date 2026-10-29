@@ -1,0 +1,83 @@
+{
+  "generated": "2026-10-29T12:36:24+00:00",
+  "ir": {
+    "@type": "Document",
+    "blocks": [
+      {
+        "@type": "Paragraph",
+        "align": null,
+        "inlines": [
+          {
+            "@type": "Text",
+            "value": "See "
+          },
+          {
+            "@type": "Cite",
+            "keys": [
+              "knuth1984"
+            ],
+            "mode": "paren",
+            "prefix": null,
+            "rendered": "[1]",
+            "suffix": null
+          },
+          {
+            "@type": "Text",
+            "value": "."
+          }
+        ]
+      },
+      {
+        "@type": "Bibliography",
+        "entries": [
+          {
+            "@type": "CSLItem",
+            "csl_fields": {
+              "author": [
+                {
+                  "family": "Knuth",
+                  "given": "Donald"
+                }
+              ],
+              "issued": {
+                "date-parts": [
+                  [
+                    1984
+                  ]
+                ]
+              },
+              "title": "The TeXbook"
+            },
+            "id": "knuth1984",
+            "type": "book"
+          }
+        ],
+        "style": "numeric"
+      }
+    ],
+    "book": false,
+    "label_aliases": {},
+    "labels": {},
+    "meta": {
+      "@type": "DocumentMeta",
+      "abstract": null,
+      "affiliations": [],
+      "authors": [],
+      "cjk_main_font": null,
+      "cjk_mono_font": null,
+      "cjk_sans_font": null,
+      "columns": 1,
+      "date": null,
+      "front_notes": [],
+      "keywords": null,
+      "language": null,
+      "main_font": null,
+      "running_head": null,
+      "subtitle": null,
+      "title": null
+    }
+  },
+  "labels": {},
+  "manifest_version": 1,
+  "tool": "tex2word"
+}

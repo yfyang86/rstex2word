@@ -1,0 +1,13 @@
+{
+"api": "to_latex",
+"args": {
+"docx_bytes": {
+"@blob": "50a106d406525bade5cbaf7861a81763d1e929954793fab37f29a825ce8935a0"
+}
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_endnotes.py::test_endnote_round_trips"
+]
+}

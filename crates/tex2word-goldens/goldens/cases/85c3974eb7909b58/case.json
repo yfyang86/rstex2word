@@ -1,0 +1,13 @@
+{
+"api": "convert_source",
+"args": {
+"source": "\\documentclass{article}\\usepackage[authoryear]{natbib}\n\\begin{document}\nSee \\citep{knuth1984}.\n{\\small\n\\bibliographystyle{plainnat}\n\\bibliography{refs}\n}\n\\end{document}\n"
+},
+"base_dir": "base",
+"files": {
+"base/refs.bib": "1738c37c8cbf4308673e2b025f270b37fc580132f972dcf7175f7cd7f724ac9c"
+},
+"tests": [
+"tests/test_issue44_tikz_bib.py::test_bibliography_inside_a_size_group_is_found"
+]
+}

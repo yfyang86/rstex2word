@@ -147,6 +147,9 @@ node! {
     /// A footnote; the back-end lifts its content into `footnotes.xml`.
     Footnote {
         inlines: Vec<Inline> = "inlines" => Vec::new(),
+        /// block content (lists, quotes, tables, several paragraphs); when
+        /// set, the note is these blocks and `inlines` is empty
+        blocks: Vec<Block> = "blocks" => Vec::new(),
     }
 }
 
@@ -404,6 +407,8 @@ node! {
         ordered: bool = "ordered" => false,
         items: Vec<ListItem> = "items" => Vec::new(),
         description: bool = "description" => false,
+        /// first number of an ordered list (enumitem `start=`, `\setcounter{enumi}`)
+        start: i64 = "start" => 1,
     }
 }
 
@@ -485,6 +490,10 @@ node! {
     CodeBlock {
         text: String = "text" => String::new(),
         lang: Option<String> = "lang" => None,
+        /// a listing's caption (lstlisting `caption=`, a listing float) and label
+        caption: Option<Vec<Inline>> = "caption" => None,
+        label: Option<String> = "label" => None,
+        caption_numbered: bool = "caption_numbered" => true,
     }
 }
 
@@ -531,6 +540,9 @@ node! {
         title: Option<Vec<Inline>> = "title" => None,
         label: Option<String> = "label" => None,
         counter: Option<String> = "counter" => None,
+        /// the counter resets within this division
+        /// (`\newtheorem{thm}{Theorem}[section]`) -> numbered "section.n"
+        within: Option<String> = "within" => None,
     }
 }
 
@@ -622,6 +634,7 @@ impl Block {
             Block::Figure(b) => b.label.as_deref(),
             Block::Theorem(b) => b.label.as_deref(),
             Block::Algorithm(b) => b.label.as_deref(),
+            Block::CodeBlock(b) => b.label.as_deref(),
             _ => None,
         }
     }
@@ -687,6 +700,11 @@ node! {
         abstract_: Option<Vec<Block>> = "abstract" => None,
         keywords: Option<Vec<Inline>> = "keywords" => None,
         affiliations: Vec<Vec<Inline>> = "affiliations" => Vec::new(),
+        /// a subtitle (KOMA `\subtitle`, beamer, a CV's job title)
+        subtitle: Option<Vec<Inline>> = "subtitle" => None,
+        /// further title-page lines: dedications, corresponding-author notes,
+        /// KOMA `\subject`/`\publishers`, contact details
+        front_notes: Vec<Vec<Inline>> = "front_notes" => Vec::new(),
         /// BCP-47 document language (from babel/polyglossia)
         language: Option<String> = "language" => None,
         /// `\markboth`/`\markright`/`\title[short]` running head
@@ -713,6 +731,8 @@ node! {
         number: Option<String> = "number" => None,
         /// the target's title/caption text (for `\nameref`)
         name: Option<String> = "name" => None,
+        /// a sub-figure's letter ("a"): `\subref` prints "(a)", `\ref` "1a"
+        sub: Option<String> = "sub" => None,
     }
 }
 
@@ -724,6 +744,9 @@ node! {
         labels: Dict<LabelInfo> = "labels" => Dict::new(),
         /// book/report class with `\chapter` (top level is the chapter)
         book: bool = "book" => false,
+        /// extra `\label`s on an already-labelled target -> the label it kept
+        /// (`\label{sec:a}\label{sec:b}` makes `sec:b` an alias of `sec:a`)
+        label_aliases: Dict<String> = "label_aliases" => Dict::new(),
     }
 }
 

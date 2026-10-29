@@ -1,0 +1,13 @@
+{
+"api": "recover_ir",
+"args": {
+"docx_bytes": {
+"@blob": "ffda38e4265a391d99f2dfad43ff414f9c951fdb4f618de6235516819a4500c3"
+}
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_siunitx.py::test_siunitx_round_trips_as_text"
+]
+}

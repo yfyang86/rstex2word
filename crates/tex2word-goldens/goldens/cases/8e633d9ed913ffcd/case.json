@@ -1,0 +1,11 @@
+{
+"api": "expand_macros",
+"args": {
+"source": "\\makeatletter\\@namedef{x}{X}\\@nameuse{x}\\makeatother"
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_macros_primitives.py::test_csname_namedef_and_delimited_def"
+]
+}

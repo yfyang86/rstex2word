@@ -1,0 +1,11 @@
+{
+"api": "convert_source",
+"args": {
+"source": "\\documentclass{article}\n\n\\begin{document}\n\\makeatletter\\newcommand{\\my@x}{KEEP}\\my@x\\makeatother\n\\end{document}\n"
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_macros_primitives.py::test_at_macros_and_providecommand"
+]
+}

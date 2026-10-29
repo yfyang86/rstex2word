@@ -1,0 +1,13 @@
+{
+"api": "validate_docx",
+"args": {
+"docx_bytes": {
+"@blob": "83bbda1a8672708f5a64238f5960855d43031d6d61e71d6f614467761f04f182"
+}
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_custom_item_label.py::test_custom_label_is_rendered_without_bullet"
+]
+}

@@ -1,0 +1,13 @@
+{
+"api": "validate_docx",
+"args": {
+"docx_bytes": {
+"@blob": "b53eda40a6ca880ae5dfa1d5878e4c9606064f50d90e276adf9231286be3b2dd"
+}
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_font_reset.py::test_valid"
+]
+}

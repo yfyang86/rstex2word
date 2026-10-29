@@ -1,0 +1,11 @@
+{
+"api": "convert_source",
+"args": {
+"source": "\\documentclass{article}\n\n\\begin{document}\n$x = 1 \\text{ if } y > 0$ and $\\mbox{for all } z$\n\\end{document}\n"
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_probe_fixes.py::test_text_in_math_keeps_its_spaces"
+]
+}

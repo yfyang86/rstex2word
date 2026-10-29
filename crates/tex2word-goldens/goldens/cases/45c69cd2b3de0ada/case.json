@@ -1,0 +1,14 @@
+{
+"api": "read_docx",
+"args": {
+"docx_bytes": {
+"@blob": "13c28e30380a6443133987cadd63d4223d1bd60456627fd85ab3073a4d0be43c"
+}
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_docx_reader.py::test_reader_recovers_algorithm_box",
+"tests/test_docx_reader.py::test_recovered_algorithm_lines_keep_relative_indent"
+]
+}

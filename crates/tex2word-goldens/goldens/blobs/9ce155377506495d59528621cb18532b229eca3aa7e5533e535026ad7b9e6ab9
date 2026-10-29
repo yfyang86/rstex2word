@@ -1,0 +1,178 @@
+{
+  "generated": "2026-10-29T12:36:24+00:00",
+  "ir": {
+    "@type": "Document",
+    "blocks": [
+      {
+        "@type": "Heading",
+        "appendix": false,
+        "inlines": [
+          {
+            "@type": "Text",
+            "value": "S"
+          }
+        ],
+        "label": "sec:a",
+        "level": 1,
+        "numbered": true,
+        "part": false
+      },
+      {
+        "@type": "Table",
+        "booktabs": false,
+        "caption": null,
+        "caption_numbered": true,
+        "colspec": [
+          "left",
+          "left"
+        ],
+        "colwidths": [
+          null,
+          null
+        ],
+        "label": null,
+        "layout": false,
+        "rows": [
+          {
+            "@type": "TableRow",
+            "cells": [
+              {
+                "@type": "TableCell",
+                "align": "left",
+                "blocks": [
+                  {
+                    "@type": "Paragraph",
+                    "align": null,
+                    "inlines": [
+                      {
+                        "@type": "Text",
+                        "value": "X"
+                      }
+                    ]
+                  }
+                ],
+                "border_bottom": false,
+                "colspan": 1,
+                "rowspan": 1,
+                "shade": null
+              },
+              {
+                "@type": "TableCell",
+                "align": "left",
+                "blocks": [
+                  {
+                    "@type": "Paragraph",
+                    "align": null,
+                    "inlines": [
+                      {
+                        "@type": "Cite",
+                        "keys": [
+                          "tk1991"
+                        ],
+                        "mode": "text",
+                        "prefix": null,
+                        "rendered": "Tversky & Kahneman (1991)",
+                        "suffix": null
+                      },
+                      {
+                        "@type": "Text",
+                        "value": ", Section "
+                      },
+                      {
+                        "@type": "Ref",
+                        "bookmark": "sec_a",
+                        "key": "sec:a",
+                        "ref_kind": "section",
+                        "style": "plain"
+                      }
+                    ]
+                  }
+                ],
+                "border_bottom": false,
+                "colspan": 1,
+                "rowspan": 1,
+                "shade": null
+              }
+            ],
+            "is_header": false,
+            "rule_above": false,
+            "rule_below": false
+          }
+        ],
+        "spanning": false
+      },
+      {
+        "@type": "Bibliography",
+        "entries": [
+          {
+            "@type": "CSLItem",
+            "csl_fields": {
+              "author": [
+                {
+                  "family": "Tversky",
+                  "given": "Amos"
+                },
+                {
+                  "family": "Kahneman",
+                  "given": "Daniel"
+                }
+              ],
+              "container-title": "The Quarterly Journal of Economics",
+              "issued": {
+                "date-parts": [
+                  [
+                    1991
+                  ]
+                ]
+              },
+              "title": "Loss Aversion in Riskless Choice"
+            },
+            "id": "tk1991",
+            "type": "article-journal"
+          }
+        ],
+        "style": "author-year"
+      }
+    ],
+    "book": false,
+    "label_aliases": {},
+    "labels": {
+      "sec:a": {
+        "@type": "LabelInfo",
+        "bookmark": "sec_a",
+        "counter_name": "Section",
+        "kind": "section",
+        "name": "S",
+        "number": null,
+        "sub": null
+      }
+    },
+    "meta": {
+      "@type": "DocumentMeta",
+      "abstract": null,
+      "affiliations": [],
+      "authors": [],
+      "cjk_main_font": null,
+      "cjk_mono_font": null,
+      "cjk_sans_font": null,
+      "columns": 1,
+      "date": null,
+      "front_notes": [],
+      "keywords": null,
+      "language": null,
+      "main_font": null,
+      "running_head": null,
+      "subtitle": null,
+      "title": null
+    }
+  },
+  "labels": {
+    "sec:a": {
+      "bookmark": "sec_a",
+      "counter": "Section",
+      "kind": "section"
+    }
+  },
+  "manifest_version": 1,
+  "tool": "tex2word"
+}

@@ -1,0 +1,639 @@
+{
+  "generated": "2026-10-29T12:36:23+00:00",
+  "ir": {
+    "@type": "Document",
+    "blocks": [
+      {
+        "@type": "Heading",
+        "appendix": false,
+        "inlines": [
+          {
+            "@type": "Text",
+            "value": "Intro"
+          }
+        ],
+        "label": "s:i",
+        "level": 1,
+        "numbered": true,
+        "part": false
+      },
+      {
+        "@type": "Paragraph",
+        "align": null,
+        "inlines": [
+          {
+            "@type": "Text",
+            "value": "See "
+          },
+          {
+            "@type": "Ref",
+            "bookmark": "s_m",
+            "key": "s:m",
+            "ref_kind": "section",
+            "style": "plain"
+          },
+          {
+            "@type": "Text",
+            "value": ", "
+          },
+          {
+            "@type": "Ref",
+            "bookmark": "s_sub",
+            "key": "s:sub",
+            "ref_kind": "section",
+            "style": "plain"
+          },
+          {
+            "@type": "Text",
+            "value": ", Figure "
+          },
+          {
+            "@type": "Ref",
+            "bookmark": "f_b",
+            "key": "f:b",
+            "ref_kind": "figure",
+            "style": "plain"
+          },
+          {
+            "@type": "Text",
+            "value": ", Table "
+          },
+          {
+            "@type": "Ref",
+            "bookmark": "t_a",
+            "key": "t:a",
+            "ref_kind": "table",
+            "style": "plain"
+          },
+          {
+            "@type": "Text",
+            "value": ", "
+          },
+          {
+            "@type": "Ref",
+            "bookmark": "e_2",
+            "key": "e:2",
+            "ref_kind": "equation",
+            "style": "plain"
+          },
+          {
+            "@type": "Text",
+            "value": ", Lemma "
+          },
+          {
+            "@type": "Ref",
+            "bookmark": "l_a",
+            "key": "l:a",
+            "ref_kind": "theorem",
+            "style": "plain"
+          },
+          {
+            "@type": "Text",
+            "value": " and item "
+          },
+          {
+            "@type": "Ref",
+            "bookmark": "i_2",
+            "key": "i:2",
+            "ref_kind": "listitem",
+            "style": "plain"
+          },
+          {
+            "@type": "Text",
+            "value": "."
+          },
+          {
+            "@type": "Footnote",
+            "blocks": [],
+            "inlines": [
+              {
+                "@type": "Text",
+                "value": "Also "
+              },
+              {
+                "@type": "Ref",
+                "bookmark": "s_sub",
+                "key": "s:sub",
+                "ref_kind": "section",
+                "style": "plain"
+              },
+              {
+                "@type": "Text",
+                "value": "."
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "@type": "MathBlock",
+        "env": "equation",
+        "label": "e:1",
+        "latex": "a=b",
+        "line_labels": [
+          "e:1"
+        ],
+        "numbered": true
+      },
+      {
+        "@type": "Figure",
+        "blocks": [],
+        "caption": [
+          {
+            "@type": "Text",
+            "value": "First"
+          }
+        ],
+        "caption_numbered": true,
+        "image": null,
+        "label": "f:a",
+        "source": "\\begin{figure}[h]\\caption{First}\\label{f:a}\\end{figure}",
+        "spanning": false,
+        "subfigures": []
+      },
+      {
+        "@type": "Heading",
+        "appendix": false,
+        "inlines": [
+          {
+            "@type": "Text",
+            "value": "Method"
+          }
+        ],
+        "label": "s:m",
+        "level": 1,
+        "numbered": true,
+        "part": false
+      },
+      {
+        "@type": "Heading",
+        "appendix": false,
+        "inlines": [
+          {
+            "@type": "Text",
+            "value": "Sub"
+          }
+        ],
+        "label": "s:sub",
+        "level": 2,
+        "numbered": true,
+        "part": false
+      },
+      {
+        "@type": "Theorem",
+        "blocks": [
+          {
+            "@type": "Paragraph",
+            "align": null,
+            "inlines": [
+              {
+                "@type": "Text",
+                "value": "A"
+              }
+            ]
+          }
+        ],
+        "counter": "Theorem",
+        "kind": "Theorem",
+        "label": "th:a",
+        "title": null,
+        "within": "section"
+      },
+      {
+        "@type": "Theorem",
+        "blocks": [
+          {
+            "@type": "Paragraph",
+            "align": null,
+            "inlines": [
+              {
+                "@type": "Text",
+                "value": "B"
+              }
+            ]
+          }
+        ],
+        "counter": "Theorem",
+        "kind": "Lemma",
+        "label": "l:a",
+        "title": null,
+        "within": "section"
+      },
+      {
+        "@type": "MathBlock",
+        "env": "align",
+        "label": "e:2",
+        "latex": "x&=1\\\\y&=2",
+        "line_labels": [
+          "e:2",
+          "e:3"
+        ],
+        "numbered": true
+      },
+      {
+        "@type": "Figure",
+        "blocks": [],
+        "caption": [
+          {
+            "@type": "Text",
+            "value": "Second"
+          }
+        ],
+        "caption_numbered": true,
+        "image": null,
+        "label": "f:b",
+        "source": "\\begin{figure}[h]\\caption{Second}\\label{f:b}\\end{figure}",
+        "spanning": false,
+        "subfigures": []
+      },
+      {
+        "@type": "Table",
+        "booktabs": false,
+        "caption": [
+          {
+            "@type": "Text",
+            "value": "Tab"
+          }
+        ],
+        "caption_numbered": true,
+        "colspec": [
+          "left"
+        ],
+        "colwidths": [
+          null
+        ],
+        "label": "t:a",
+        "layout": false,
+        "rows": [
+          {
+            "@type": "TableRow",
+            "cells": [
+              {
+                "@type": "TableCell",
+                "align": "left",
+                "blocks": [
+                  {
+                    "@type": "Paragraph",
+                    "align": null,
+                    "inlines": [
+                      {
+                        "@type": "Text",
+                        "value": "x"
+                      }
+                    ]
+                  }
+                ],
+                "border_bottom": false,
+                "colspan": 1,
+                "rowspan": 1,
+                "shade": null
+              }
+            ],
+            "is_header": false,
+            "rule_above": false,
+            "rule_below": false
+          }
+        ],
+        "spanning": false
+      },
+      {
+        "@type": "ItemList",
+        "description": false,
+        "items": [
+          {
+            "@type": "ListItem",
+            "blocks": [
+              {
+                "@type": "Paragraph",
+                "align": null,
+                "inlines": [
+                  {
+                    "@type": "Text",
+                    "value": "one"
+                  }
+                ]
+              }
+            ],
+            "label": null,
+            "term": null
+          },
+          {
+            "@type": "ListItem",
+            "blocks": [
+              {
+                "@type": "Paragraph",
+                "align": null,
+                "inlines": [
+                  {
+                    "@type": "Text",
+                    "value": "two"
+                  }
+                ]
+              }
+            ],
+            "label": "i:2",
+            "term": null
+          }
+        ],
+        "ordered": true,
+        "start": 1
+      },
+      {
+        "@type": "Heading",
+        "appendix": true,
+        "inlines": [
+          {
+            "@type": "Text",
+            "value": "Proofs"
+          }
+        ],
+        "label": "s:a",
+        "level": 1,
+        "numbered": true,
+        "part": false
+      },
+      {
+        "@type": "Theorem",
+        "blocks": [
+          {
+            "@type": "Paragraph",
+            "align": null,
+            "inlines": [
+              {
+                "@type": "Text",
+                "value": "C"
+              }
+            ]
+          }
+        ],
+        "counter": "Theorem",
+        "kind": "Theorem",
+        "label": null,
+        "title": null,
+        "within": "section"
+      },
+      {
+        "@type": "Paragraph",
+        "align": null,
+        "inlines": [
+          {
+            "@type": "Text",
+            "value": "Refs: "
+          },
+          {
+            "@type": "Ref",
+            "bookmark": "s_a",
+            "key": "s:a",
+            "ref_kind": "section",
+            "style": "plain"
+          },
+          {
+            "@type": "Text",
+            "value": ", "
+          },
+          {
+            "@type": "Ref",
+            "bookmark": "e_3",
+            "key": "e:3",
+            "ref_kind": "equation",
+            "style": "plain"
+          },
+          {
+            "@type": "Text",
+            "value": ", "
+          },
+          {
+            "@type": "Ref",
+            "bookmark": "f_a",
+            "key": "f:a",
+            "ref_kind": "figure",
+            "style": "plain"
+          },
+          {
+            "@type": "Text",
+            "value": ", "
+          },
+          {
+            "@type": "Ref",
+            "bookmark": "th_a",
+            "key": "th:a",
+            "ref_kind": "theorem",
+            "style": "plain"
+          },
+          {
+            "@type": "Text",
+            "value": "."
+          }
+        ]
+      }
+    ],
+    "book": false,
+    "label_aliases": {},
+    "labels": {
+      "e:1": {
+        "@type": "LabelInfo",
+        "bookmark": "e_1",
+        "counter_name": "Equation",
+        "kind": "equation",
+        "name": null,
+        "number": null,
+        "sub": null
+      },
+      "e:2": {
+        "@type": "LabelInfo",
+        "bookmark": "e_2",
+        "counter_name": "Equation",
+        "kind": "equation",
+        "name": null,
+        "number": null,
+        "sub": null
+      },
+      "e:3": {
+        "@type": "LabelInfo",
+        "bookmark": "e_3",
+        "counter_name": "Equation",
+        "kind": "equation",
+        "name": null,
+        "number": null,
+        "sub": null
+      },
+      "f:a": {
+        "@type": "LabelInfo",
+        "bookmark": "f_a",
+        "counter_name": "Figure",
+        "kind": "figure",
+        "name": "First",
+        "number": null,
+        "sub": null
+      },
+      "f:b": {
+        "@type": "LabelInfo",
+        "bookmark": "f_b",
+        "counter_name": "Figure",
+        "kind": "figure",
+        "name": "Second",
+        "number": null,
+        "sub": null
+      },
+      "i:2": {
+        "@type": "LabelInfo",
+        "bookmark": "i_2",
+        "counter_name": "Item",
+        "kind": "listitem",
+        "name": null,
+        "number": null,
+        "sub": null
+      },
+      "l:a": {
+        "@type": "LabelInfo",
+        "bookmark": "l_a",
+        "counter_name": "Theorem",
+        "kind": "theorem",
+        "name": "Lemma",
+        "number": null,
+        "sub": null
+      },
+      "s:a": {
+        "@type": "LabelInfo",
+        "bookmark": "s_a",
+        "counter_name": "Section",
+        "kind": "section",
+        "name": "Proofs",
+        "number": null,
+        "sub": null
+      },
+      "s:i": {
+        "@type": "LabelInfo",
+        "bookmark": "s_i",
+        "counter_name": "Section",
+        "kind": "section",
+        "name": "Intro",
+        "number": null,
+        "sub": null
+      },
+      "s:m": {
+        "@type": "LabelInfo",
+        "bookmark": "s_m",
+        "counter_name": "Section",
+        "kind": "section",
+        "name": "Method",
+        "number": null,
+        "sub": null
+      },
+      "s:sub": {
+        "@type": "LabelInfo",
+        "bookmark": "s_sub",
+        "counter_name": "Section",
+        "kind": "section",
+        "name": "Sub",
+        "number": null,
+        "sub": null
+      },
+      "t:a": {
+        "@type": "LabelInfo",
+        "bookmark": "t_a",
+        "counter_name": "Table",
+        "kind": "table",
+        "name": "Tab",
+        "number": null,
+        "sub": null
+      },
+      "th:a": {
+        "@type": "LabelInfo",
+        "bookmark": "th_a",
+        "counter_name": "Theorem",
+        "kind": "theorem",
+        "name": "Theorem",
+        "number": null,
+        "sub": null
+      }
+    },
+    "meta": {
+      "@type": "DocumentMeta",
+      "abstract": null,
+      "affiliations": [],
+      "authors": [],
+      "cjk_main_font": null,
+      "cjk_mono_font": null,
+      "cjk_sans_font": null,
+      "columns": 1,
+      "date": null,
+      "front_notes": [],
+      "keywords": null,
+      "language": null,
+      "main_font": null,
+      "running_head": null,
+      "subtitle": null,
+      "title": null
+    }
+  },
+  "labels": {
+    "e:1": {
+      "bookmark": "e_1",
+      "counter": "Equation",
+      "kind": "equation"
+    },
+    "e:2": {
+      "bookmark": "e_2",
+      "counter": "Equation",
+      "kind": "equation"
+    },
+    "e:3": {
+      "bookmark": "e_3",
+      "counter": "Equation",
+      "kind": "equation"
+    },
+    "f:a": {
+      "bookmark": "f_a",
+      "counter": "Figure",
+      "kind": "figure"
+    },
+    "f:b": {
+      "bookmark": "f_b",
+      "counter": "Figure",
+      "kind": "figure"
+    },
+    "i:2": {
+      "bookmark": "i_2",
+      "counter": "Item",
+      "kind": "listitem"
+    },
+    "l:a": {
+      "bookmark": "l_a",
+      "counter": "Theorem",
+      "kind": "theorem"
+    },
+    "s:a": {
+      "bookmark": "s_a",
+      "counter": "Section",
+      "kind": "section"
+    },
+    "s:i": {
+      "bookmark": "s_i",
+      "counter": "Section",
+      "kind": "section"
+    },
+    "s:m": {
+      "bookmark": "s_m",
+      "counter": "Section",
+      "kind": "section"
+    },
+    "s:sub": {
+      "bookmark": "s_sub",
+      "counter": "Section",
+      "kind": "section"
+    },
+    "t:a": {
+      "bookmark": "t_a",
+      "counter": "Table",
+      "kind": "table"
+    },
+    "th:a": {
+      "bookmark": "th_a",
+      "counter": "Theorem",
+      "kind": "theorem"
+    }
+  },
+  "manifest_version": 1,
+  "tool": "tex2word"
+}

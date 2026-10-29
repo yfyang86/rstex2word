@@ -1,0 +1,11 @@
+{
+"api": "convert_source",
+"args": {
+"source": "\\documentclass{article}\n\\begin{document}\nText.\\nobalance\n\\typeout{PAGE=\\thepage}\n\\onecolumn\n\\twocolumn[\\section{Wide}]\nMore.\n\\end{document}\n"
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_issue44_macros.py::test_column_and_console_macros_are_silent"
+]
+}

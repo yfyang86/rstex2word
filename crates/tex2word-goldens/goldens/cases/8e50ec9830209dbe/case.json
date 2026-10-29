@@ -1,0 +1,13 @@
+{
+"api": "to_latex",
+"args": {
+"docx_bytes": {
+"@blob": "1c6d10a351ea7f9a41d0572df96f0b7e0ea1f2a676471a6e856c0ffb6cb10362"
+}
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_reconcile.py::test_inline_reconcile_falls_back_to_manifest_for_ref_paragraphs"
+]
+}

@@ -1,0 +1,11 @@
+{
+"api": "convert_source",
+"args": {
+"source": "\\documentclass{article}\n\\usepackage{natbib}\n\\begin{document}\n\\citep[see][p.~3]{x} \\url{https://example.org/~user/a_b}\\begin{thebibliography}{9}\\bibitem{x} X. Author.\\end{thebibliography}\n\\end{document}\n"
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_probe_fixes.py::test_cite_locator_keeps_its_tie_and_url_its_tilde"
+]
+}

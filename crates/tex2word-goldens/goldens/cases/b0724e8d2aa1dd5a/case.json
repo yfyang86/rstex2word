@@ -1,0 +1,13 @@
+{
+"api": "validate_docx",
+"args": {
+"docx_bytes": {
+"@blob": "39f346b6f9745ea217677a88b687255303ce040c0d0bf2bb49d18dd75260d2ee"
+}
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_wrapfloat.py::test_valid"
+]
+}

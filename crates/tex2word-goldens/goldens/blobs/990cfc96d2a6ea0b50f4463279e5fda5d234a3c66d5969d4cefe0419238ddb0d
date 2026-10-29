@@ -1,0 +1,61 @@
+{
+  "generated": "2026-10-29T12:36:23+00:00",
+  "ir": {
+    "@type": "Document",
+    "blocks": [
+      {
+        "@type": "Paragraph",
+        "align": null,
+        "inlines": [
+          {
+            "@type": "Text",
+            "value": "text "
+          },
+          {
+            "@type": "Image",
+            "alt": "pic.png",
+            "angle": null,
+            "clip": false,
+            "height": 126525.5292652553,
+            "keep_aspect": false,
+            "original_format": "png",
+            "path": "pic.png",
+            "rel_height": null,
+            "rel_width": null,
+            "scale": null,
+            "trim": null,
+            "width": null
+          },
+          {
+            "@type": "Text",
+            "value": " more"
+          }
+        ]
+      }
+    ],
+    "book": false,
+    "label_aliases": {},
+    "labels": {},
+    "meta": {
+      "@type": "DocumentMeta",
+      "abstract": null,
+      "affiliations": [],
+      "authors": [],
+      "cjk_main_font": null,
+      "cjk_mono_font": null,
+      "cjk_sans_font": null,
+      "columns": 1,
+      "date": null,
+      "front_notes": [],
+      "keywords": null,
+      "language": null,
+      "main_font": null,
+      "running_head": null,
+      "subtitle": null,
+      "title": null
+    }
+  },
+  "labels": {},
+  "manifest_version": 1,
+  "tool": "tex2word"
+}

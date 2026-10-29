@@ -1,0 +1,13 @@
+{
+"api": "recover_ir",
+"args": {
+"docx_bytes": {
+"@blob": "6f9783f44f52343390be2eb21c1c307babbe4826ddd29688bbfa43fdae070c8d"
+}
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_roundtrip.py::test_recover_ir_round_trips"
+]
+}

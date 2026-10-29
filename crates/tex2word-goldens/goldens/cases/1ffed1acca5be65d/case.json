@@ -1,0 +1,13 @@
+{
+"api": "validate_docx",
+"args": {
+"docx_bytes": {
+"@blob": "07c19b541356c83f240ec2a332e4407e26022d90a2977196d055bc4e3f6d54d0"
+}
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_validate.py::test_validate_docx_flags_injected_bad_order"
+]
+}

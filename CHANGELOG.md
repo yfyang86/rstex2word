@@ -7,6 +7,79 @@ tracks the reference implementation and shares its version numbers; see
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 2.4.0 — 2026-10-29 — catch up with the Python 1.1.0 reference
+
+Ports the Python tex2word **1.1.0** fixes (yfyang86/tex2word#45/#46) into the
+Rust line, so the two again agree on everything the reference converts
+([rstex2word#9](https://github.com/yfyang86/rstex2word/issues/9)). On the
+issue's 7,980 synthetic probes, Rust 2.3.0 failed 1,711; 2.4.0 fails
+@@PROBES@@ (Python 1.1.0: @@PYPROBES@@ under the same oracles), and every probe that
+fails only in Rust is gone.
+
+### Added
+
+- **Journal front matter** for 17 classes (`frontmatter.rs`): authors with
+  markers (`\author*[1]{…}`, elsarticle `\corref`/`\fnref`, llncs
+  `\inst`/`\orcidID`, NeurIPS `\And`, IEEE `\IEEEmembership`, ICML
+  `\icmlauthor`), structured affiliations (acmart `\institution`/`\city`,
+  sn-jnl `\orgname`, elsarticle `organization={…}`, authblk `\affil[1]`),
+  notes (amsart `\curraddr`/`\urladdr`/`\dedicatory`, `\cortext`/`\fntext`,
+  KOMA `\subtitle`/`\publishers`), and class body commands (sn-jnl
+  `\abstract{}`/`\bmhead`, KOMA `\addsec`/`\minisec`, IEEE `\appendices`,
+  beamer frames, the `letter` class, moderncv entries). Every
+  `\author`/`\affil` line of the preamble counts. New IR fields:
+  `DocumentMeta.subtitle` and `front_notes`.
+- **Table and float wrappers**: `threeparttable` (caption, label, `\tnote`),
+  `sidewaystable`/`sidewaysfigure`, side-by-side captioned minipages and
+  `subtable`s (one table each, "(a)"-lettered under an overall caption),
+  `adjustbox`; `multicols` and `landscape` are transparent.
+- **Real cached field numbers.** SEQ, STYLEREF and REF fields carry the
+  numbers Word would compute (`field_results.rs`), so viewers that don't
+  update fields no longer show "Figure 1" everywhere and "see 0".
+  Section-relative numbering uses `STYLEREF 1 \n` and restarts each counter
+  (`SEQ X \r 1 \s 1`) after every Heading 1; `\newtheorem{thm}{Theorem}[section]`
+  numbers per section even in a flat document.
+- **Ordered lists restart**: each `enumerate` gets its own numbering instance
+  (`start=`, `\setcounter{enumi}`), and a nested list restarts under every
+  parent item.
+- **References**: `\ref`/`\cite` inside titles and labels, `\pageref`, lstlisting
+  `caption=`/`label=` and minted `listing` floats ("Listing N"), subfig
+  `\subfloat[…\label{…}]`, `\subref` → "(b)" and `\ref` to a panel → "1a".
+  A target keeps its first `\label`; later ones become aliases
+  (`Document.label_aliases`).
+- **Macros and conditionals** (`conditionals.rs`, `counters.rs`): `\let`,
+  `\csname`, `\@namedef`/`\@nameuse`, delimited `\def`, `\makeatletter`,
+  `\providecommand` keeping an existing command, `\newcounter` values,
+  `\newlength`/`\addtolength`, `\endinput`, `\input file` without braces,
+  `\subfile`, `\newenvironment`/xparse environments; `\newif` switches,
+  `\ifdefined`, `\ifthenelse`, etoolbox toggles, `\IfFileExists`,
+  `\@ifpackageloaded`; the `comment` environment.
+- **Inline constructs**: `\citep[p.~3]` locators render ("p. 3"),
+  `\"{\i}`, `\ss` and friends, `\glqq`/`\grqq`, `\parbox`,
+  `\MakeUppercase`, `\foreignlanguage`/`otherlanguage`, `\scalebox`/
+  `\resizebox`, inline `tabular`, URL specials, `%` inside verbatim and
+  `alltt`; lists, quotes and tables inside footnotes and margin notes become
+  block footnotes.
+@@MATH@@
+### Fixed
+
+- NUL and other control characters in the source no longer abort the
+  conversion (they are dropped, as XML cannot carry them).
+
+### Changed
+
+- Where the 2.3.0 Rust code and Python 1.1.0 solved the same problem
+  differently (amsart `\subjclass`, `\captionof` in table floats, TikZ
+  warnings, the citation walk), Rust now follows the reference. A figure
+  drawn with TikZ is reported as info, and warns only when it cannot be
+  rendered.
+
+### Golden parity
+
+The goldens are re-recorded from Python 1.1.0: all 496 `convert_source`
+and 671 `parse_document` calls give the same IR and report as Python,
+@@GOLDEN@@
+
 ## 2.3.0 — 2026-10-29 — amsart manuscripts: tables, captions and formulas
 
 Driven by a 32-page `amsart` economics manuscript (behavioural model,

@@ -1,0 +1,13 @@
+{
+"api": "to_latex",
+"args": {
+"docx_bytes": {
+"@blob": "0f971a27b0aa062f7cceee6bea2d1d7d5a7740843e84e62110ec2bdebd974579"
+}
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_tables.py::test_cmidrule_round_trips"
+]
+}

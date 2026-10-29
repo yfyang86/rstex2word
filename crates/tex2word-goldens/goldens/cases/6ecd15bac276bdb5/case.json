@@ -1,0 +1,13 @@
+{
+"api": "validate_docx",
+"args": {
+"docx_bytes": {
+"@blob": "491c00b38916add47bd7d1fbe3ec0925040c7bce2dcecb676c738316f67f708a"
+}
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_color.py::test_styled_math_is_valid_and_ordered"
+]
+}

@@ -1,0 +1,142 @@
+{
+  "generated": "2026-01-02T00:00:00+00:00",
+  "ir": {
+    "@type": "Document",
+    "blocks": [
+      {
+        "@type": "Heading",
+        "appendix": false,
+        "inlines": [
+          {
+            "@type": "Text",
+            "value": "Alpha"
+          }
+        ],
+        "label": null,
+        "level": 1,
+        "numbered": true,
+        "part": false
+      },
+      {
+        "@type": "MathBlock",
+        "env": "equation",
+        "label": "eq:1",
+        "latex": "E=mc^2",
+        "line_labels": [
+          "eq:1"
+        ],
+        "numbered": true
+      },
+      {
+        "@type": "Heading",
+        "appendix": false,
+        "inlines": [
+          {
+            "@type": "Text",
+            "value": "Beta"
+          }
+        ],
+        "label": null,
+        "level": 1,
+        "numbered": true,
+        "part": false
+      },
+      {
+        "@type": "MathBlock",
+        "env": "equation",
+        "label": "eq:2",
+        "latex": "a=b",
+        "line_labels": [
+          "eq:2"
+        ],
+        "numbered": true
+      },
+      {
+        "@type": "Paragraph",
+        "align": null,
+        "inlines": [
+          {
+            "@type": "Text",
+            "value": "See "
+          },
+          {
+            "@type": "Ref",
+            "bookmark": "eq_1",
+            "key": "eq:1",
+            "ref_kind": "equation",
+            "style": "plain"
+          },
+          {
+            "@type": "Text",
+            "value": " and "
+          },
+          {
+            "@type": "Ref",
+            "bookmark": "eq_2",
+            "key": "eq:2",
+            "ref_kind": "equation",
+            "style": "plain"
+          },
+          {
+            "@type": "Text",
+            "value": "."
+          }
+        ]
+      }
+    ],
+    "book": false,
+    "label_aliases": {},
+    "labels": {
+      "eq:1": {
+        "@type": "LabelInfo",
+        "bookmark": "eq_1",
+        "counter_name": "Equation",
+        "kind": "equation",
+        "name": null,
+        "number": null,
+        "sub": null
+      },
+      "eq:2": {
+        "@type": "LabelInfo",
+        "bookmark": "eq_2",
+        "counter_name": "Equation",
+        "kind": "equation",
+        "name": null,
+        "number": null,
+        "sub": null
+      }
+    },
+    "meta": {
+      "@type": "DocumentMeta",
+      "abstract": null,
+      "affiliations": [],
+      "authors": [],
+      "cjk_main_font": null,
+      "cjk_mono_font": null,
+      "cjk_sans_font": null,
+      "columns": 1,
+      "date": null,
+      "front_notes": [],
+      "keywords": null,
+      "language": null,
+      "main_font": null,
+      "running_head": null,
+      "subtitle": null,
+      "title": null
+    }
+  },
+  "labels": {
+    "eq:1": {
+      "bookmark": "eq_1",
+      "counter": "Equation",
+      "kind": "equation"
+    },
+    "eq:2": {
+      "bookmark": "eq_2",
+      "counter": "Equation",
+      "kind": "equation"
+    }
+  },
+  "manifest_version": 1,
+  "tool": "tex2word"
+}

@@ -7,6 +7,7 @@
 //! back to this formatter, as the reference does without the extra.
 
 use tex2word_ir::pystr;
+use tex2word_ir::walk::{self, NodeRef};
 use tex2word_ir::{
     Bibliography, Block, CSLItem, Cite, ConversionReport, Dict, Document, Inline, Value,
 };
@@ -303,54 +304,32 @@ pub fn build_bibliography(items: &Dict<CSLItem>, cited_keys: &[String], style: &
     biblio
 }
 
-/// Visit every `Cite` in body order: paragraphs/headings, quotes, theorem
-/// bodies, figure and table captions, figure bodies, table cells and list
-/// items; through emphasis, links, colour/size spans and foot/endnotes.
-fn walk_cites(blocks: &mut [Block], f: &mut dyn FnMut(&mut Cite)) {
-    fn inl(inlines: &mut [Inline], f: &mut dyn FnMut(&mut Cite)) {
-        for n in inlines {
-            match n {
-                Inline::Cite(c) => f(c),
-                Inline::Emphasis(e) => inl(&mut e.inlines, f),
-                Inline::Link(l) => inl(&mut l.inlines, f),
-                Inline::Footnote(x) => inl(&mut x.inlines, f),
-                Inline::Endnote(x) => inl(&mut x.inlines, f),
-                Inline::Colored(x) => inl(&mut x.inlines, f),
-                Inline::FontSize(x) => inl(&mut x.inlines, f),
-                _ => {}
+/// Every `Cite` below the metadata and blocks, in reading order -- table
+/// cells, captions, theorem bodies and styled spans included (`_walk_cites`).
+fn collect_cites(doc: &Document) -> Vec<Cite> {
+    let mut out = Vec::new();
+    let mut visit = |n: NodeRef<'_>| {
+        if let NodeRef::Inline(Inline::Cite(c)) = n {
+            out.push(c.clone());
+        }
+    };
+    // the front matter (title notes, abstract) reads before the body
+    walk::meta_for_each_node(&doc.meta, &mut visit);
+    walk::for_each_node(&doc.blocks, &mut visit);
+    out
+}
+
+/// Apply `f` to every `Cite` the walk of [`collect_cites`] reaches.
+fn for_each_cite_mut(doc: &mut Document, mut f: impl FnMut(&mut Cite)) {
+    let mut visit = |list: &mut Vec<Inline>| {
+        for n in list.iter_mut() {
+            if let Inline::Cite(c) = n {
+                f(c);
             }
         }
-    }
-    for block in blocks {
-        match block {
-            Block::Paragraph(p) => inl(&mut p.inlines, f),
-            Block::Heading(h) => inl(&mut h.inlines, f),
-            Block::Quote(q) => walk_cites(&mut q.blocks, f),
-            Block::Theorem(t) => walk_cites(&mut t.blocks, f),
-            Block::Figure(fig) => {
-                if let Some(cap) = fig.caption.as_mut() {
-                    inl(cap, f);
-                }
-                walk_cites(&mut fig.blocks, f);
-            }
-            Block::Table(t) => {
-                if let Some(cap) = t.caption.as_mut() {
-                    inl(cap, f);
-                }
-                for row in t.rows.iter_mut() {
-                    for cell in row.cells.iter_mut() {
-                        walk_cites(&mut cell.blocks, f);
-                    }
-                }
-            }
-            Block::ItemList(l) => {
-                for item in l.items.iter_mut() {
-                    walk_cites(&mut item.blocks, f);
-                }
-            }
-            _ => {}
-        }
-    }
+    };
+    walk::meta_inline_lists_mut(&mut doc.meta, &mut visit);
+    walk::inline_lists_mut(&mut doc.blocks, &mut visit);
 }
 
 /// Resolve cites, fill `Cite.rendered`, and populate the Bibliography block.
@@ -363,8 +342,7 @@ pub fn resolve_citations(
     nocite_keys: &[String],
 ) -> Biblio {
     let style = style_family(bibstyle);
-    let mut cites: Vec<Cite> = Vec::new();
-    walk_cites(&mut doc.blocks, &mut |c| cites.push(c.clone()));
+    let cites = collect_cites(doc);
 
     let mut cited_order: Vec<String> = Vec::new();
     for cite in &cites {
@@ -398,9 +376,7 @@ pub fn resolve_citations(
         );
     }
     let biblio = build_bibliography(items, &cited_order, &style);
-    walk_cites(&mut doc.blocks, &mut |c| {
-        c.rendered = Some(render_citation(c, &biblio))
-    });
+    for_each_cite_mut(doc, |c| c.rendered = Some(render_citation(c, &biblio)));
     fill_biblio_block(doc, &biblio.entries, &style);
     biblio
 }

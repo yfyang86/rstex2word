@@ -1,0 +1,11 @@
+{
+"api": "convert_source",
+"args": {
+"source": "\\documentclass{article}\\usepackage{threeparttable,subcaption,rotating}\\begin{document}\n\\begin{table}\\begin{minipage}{.45\\linewidth}\\caption{Left}\\label{l}\\begin{tabular}{l}x\\\\\\end{tabular}\\end{minipage}\\hfill\\begin{minipage}{.45\\linewidth}\\caption{Right}\\label{r}\\begin{tabular}{l}y\\\\\\end{tabular}\\end{minipage}\\end{table}\n\\end{document}"
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_table_floats.py::test_side_by_side_tables_keep_their_captions_and_labels"
+]
+}

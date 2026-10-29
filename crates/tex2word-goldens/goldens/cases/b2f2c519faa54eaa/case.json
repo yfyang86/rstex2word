@@ -1,0 +1,13 @@
+{
+"api": "convert_source",
+"args": {
+"source": "\\documentclass{article}\n\\usepackage{listings}\n\\begin{document}\n\\lstinputlisting[caption=Script,label=lst:a]{a.py} \\ref{lst:a}\n\\end{document}\n"
+},
+"base_dir": "base",
+"files": {
+"base/a.py": "cc42155088fca5730758db72b2a5bca33112a941dfaa2d43098ec422ce4ea213"
+},
+"tests": [
+"tests/test_listings_subrefs.py::test_lstinputlisting_caption"
+]
+}

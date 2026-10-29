@@ -1,0 +1,13 @@
+{
+"api": "validate_docx",
+"args": {
+"docx_bytes": {
+"@blob": "7d9a689f642c1af61e03b33fd91fd4ec254e052221df50d1ff323dbd95151a36"
+}
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_tables.py::test_resizebox_table_renders_valid_docx"
+]
+}

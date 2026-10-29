@@ -1,0 +1,13 @@
+{
+"api": "to_latex",
+"args": {
+"docx_bytes": {
+"@blob": "9d3f767b2529c0f8397741962e37d63c5d426d762c49384c1ec718742266dd1f"
+}
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_reconcile.py::test_default_is_manifest_faithful"
+]
+}

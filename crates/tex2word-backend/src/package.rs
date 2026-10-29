@@ -159,9 +159,24 @@ impl DocxPackage {
     }
 }
 
-/// `numbering_xml()`: the fixed `word/numbering.xml` part.
-pub fn numbering_xml() -> Vec<u8> {
-    NUMBERING_XML.as_bytes().to_vec()
+/// `numbering_xml(restarts)`: `word/numbering.xml`; `restarts` adds one
+/// `w:num` per ordered list as `(numId, ilvl, start)`, so each list restarts
+/// its numbering (lists sharing one instance continue across the document in
+/// Word). An empty slice is Python's `None`.
+pub fn numbering_xml(restarts: &[(i64, i64, i64)]) -> Vec<u8> {
+    let mut xml = NUMBERING_XML.to_string();
+    if !restarts.is_empty() {
+        let mut extra = String::new();
+        for (num_id, ilvl, start) in restarts {
+            extra.push_str(&format!(
+                "  <w:num w:numId=\"{num_id}\"><w:abstractNumId w:val=\"{DECIMAL_ABSTRACT_ID}\"/>\
+                 <w:lvlOverride w:ilvl=\"{ilvl}\"><w:startOverride w:val=\"{start}\"/>\
+                 </w:lvlOverride></w:num>\n"
+            ));
+        }
+        xml = xml.replace("</w:numbering>", &(extra + "</w:numbering>"));
+    }
+    xml.into_bytes()
 }
 
 /// numIds of the numbering scheme.
@@ -170,3 +185,7 @@ pub const DECIMAL_NUM_ID: i64 = 2;
 pub const HEADING_NUM_ID: i64 = 3;
 pub const HEADING_APPENDIX_NUM_ID: i64 = 4;
 pub const PART_NUM_ID: i64 = 5;
+/// abstract list definition of ordered (enumerate) lists
+pub const DECIMAL_ABSTRACT_ID: i64 = 1;
+/// first numId handed out for restartable ordered-list instances
+pub const FIRST_LIST_NUM_ID: i64 = 100;

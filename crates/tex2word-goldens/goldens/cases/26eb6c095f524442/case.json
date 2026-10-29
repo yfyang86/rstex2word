@@ -1,0 +1,11 @@
+{
+"api": "convert_source",
+"args": {
+"source": "\\documentclass{article}\\usepackage{enumitem}\\begin{document}\\begin{enumerate}\\item a\\item b\\end{enumerate}x\\begin{enumerate}\\item c\\end{enumerate}\\begin{enumerate}[start=5]\\item d\\end{enumerate}\\end{document}"
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_field_results.py::test_each_ordered_list_restarts"
+]
+}

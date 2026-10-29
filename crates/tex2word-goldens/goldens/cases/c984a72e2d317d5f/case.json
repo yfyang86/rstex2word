@@ -1,0 +1,13 @@
+{
+"api": "to_latex",
+"args": {
+"docx_bytes": {
+"@blob": "c444493d6df54f0af92d5f60d8911b0473f00a5848dd0e013a0bcb151de0ef5f"
+}
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_corpus_harness.py::test_corpus_latex_roundtrip_preserves_structure[features.tex]"
+]
+}

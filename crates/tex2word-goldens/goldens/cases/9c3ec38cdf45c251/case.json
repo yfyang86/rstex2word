@@ -1,0 +1,13 @@
+{
+"api": "validate_docx",
+"args": {
+"docx_bytes": {
+"@blob": "b2ec84f15f624339c9ffe51fd0732e61d6af28ffb71b0aff7503a3e1abe91ab9"
+}
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_index.py::test_output_with_index_is_valid"
+]
+}

@@ -1,0 +1,11 @@
+{
+"api": "convert_source",
+"args": {
+"source": "\\documentclass{article}\n\n\\begin{document}\n\\twocolumn[\\icmltitle{T}\\begin{icmlauthorlist}\\icmlauthor{A}{x}\\icmlauthor{B}{y,x}\\end{icmlauthorlist}\\icmlaffiliation{x}{UX}\\icmlaffiliation{y}{UY}\\icmlcorrespondingauthor{A}{a@b}\\icmlkeywords{k}]\n\\end{document}\n"
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_front_matter_classes.py::test_neurips_and_icml_authors"
+]
+}

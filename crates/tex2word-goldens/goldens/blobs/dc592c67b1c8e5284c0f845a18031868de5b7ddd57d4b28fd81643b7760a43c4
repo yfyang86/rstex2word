@@ -1,0 +1,74 @@
+{
+  "generated": "2026-01-02T00:00:00+00:00",
+  "ir": {
+    "@type": "Document",
+    "blocks": [
+      {
+        "@type": "CodeBlock",
+        "caption": [
+          {
+            "@type": "Text",
+            "value": "Script"
+          }
+        ],
+        "caption_numbered": true,
+        "label": "lst:a",
+        "lang": null,
+        "text": "print(1)"
+      },
+      {
+        "@type": "Paragraph",
+        "align": null,
+        "inlines": [
+          {
+            "@type": "Ref",
+            "bookmark": "lst_a",
+            "key": "lst:a",
+            "ref_kind": "listing",
+            "style": "plain"
+          }
+        ]
+      }
+    ],
+    "book": false,
+    "label_aliases": {},
+    "labels": {
+      "lst:a": {
+        "@type": "LabelInfo",
+        "bookmark": "lst_a",
+        "counter_name": "Listing",
+        "kind": "listing",
+        "name": "Script",
+        "number": null,
+        "sub": null
+      }
+    },
+    "meta": {
+      "@type": "DocumentMeta",
+      "abstract": null,
+      "affiliations": [],
+      "authors": [],
+      "cjk_main_font": null,
+      "cjk_mono_font": null,
+      "cjk_sans_font": null,
+      "columns": 1,
+      "date": null,
+      "front_notes": [],
+      "keywords": null,
+      "language": null,
+      "main_font": null,
+      "running_head": null,
+      "subtitle": null,
+      "title": null
+    }
+  },
+  "labels": {
+    "lst:a": {
+      "bookmark": "lst_a",
+      "counter": "Listing",
+      "kind": "listing"
+    }
+  },
+  "manifest_version": 1,
+  "tool": "tex2word"
+}

@@ -1,0 +1,106 @@
+{
+  "generated": "2026-01-02T00:00:00+00:00",
+  "ir": {
+    "@type": "Document",
+    "blocks": [],
+    "book": false,
+    "label_aliases": {},
+    "labels": {},
+    "meta": {
+      "@type": "DocumentMeta",
+      "abstract": null,
+      "affiliations": [
+        [
+          {
+            "@type": "Text",
+            "value": "Email: "
+          },
+          {
+            "@type": "Text",
+            "value": "a@b.org"
+          }
+        ],
+        [
+          {
+            "@type": "Emphasis",
+            "inlines": [
+              {
+                "@type": "Text",
+                "value": "a"
+              }
+            ],
+            "kind_": "superscript"
+          },
+          {
+            "@type": "Text",
+            "value": "Uni, Town"
+          }
+        ]
+      ],
+      "authors": [
+        [
+          {
+            "@type": "Text",
+            "value": "Ann"
+          },
+          {
+            "@type": "Emphasis",
+            "inlines": [
+              {
+                "@type": "Text",
+                "value": "∗"
+              }
+            ],
+            "kind_": "superscript"
+          },
+          {
+            "@type": "Emphasis",
+            "inlines": [
+              {
+                "@type": "Text",
+                "value": "a"
+              }
+            ],
+            "kind_": "superscript"
+          }
+        ]
+      ],
+      "cjk_main_font": null,
+      "cjk_mono_font": null,
+      "cjk_sans_font": null,
+      "columns": 1,
+      "date": null,
+      "front_notes": [
+        [
+          {
+            "@type": "Emphasis",
+            "inlines": [
+              {
+                "@type": "Text",
+                "value": "∗"
+              }
+            ],
+            "kind_": "superscript"
+          },
+          {
+            "@type": "Text",
+            "value": " "
+          },
+          {
+            "@type": "Text",
+            "value": "Corresponding."
+          }
+        ]
+      ],
+      "keywords": null,
+      "language": null,
+      "main_font": null,
+      "running_head": null,
+      "subtitle": null,
+      "title": null
+    }
+  },
+  "labels": {},
+  "manifest_version": 1,
+  "tool": "tex2word"
+}

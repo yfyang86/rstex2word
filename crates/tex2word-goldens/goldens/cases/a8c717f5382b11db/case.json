@@ -1,0 +1,11 @@
+{
+"api": "convert_source",
+"args": {
+"source": "\\documentclass{article}\n\\newenvironment{note}{\\begin{quote}\\textbf{Note:} }{\\end{quote}}\\newenvironment{titled}[1]{\\textbf{#1}: }{.}\n\\begin{document}\n\\begin{note}BODY\\end{note} \\begin{titled}{HEAD}TAIL\\end{titled}\n\\end{document}\n"
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_probe_fixes.py::test_newenvironment_begin_and_end_code"
+]
+}

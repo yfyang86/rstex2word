@@ -21,6 +21,7 @@ use tex2word_ir::{
 };
 use tex2word_latexwalker::{ContextDb, LatexWalker, Node, NodeKind, ParsingState, Stop};
 
+use super::frontmatter::is_front_matter;
 use super::helpers::*;
 use crate::colors::ColorTable;
 use crate::siunitx;
@@ -88,12 +89,23 @@ pub(crate) struct Builder {
     labelable: Option<usize>,
     id: usize,
     labels: Vec<Option<String>>,
-    /// true while scanning inside a TikZ/PGF picture of a figure
-    in_picture: bool,
-    /// extra `\label`s on an already-labelled target -> the label it kept;
-    /// `\ref`s to them are redirected so every alias resolves
-    label_aliases: HashMap<String, String>,
+    /// extra \label -> the label its target already carries
+    pub label_aliases: Dict<String>,
     footmarks: Vec<Option<Vec<Inline>>>,
+    /// the document class (`article`, `letter`, `moderncv`, …)
+    pub doc_class: String,
+    /// (label, caption, numbered) of an lstlisting, for the next code block
+    pending_listing: Option<(Option<String>, Option<Vec<Inline>>, bool)>,
+    /// past \maketitle: a \thanks is a plain footnote
+    title_done: bool,
+    /// env -> division its counter resets in
+    pub theorem_within: HashMap<String, String>,
+    /// front matter: elsarticle \fnref labels -> marks
+    pub(crate) fn_marks: Dict<String>,
+    /// front matter: ICML affiliation keys, in author order
+    pub(crate) icml_keys: Vec<String>,
+    pub(crate) letter_from: Option<Vec<Inline>>,
+    pub(crate) letter_signature: Option<Vec<Inline>>,
 }
 
 impl Builder {
@@ -128,10 +140,17 @@ impl Builder {
             labelable: None,
             id: BUILDER_IDS.fetch_add(1, Ordering::Relaxed),
             labels: Vec::new(),
-            in_picture: false,
-            label_aliases: HashMap::new(),
+            label_aliases: Dict::new(),
             subjclass_names: HashMap::new(),
             footmarks: Vec::new(),
+            doc_class: "article".into(),
+            pending_listing: None,
+            title_done: false,
+            theorem_within: HashMap::new(),
+            fn_marks: Dict::new(),
+            icml_keys: Vec::new(),
+            letter_from: None,
+            letter_signature: None,
         }
     }
 
@@ -144,6 +163,80 @@ impl Builder {
         self.labels.push(initial);
         self.labelable = Some(n);
         Some(format!("{LABEL_SLOT}{}:{n}", self.id))
+    }
+
+    /// Attach `\label{label}` to the current target (`_set_label`).
+    ///
+    /// A target keeps its first label; any further one (`\label{a}\label{b}`,
+    /// or a stray `\label` after `\end{figure}`) becomes an alias, so `\ref`
+    /// to either resolves to the same number, as in LaTeX.
+    pub(crate) fn set_label(&mut self, label: &str) {
+        let Some(n) = self.labelable else {
+            return;
+        };
+        if label.is_empty() {
+            return;
+        }
+        match self.labels[n].clone() {
+            None => self.labels[n] = Some(label.to_string()),
+            Some(cur) if cur != label => {
+                self.label_aliases.set_default(label, cur);
+            }
+            Some(_) => {}
+        }
+    }
+
+    /// A footnote; lists, quotes, tables or paragraph breaks inside it make it
+    /// a block note (inline parsing would drop the environments) (`_note`).
+    pub(crate) fn note(&mut self, nodes: &[Node]) -> Footnote {
+        if !has_block_content(nodes) {
+            return Footnote {
+                inlines: self.inlines(nodes),
+                blocks: Vec::new(),
+            };
+        }
+        let saved = self.labelable;
+        let blocks = self.blocks(nodes);
+        self.labelable = saved;
+        Footnote {
+            inlines: Vec::new(),
+            blocks,
+        }
+    }
+
+    /// amsart `\subjclass[scheme]{codes}` -> "<label>: codes" (`_subjclass`).
+    ///
+    /// The label comes from `\@namedef{subjclassname@scheme}{...}` when the
+    /// document declares one, else amsart's default for a year scheme.
+    pub(crate) fn subjclass(&mut self, node: &Node) -> Paragraph {
+        let mut scheme = String::new();
+        for a in argnlist(node).iter().flatten() {
+            if is_bracket_group(a) {
+                scheme = pystr::strip(&chars_of(a.nodelist().unwrap_or(&[]))).to_string();
+            }
+        }
+        let label = match self.subjclass_names.get(&scheme) {
+            Some(l) => l.clone(),
+            None if scheme == "JEL" => "JEL classification".to_string(),
+            None if !scheme.is_empty() && scheme.chars().all(pystr::is_digit) => {
+                format!("{scheme} Mathematics Subject Classification")
+            }
+            None => "Mathematics Subject Classification".to_string(),
+        };
+        let groups = brace_groups(node);
+        let codes = match groups.last() {
+            Some(g) => self.inlines(g),
+            None => Vec::new(),
+        };
+        let mut inlines = vec![Inline::Emphasis(Emphasis {
+            inlines: vec![Inline::text(format!("{label}: "))],
+            kind: "bold".into(),
+        })];
+        inlines.extend(codes);
+        Paragraph {
+            inlines,
+            ..Default::default()
+        }
     }
 
     fn slot_index(&self, s: &str, prefix: &str) -> Option<usize> {
@@ -188,7 +281,13 @@ impl Builder {
         opt(self, &mut meta.title);
         opt(self, &mut meta.date);
         opt(self, &mut meta.keywords);
-        for a in meta.authors.iter_mut().chain(meta.affiliations.iter_mut()) {
+        opt(self, &mut meta.subtitle);
+        for a in meta
+            .authors
+            .iter_mut()
+            .chain(meta.affiliations.iter_mut())
+            .chain(meta.front_notes.iter_mut())
+        {
             self.resolve_inlines(a);
         }
         if let Some(a) = &mut meta.abstract_ {
@@ -198,19 +297,13 @@ impl Builder {
 
     pub fn resolve_inlines(&self, inlines: &mut [Inline]) {
         for node in inlines.iter_mut() {
-            if let Inline::Ref(r) = node {
-                // follow alias chains (bounded: a cycle can't hang us)
-                for _ in 0..8 {
-                    match self.label_aliases.get(&r.key) {
-                        Some(k) if *k != r.key => r.key = k.clone(),
-                        _ => break,
-                    }
-                }
-            }
             if let Inline::Footnote(f) = node {
                 if let Some(n) = self.footmark_slot(f) {
                     f.inlines = self.footmarks[n].clone().unwrap_or_default();
                 }
+            }
+            if let Inline::Footnote(f) = node {
+                self.resolve_blocks(&mut f.blocks);
             }
             if let Some(children) = node.inlines_mut() {
                 self.resolve_inlines(children);
@@ -253,6 +346,7 @@ impl Builder {
                     self.resolve_label(&mut f.label);
                     self.resolve_opt_inlines(&mut f.caption);
                     for s in f.subfigures.iter_mut() {
+                        self.resolve_label(&mut s.label);
                         self.resolve_opt_inlines(&mut s.caption);
                     }
                     self.resolve_blocks(&mut f.blocks);
@@ -265,6 +359,10 @@ impl Builder {
                     self.resolve_label(&mut t.label);
                     self.resolve_opt_inlines(&mut t.title);
                     self.resolve_blocks(&mut t.blocks);
+                }
+                Block::CodeBlock(c) => {
+                    self.resolve_label(&mut c.label);
+                    self.resolve_opt_inlines(&mut c.caption);
                 }
                 Block::Algorithm(a) => {
                     self.resolve_label(&mut a.label);
@@ -391,12 +489,50 @@ impl Builder {
             }
             NodeKind::Specials { specials_chars, .. } => inline_special(specials_chars, out),
             NodeKind::Macro { .. } => self.inline_macro(node, out),
-            NodeKind::Environment { .. } => {}
+            NodeKind::Environment { .. } => self.inline_env(node, out),
         }
+    }
+
+    /// An environment inside a macro argument (a caption, a heading, \fbox,
+    /// \textbf, ...). Word cannot put a table inside a run, so a tabular keeps
+    /// its text: rows on separate lines, cells separated by spaces. Any other
+    /// environment contributes its content.
+    fn inline_env(&mut self, node: &Node, out: &mut Vec<Inline>) {
+        let name = node.environmentname().unwrap_or("");
+        let base = name.trim_end_matches('*');
+        if is_tabular_env(base) {
+            let Block::Table(table) = self.tabular(node) else {
+                return;
+            };
+            for (ri, row) in table.rows.iter().enumerate() {
+                if ri > 0 {
+                    out.push(Inline::LineBreak(LineBreak {}));
+                }
+                for (ci, cell) in row.cells.iter().enumerate() {
+                    if ci > 0 {
+                        out.push(Inline::text("  "));
+                    }
+                    for b in &cell.blocks {
+                        if let Block::Paragraph(p) = b {
+                            out.extend(p.inlines.iter().cloned());
+                        }
+                    }
+                }
+            }
+            return;
+        }
+        if OPAQUE_ENVS.contains(&base) || is_dropped_env(base) {
+            return;
+        }
+        let inner = self.scoped_inlines(node.nodelist().unwrap_or(&[]));
+        out.extend(inner);
     }
 
     fn inline_macro(&mut self, node: &Node, out: &mut Vec<Inline>) {
         let name = node.macroname().unwrap_or("");
+        if self.front_inline(node, out) {
+            return;
+        }
         if is_font_reset(name) {
             // \textrm/\textnormal/... -> upright passthrough
             let inner = self.inlines(&group_nodes(node));
@@ -480,7 +616,7 @@ impl Builder {
                 .filter(|k| !k.is_empty())
                 .map(str::to_string)
                 .collect();
-            let (prefix, suffix) = cite_locators(node);
+            let (prefix, suffix) = self.cite_locators(node);
             out.push(Inline::Cite(Cite {
                 keys,
                 mode: mode.into(),
@@ -491,17 +627,7 @@ impl Builder {
             return;
         }
         if name == "label" {
-            let label = chars_of(&group_nodes(node));
-            if let Some(n) = self.labelable {
-                if !label.is_empty() {
-                    if let Some(old) = self.labels[n].take() {
-                        if old != label {
-                            self.label_aliases.insert(old, label.clone());
-                        }
-                    }
-                    self.labels[n] = Some(label);
-                }
-            }
+            self.set_label(&chars_of(&group_nodes(node)));
             return;
         }
         if self.in_figure_body && (name == "caption" || name == "captionof") {
@@ -512,8 +638,11 @@ impl Builder {
             return;
         }
         if name == "path" || name == "nolinkurl" {
-            // url-package path: monospace text, no hyperlink
-            let text = chars_of(&group_nodes(node));
+            // url-style path, not a link: monospace
+            let text: String = brace_groups(node)
+                .last()
+                .map(|g| g.iter().map(Node::latex_verbatim).collect())
+                .unwrap_or_default();
             if !text.is_empty() {
                 out.push(Inline::Emphasis(Emphasis {
                     inlines: vec![Inline::text(text)],
@@ -548,10 +677,14 @@ impl Builder {
             }
             return;
         }
-        if matches!(name, "footnote" | "thanks" | "marginpar" | "sidenote") {
-            // all degrade to a Word footnote -- the closest aside Word offers
-            let inner = self.inlines(&group_nodes(node));
-            out.push(Inline::Footnote(Footnote { inlines: inner }));
+        if matches!(
+            name,
+            "footnote" | "thanks" | "marginpar" | "sidenote" | "marginnote"
+        ) {
+            // \thanks (title/author note), \marginpar/\sidenote (margin asides)
+            // all degrade to a Word footnote -- the closest aside Word offers.
+            let note = self.note(&group_nodes(node));
+            out.push(Inline::Footnote(note));
             return;
         }
         if name == "footnotemark" {
@@ -564,6 +697,7 @@ impl Builder {
                     latex: format!("{FOOT_SLOT}{}:{n}", self.id),
                     reason: String::new(),
                 })],
+                ..Default::default()
             }));
             return;
         }
@@ -572,7 +706,10 @@ impl Builder {
             let content = self.inlines(&group_nodes(node));
             match self.pending_footmarks.pop_front() {
                 Some(n) => self.footmarks[n] = Some(content),
-                None => out.push(Inline::Footnote(Footnote { inlines: content })),
+                None => out.push(Inline::Footnote(Footnote {
+                    inlines: content,
+                    ..Default::default()
+                })),
             }
             return;
         }
@@ -731,8 +868,8 @@ impl Builder {
             }
             return;
         }
-        if name == "inst" || name == "IEEEauthorrefmark" {
-            // affiliation marker -> superscript
+        if matches!(name, "inst" | "IEEEauthorrefmark" | "tnote") {
+            // markers -> superscript
             let inner = self.inlines(&group_nodes(node));
             out.push(Inline::Emphasis(Emphasis {
                 inlines: inner,
@@ -784,8 +921,24 @@ impl Builder {
             return;
         }
         if accent_char(name).is_some() {
-            let base = chars_of(&group_nodes(node));
+            // render the base: \"{\i} has a macro (dotless i) as its base
+            let rendered = self.inlines(&group_nodes(node));
+            let base = flat_text(&rendered);
             out.push(Inline::text(apply_text_accent(name, &base)));
+            return;
+        }
+        if matches!(
+            name,
+            "MakeUppercase"
+                | "MakeLowercase"
+                | "uppercase"
+                | "lowercase"
+                | "MakeTextUppercase"
+                | "MakeTextLowercase"
+        ) {
+            let mut inner = self.inlines(&group_nodes(node));
+            change_case(&mut inner, name.contains("pper"));
+            out.extend(inner);
             return;
         }
         // graceful degradation
@@ -869,6 +1022,7 @@ impl Builder {
             ordered: false,
             items,
             description: true,
+            ..Default::default()
         }))
     }
 
@@ -922,14 +1076,14 @@ impl Builder {
             .map(|(n, _)| n)
             .collect();
         if node.macroname() == Some("url") && !groups.is_empty() {
-            let url = chars_of(groups[0]);
+            let url = url_text(groups[0]);
             out.push(Inline::Link(Link {
                 inlines: vec![Inline::text(url.clone())],
                 url,
                 anchor: None,
             }));
         } else if groups.len() >= 2 {
-            let url = chars_of(groups[0]);
+            let url = url_text(groups[0]);
             let inner = self.inlines(groups[1]);
             out.push(Inline::Link(Link {
                 inlines: inner,
@@ -937,7 +1091,7 @@ impl Builder {
                 anchor: None,
             }));
         } else if let Some(g) = groups.first() {
-            let url = chars_of(g);
+            let url = url_text(g);
             out.push(Inline::Link(Link {
                 inlines: vec![Inline::text(url.clone())],
                 url,
@@ -986,7 +1140,7 @@ impl Builder {
                 NodeKind::Group { nodelist, .. }
                     if nodelist
                         .iter()
-                        .any(|n| n.is_environment() || is_block_macro_node(n)) =>
+                        .any(|n| n.is_environment() || is_bib_block_macro(n)) =>
                 {
                     flush(&mut inline_buf, &mut scope_marks, &mut out);
                     let inner = self.blocks(nodelist);
@@ -997,21 +1151,7 @@ impl Builder {
             }
             if let Some(name) = macroname {
                 if name == "label" {
-                    let label = chars_of(&group_nodes(node));
-                    // don't overwrite a label the target already captured
-                    if let Some(n) = self.labelable {
-                        if !label.is_empty() {
-                            match &self.labels[n] {
-                                None => self.labels[n] = Some(label),
-                                // a second \label on the same target (e.g. a
-                                // heading with several keys) becomes an alias
-                                Some(kept) if *kept != label => {
-                                    self.label_aliases.insert(label, kept.clone());
-                                }
-                                Some(_) => {}
-                            }
-                        }
-                    }
+                    self.set_label(&chars_of(&group_nodes(node)));
                     continue;
                 }
                 if name == "appendix" || name == "beginappendix" {
@@ -1030,50 +1170,20 @@ impl Builder {
                     }));
                     continue;
                 }
-                if name == "subjclass" {
-                    // amsart subject classification: "<label>: codes"
-                    flush(&mut inline_buf, &mut scope_marks, &mut out);
-                    let scheme = optional_group(node)
-                        .map(|g| pystr::strip(&chars_of(g)).to_string())
-                        .unwrap_or_default();
-                    let label = match self.subjclass_names.get(&scheme) {
-                        Some(l) => l.clone(),
-                        None if scheme == "JEL" => "JEL classification".to_string(),
-                        None if !scheme.is_empty()
-                            && scheme.chars().all(|c| c.is_ascii_digit()) =>
-                        {
-                            format!("{scheme} Mathematics Subject Classification")
+                if is_front_matter(name) {
+                    if let Some(fm) = self.front_matter(node) {
+                        if !fm.is_empty() {
+                            flush(&mut inline_buf, &mut scope_marks, &mut out);
+                            out.extend(fm);
                         }
-                        None => "Mathematics Subject Classification".to_string(),
-                    };
-                    let codes = match brace_groups(node).last() {
-                        Some(g) => self.inlines(g),
-                        None => Vec::new(),
-                    };
-                    let mut inlines = vec![Inline::Emphasis(Emphasis {
-                        inlines: vec![Inline::text(format!("{label}: "))],
-                        kind: "bold".into(),
-                    })];
-                    inlines.extend(codes);
-                    out.push(Block::Paragraph(Paragraph {
-                        inlines,
-                        ..Paragraph::default()
-                    }));
-                    continue;
+                        continue;
+                    }
                 }
                 if matches!(
                     name,
                     "title"
-                        | "author"
                         | "date"
-                        | "keywords"
                         | "IEEEkeywords"
-                        | "institute"
-                        | "affiliation"
-                        | "affil"
-                        | "address"
-                        | "email"
-                        | "orcid"
                         | "markboth"
                         | "markright"
                         | "runninghead"
@@ -1082,8 +1192,68 @@ impl Builder {
                     self.meta_macro(node);
                     continue;
                 }
-                if name == "resizebox" || name == "scalebox" || name == "rotatebox" {
-                    // box-scaling wrappers are transparent
+                if name == "thanks"
+                    && self.meta.title.as_ref().is_some_and(|t| !t.is_empty())
+                    && !self.title_done
+                {
+                    // amsart-style \thanks between \author and \maketitle: a
+                    // first-page note on the title, not a mark on a line of its own
+                    let inner = self.inlines(&group_nodes(node));
+                    if let Some(title) = self.meta.title.as_mut() {
+                        title.push(Inline::Footnote(Footnote {
+                            inlines: inner,
+                            ..Default::default()
+                        }));
+                    }
+                    continue;
+                }
+                if name == "maketitle" {
+                    self.title_done = true;
+                    continue;
+                }
+                if name == "twlistingcaption" {
+                    // lstlisting caption=/label= (see preprocess): for the next code block
+                    let g = brace_groups(node);
+                    if g.len() == 3 {
+                        let label = pystr::strip(&chars_of(g[0])).to_string();
+                        let caption = self.inlines(g[1]);
+                        self.pending_listing = Some((
+                            Some(label).filter(|l| !l.is_empty()),
+                            Some(caption).filter(|c| !c.is_empty()),
+                            pystr::strip(&chars_of(g[2])) != "0",
+                        ));
+                    }
+                    continue;
+                }
+                if name == "twocolumn" {
+                    // \twocolumn[full-width header]: the optional argument is content
+                    flush(&mut inline_buf, &mut scope_marks, &mut out);
+                    for arg in argnlist(node).iter().flatten() {
+                        if let NodeKind::Group { nodelist, .. } = &arg.kind {
+                            let inner = self.blocks(nodelist);
+                            out.extend(inner);
+                        }
+                    }
+                    continue;
+                }
+                if name == "subjclass" {
+                    flush(&mut inline_buf, &mut scope_marks, &mut out);
+                    let p = self.subjclass(node);
+                    out.push(Block::Paragraph(p));
+                    continue;
+                }
+                if name == "parbox" {
+                    let groups = brace_groups(node);
+                    if let Some(last) = groups.last().filter(|g| has_block_content(g)) {
+                        flush(&mut inline_buf, &mut scope_marks, &mut out);
+                        let inner = self.blocks(last);
+                        out.extend(inner);
+                        continue;
+                    }
+                }
+                if is_box_wrapper(name) {
+                    // box-scaling wrappers are transparent: process their content as
+                    // blocks so nested tabulars/minipages survive (\resizebox{w}{h}{X}).
                     flush(&mut inline_buf, &mut scope_marks, &mut out);
                     if let Some(last) = brace_groups(node).last() {
                         let inner = self.blocks(last);
@@ -1228,7 +1398,7 @@ impl Builder {
         out
     }
 
-    fn meta_macro(&mut self, node: &Node) {
+    pub(crate) fn meta_macro(&mut self, node: &Node) {
         let name = node.macroname().unwrap_or("");
         if name == "author" {
             // one \author may list several authors separated by \and
@@ -1361,6 +1531,9 @@ impl Builder {
     }
 
     fn environment(&mut self, node: &Node, out: &mut Vec<Block>) {
+        if self.front_env(node, out) {
+            return;
+        }
         let name = node.environmentname().unwrap_or("");
         let base = name.trim_end_matches('*');
         let starred = name.ends_with('*');
@@ -1376,25 +1549,18 @@ impl Builder {
             out.push(l);
             return;
         }
-        if base == "figure" || base == "wrapfigure" {
+        if matches!(base, "figure" | "wrapfigure" | "sidewaysfigure") {
             self.figure(node, out, starred);
-            return;
-        }
-        if base == "table" || base == "wraptable" {
-            self.table_float(node, out, starred);
             return;
         }
         if matches!(
             base,
-            "tabular"
-                | "array"
-                | "tabularx"
-                | "tabulary"
-                | "longtable"
-                | "supertabular"
-                | "xtabular"
-                | "mpsupertabular"
+            "table" | "wraptable" | "sidewaystable" | "threeparttable"
         ) {
+            self.table_float(node, out, starred || base == "sidewaystable");
+            return;
+        }
+        if is_tabular_env(base) {
             let t = self.tabular(node);
             out.push(t);
             return;
@@ -1437,10 +1603,22 @@ impl Builder {
             return;
         }
         if matches!(base, "verbatim" | "lstlisting" | "minted") {
-            out.push(Block::CodeBlock(CodeBlock {
+            let mut block = CodeBlock {
                 text: verbatim_inner(node),
                 lang: None,
-            }));
+                ..Default::default()
+            };
+            if let Some((label, caption, numbered)) = self.pending_listing.take() {
+                block.label = label;
+                block.caption = caption;
+                block.caption_numbered = numbered;
+            }
+            out.push(Block::CodeBlock(block));
+            return;
+        }
+        if base == "listing" {
+            // minted's float: code + \caption + \label
+            self.listing_float(node, out);
             return;
         }
         if base == "abstract" {
@@ -1519,6 +1697,73 @@ impl Builder {
             out.extend(blocks);
             return;
         }
+        if is_dropped_env(base) {
+            return;
+        }
+        if matches!(base, "IEEEbiography" | "IEEEbiographynophoto") {
+            // \begin{IEEEbiography}[photo]{Name} text -> a bold run-in name
+            let name_group: Option<Vec<Node>> = argnlist(node)
+                .iter()
+                .flatten()
+                .rfind(|a| matches!(group_parts(a), Some((_, d)) if d.0 == "{"))
+                .map(|a| a.nodelist().unwrap_or(&[]).to_vec());
+            let mut body = self.blocks(nodelist);
+            if let Some(g) = name_group {
+                let lead = vec![
+                    Inline::Emphasis(Emphasis {
+                        inlines: self.inlines(&g),
+                        kind: "bold".into(),
+                    }),
+                    Inline::text(" "),
+                ];
+                match body.first_mut() {
+                    Some(Block::Paragraph(p)) => {
+                        p.inlines.splice(0..0, lead);
+                    }
+                    _ => body.insert(
+                        0,
+                        Block::Paragraph(Paragraph {
+                            inlines: lead,
+                            align: None,
+                        }),
+                    ),
+                }
+            }
+            out.extend(body);
+            return;
+        }
+        if let Some(title) = ack_heading(base) {
+            out.push(Block::Heading(Heading {
+                level: 1,
+                inlines: vec![Inline::text(title)],
+                numbered: false,
+                ..Default::default()
+            }));
+            let blocks = self.blocks(nodelist);
+            out.extend(blocks);
+            return;
+        }
+        if matches!(base, "IEEEkeywords" | "keyword" | "keywords") {
+            // IEEEtran / elsarticle keyword blocks (elsarticle separates with \sep)
+            let mut parts: Vec<Vec<Node>> = vec![Vec::new()];
+            for n in nodelist {
+                if n.macroname() == Some("sep") {
+                    parts.push(Vec::new());
+                } else if let Some(last) = parts.last_mut() {
+                    last.push(n.clone());
+                }
+            }
+            let mut keywords = Vec::new();
+            for (i, part) in parts.iter().enumerate() {
+                if i > 0 {
+                    keywords.push(Inline::text("; "));
+                }
+                let inl = self.inlines(part);
+                keywords.extend(inl);
+            }
+            self.meta.keywords = Some(clean_inlines(keywords, true));
+            return;
+        }
         // Otherwise treat the unknown environment as a transparent wrapper
         self.report.warn(
             name,
@@ -1553,6 +1798,11 @@ impl Builder {
             )
         };
         // become the label target *before* parsing the body
+        let within = if counter.is_some() {
+            self.theorem_within.get(base).cloned()
+        } else {
+            None
+        };
         let label = self.label_target(None);
         let blocks = self.blocks(node.nodelist().unwrap_or(&[]));
         Block::Theorem(Theorem {
@@ -1561,6 +1811,7 @@ impl Builder {
             title,
             label,
             counter,
+            within,
         })
     }
 
@@ -1584,6 +1835,32 @@ impl Builder {
             label,
             numbered: true,
         })
+    }
+
+    /// `\citep[pre][post]{key}` locators (`_cite_locators`): one optional
+    /// argument is the post-note, two are (pre, post).
+    fn cite_locators(&mut self, node: &Node) -> (Option<String>, Option<String>) {
+        let groups: Vec<Vec<Node>> = argnlist(node)
+            .iter()
+            .flatten()
+            .filter_map(group_parts)
+            .filter(|(_, d)| d.0 == "[" && d.1 == "]")
+            .map(|(n, _)| n.to_vec())
+            .collect();
+        // rendered, not raw: p.~3 -> "p. 3", \S~2 -> "§ 2"
+        let opts: Vec<String> = groups
+            .iter()
+            .map(|g| {
+                let inl = self.inlines(g);
+                flat_text(&inl)
+            })
+            .collect();
+        let nonempty = |s: &String| (!s.is_empty()).then(|| s.clone());
+        match opts.len() {
+            0 => (None, None),
+            1 => (None, nonempty(&opts[0])),
+            _ => (nonempty(&opts[0]), nonempty(&opts[1])),
+        }
     }
 
     fn env_optional_title(&mut self, node: &Node) -> Option<Vec<Inline>> {
@@ -1672,6 +1949,7 @@ impl Builder {
             ordered,
             items,
             description,
+            start: if ordered { list_start(node) } else { 1 },
         })
     }
 
@@ -1707,8 +1985,14 @@ impl Builder {
                 fig.blocks = self.figure_body_blocks(nodelist);
             }
             if fig.image.is_none() && fig.subfigures.is_empty() && fig.blocks.is_empty() {
-                self.report
-                    .warn("figure", "figure without convertible graphics (e.g. TikZ)");
+                if has_opaque_env(&fig.source) {
+                    // a drawing: the writer compiles it, and warns (with the
+                    // reason) only when it cannot
+                    self.report.info("figure", "figure drawn with TikZ/PGF");
+                } else {
+                    self.report
+                        .warn("figure", "figure without convertible graphics");
+                }
             }
             fig.label = self.label_target(fig.label.take());
             out.push(Block::Figure(fig));
@@ -1924,13 +2208,10 @@ impl Builder {
                     if environmentname.trim_end_matches('*') == "subfigure" {
                         let s = self.subfigure_from_env(child);
                         fig.subfigures.push(s);
-                    } else if is_drawing_env(environmentname) {
-                        // a picture's own \label/\caption (e.g. a `\foreach
-                        // \label/\value in ...` loop variable) are not the
-                        // figure's; graphics inside nodes still count
-                        let prev = std::mem::replace(&mut self.in_picture, true);
-                        self.collect_figure_parts(nodelist, fig, panels.as_deref_mut());
-                        self.in_picture = prev;
+                    } else if OPAQUE_ENVS.contains(&environmentname.trim_end_matches('*')) {
+                        // a drawing's own macros are not the figure's: TikZ's
+                        // \foreach \label/\value in {...} must not become its label
+                        continue;
                     } else {
                         self.collect_figure_parts(nodelist, fig, panels.as_deref_mut());
                     }
@@ -1955,7 +2236,6 @@ impl Builder {
                             });
                         }
                     }
-                    "caption" | "captionof" | "label" if self.in_picture => {}
                     "caption" | "captionof" => {
                         let cap = self.inlines(&group_nodes(child));
                         let numbered = !has_star(child);
@@ -2019,6 +2299,16 @@ impl Builder {
             caption,
             label: None,
         };
+        // \subfloat[Caption\label{fig:a}]{...}: the label sits in the caption
+        for a in argnlist(node).iter().flatten() {
+            if is_bracket_group(a) {
+                for child in walk_macros(a.nodelist().unwrap_or(&[])) {
+                    if child.macroname() == Some("label") {
+                        sub.label = Some(chars_of(&group_nodes(child)));
+                    }
+                }
+            }
+        }
         if let Some(last) = groups.last() {
             for child in walk_macros(last) {
                 match child.macroname() {
@@ -2032,7 +2322,22 @@ impl Builder {
     }
 
     fn table_float(&mut self, node: &Node, out: &mut Vec<Block>, spanning: bool) {
-        // Pull the float's own caption/label, then process the rest as blocks
+        // Pull the float's own caption/label, then process the rest as blocks --
+        // which descends \resizebox/\scalebox and minipage so nested tabulars (a
+        // grid of sub-tables) survive instead of being dumped as raw LaTeX.
+        let panels: Vec<&Node> = node
+            .nodelist()
+            .unwrap_or(&[])
+            .iter()
+            .filter(|n| {
+                matches!(n.environmentname(), Some("minipage" | "subtable"))
+                    && has_caption(n.nodelist().unwrap_or(&[]))
+            })
+            .collect();
+        if panels.len() >= 2 {
+            self.table_panels(node, &panels, out, spanning);
+            return;
+        }
         let mut caption: Option<Vec<Inline>> = None;
         let mut caption_numbered = true;
         let mut label: Option<String> = None;
@@ -2051,7 +2356,17 @@ impl Builder {
                     caption = Some(self.inlines(&group_nodes(child)));
                     caption_numbered = !has_star(child);
                 }
-                Some("label") => label = Some(chars_of(&group_nodes(child))),
+                Some("label") => {
+                    let lab = chars_of(&group_nodes(child));
+                    match &label {
+                        None => label = Some(lab),
+                        Some(cur) if !lab.is_empty() && &lab != cur => {
+                            let cur = cur.clone();
+                            self.label_aliases.set_default(lab, cur);
+                        }
+                        Some(_) => {}
+                    }
+                }
                 _ => content.push(child.clone()),
             }
         }
@@ -2073,6 +2388,119 @@ impl Builder {
             t.spanning = spanning;
         }
         out.extend(sub_blocks);
+    }
+
+    /// minted's `listing` float: its caption and label go to the code.
+    fn listing_float(&mut self, node: &Node, out: &mut Vec<Block>) {
+        let mut caption: Option<Vec<Inline>> = None;
+        let mut numbered = true;
+        let mut label: Option<String> = None;
+        let mut content: Vec<Node> = Vec::new();
+        for child in node.nodelist().unwrap_or(&[]) {
+            match child.macroname() {
+                Some("caption") => {
+                    caption = Some(self.inlines(&group_nodes(child)));
+                    numbered = !has_star(child);
+                }
+                Some("label") => {
+                    let lab = chars_of(&group_nodes(child));
+                    if label.as_deref().is_none_or(str::is_empty) {
+                        label = Some(lab);
+                    }
+                }
+                _ => content.push(child.clone()),
+            }
+        }
+        let mut blocks = self.blocks(&content);
+        if let Some(Block::CodeBlock(code)) =
+            blocks.iter_mut().find(|b| matches!(b, Block::CodeBlock(_)))
+        {
+            code.caption = caption;
+            code.label = label;
+            code.caption_numbered = numbered;
+        }
+        out.extend(blocks);
+    }
+
+    /// The label a (possibly slotted) label field holds right now.
+    fn current_label(&self, label: &Option<String>) -> Option<String> {
+        match label
+            .as_deref()
+            .and_then(|l| self.slot_index(l, LABEL_SLOT))
+        {
+            Some(n) => self.labels[n].clone(),
+            None => label.clone(),
+        }
+    }
+
+    /// Several captioned minipages/subtables in one `table`: each panel is a
+    /// table with its own caption and label. With an overall caption too
+    /// (subtables), that caption numbers the first panel and the panels' own
+    /// captions become "(a) ..." lines (`_table_panels`).
+    fn table_panels(
+        &mut self,
+        node: &Node,
+        panels: &[&Node],
+        out: &mut Vec<Block>,
+        spanning: bool,
+    ) {
+        let mut outer_caption: Option<Vec<Inline>> = None;
+        let mut outer_label: Option<String> = None;
+        for child in node.nodelist().unwrap_or(&[]) {
+            match child.macroname() {
+                Some("caption") => outer_caption = Some(self.inlines(&group_nodes(child))),
+                Some("label") if outer_label.as_deref().is_none_or(str::is_empty) => {
+                    outer_label = Some(chars_of(&group_nodes(child)));
+                }
+                _ => {}
+            }
+        }
+        // (index into `out`) of the first panel's table
+        let mut first_table: Option<usize> = None;
+        for (i, panel) in panels.iter().enumerate() {
+            let mut sub: Vec<Block> = Vec::new();
+            self.table_float(panel, &mut sub, spanning);
+            let first = sub.iter().position(|b| matches!(b, Block::Table(_)));
+            if let (Some(_), Some(ti)) = (&outer_caption, first) {
+                let Block::Table(t) = &mut sub[ti] else {
+                    unreachable!()
+                };
+                let cap = t.caption.take().filter(|c| !c.is_empty());
+                let t_label = t.label.take();
+                if let Some(cap) = cap {
+                    let letter = char::from(b'a' + (i % 26) as u8);
+                    let mut inl = vec![Inline::text(format!("({letter}) "))];
+                    inl.extend(cap);
+                    sub.insert(
+                        ti,
+                        Block::Paragraph(Paragraph {
+                            inlines: inl,
+                            align: Some("center".into()),
+                        }),
+                    );
+                }
+                let t_label = self.current_label(&t_label).filter(|l| !l.is_empty());
+                if let (Some(tl), Some(ol)) =
+                    (t_label, outer_label.as_ref().filter(|l| !l.is_empty()))
+                {
+                    // \ref{sub-label} -> the table's number
+                    self.label_aliases.set_default(tl, ol.clone());
+                }
+            }
+            if first_table.is_none() {
+                if let Some(ti) = sub.iter().position(|b| matches!(b, Block::Table(_))) {
+                    first_table = Some(out.len() + ti);
+                }
+            }
+            out.extend(sub);
+        }
+        if let (Some(cap), Some(fi)) = (outer_caption, first_table) {
+            let slot = self.label_target(outer_label);
+            if let Block::Table(t) = &mut out[fi] {
+                t.caption = Some(cap);
+                t.label = slot;
+            }
+        }
     }
 
     fn tabular(&mut self, node: &Node) -> Block {
@@ -2413,24 +2841,6 @@ fn numeric_bibliography() -> Block {
         entries: Vec::new(),
         style: "numeric".into(),
     })
-}
-
-/// Extract `\citep[pre][post]{key}` locators (natbib: one optional is the
-/// post-note; two are (pre, post)).
-fn cite_locators(node: &Node) -> (Option<String>, Option<String>) {
-    let opts: Vec<String> = argnlist(node)
-        .iter()
-        .flatten()
-        .filter_map(group_parts)
-        .filter(|(_, d)| d.0 == "[" && d.1 == "]")
-        .map(|(n, _)| chars_of(n))
-        .collect();
-    let nonempty = |s: &String| (!s.is_empty()).then(|| s.clone());
-    match opts.len() {
-        0 => (None, None),
-        1 => (None, nonempty(&opts[0])),
-        _ => (nonempty(&opts[0]), nonempty(&opts[1])),
-    }
 }
 
 /// Raw LaTeX of a user env's `\begin` arguments (an optional first argument

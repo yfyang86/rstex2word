@@ -1,0 +1,13 @@
+{
+"api": "validate_docx",
+"args": {
+"docx_bytes": {
+"@blob": "bd0fcc54cf0ac29684e0fffb71fa932c1a40bfd276609b44ccdebe9c0894aadb"
+}
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_uat_bundle.py::test_uat_bundle_converts_cleanly[bundle:scribe1.tex]"
+]
+}

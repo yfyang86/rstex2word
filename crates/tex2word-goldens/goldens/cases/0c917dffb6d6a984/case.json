@@ -1,0 +1,11 @@
+{
+"api": "convert_source",
+"args": {
+"source": "\\documentclass{article}\n\n\\begin{document}\n\\newlength{\\gap}\\setlength{\\gap}{3pt}\\addtolength{\\gap}{1pt}A\\hspace{\\gap}B\n\\end{document}\n"
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_macros_primitives.py::test_lengths_are_silent"
+]
+}

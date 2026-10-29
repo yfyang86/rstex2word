@@ -1,0 +1,146 @@
+{
+  "generated": "2026-01-02T00:00:00+00:00",
+  "ir": {
+    "@type": "Document",
+    "blocks": [
+      {
+        "@type": "Heading",
+        "appendix": false,
+        "inlines": [
+          {
+            "@type": "Text",
+            "value": "Edu"
+          }
+        ],
+        "label": null,
+        "level": 1,
+        "numbered": true,
+        "part": false
+      },
+      {
+        "@type": "Paragraph",
+        "align": null,
+        "inlines": [
+          {
+            "@type": "Text",
+            "value": "2020"
+          },
+          {
+            "@type": "Text",
+            "value": "  "
+          },
+          {
+            "@type": "Emphasis",
+            "inlines": [
+              {
+                "@type": "Text",
+                "value": "MSc"
+              }
+            ],
+            "kind_": "bold"
+          },
+          {
+            "@type": "Text",
+            "value": ", "
+          },
+          {
+            "@type": "Text",
+            "value": "Uni"
+          },
+          {
+            "@type": "Text",
+            "value": ", "
+          },
+          {
+            "@type": "Text",
+            "value": "Town"
+          },
+          {
+            "@type": "LineBreak"
+          },
+          {
+            "@type": "Text",
+            "value": "Thesis."
+          }
+        ]
+      },
+      {
+        "@type": "Paragraph",
+        "align": null,
+        "inlines": [
+          {
+            "@type": "Emphasis",
+            "inlines": [
+              {
+                "@type": "Text",
+                "value": "Lang"
+              }
+            ],
+            "kind_": "bold"
+          },
+          {
+            "@type": "Text",
+            "value": ": "
+          },
+          {
+            "@type": "Text",
+            "value": "English"
+          }
+        ]
+      }
+    ],
+    "book": false,
+    "label_aliases": {},
+    "labels": {},
+    "meta": {
+      "@type": "DocumentMeta",
+      "abstract": null,
+      "affiliations": [],
+      "authors": [],
+      "cjk_main_font": null,
+      "cjk_mono_font": null,
+      "cjk_sans_font": null,
+      "columns": 1,
+      "date": null,
+      "front_notes": [
+        [
+          {
+            "@type": "Text",
+            "value": "Email: "
+          },
+          {
+            "@type": "Text",
+            "value": "a@b.org"
+          }
+        ]
+      ],
+      "keywords": null,
+      "language": null,
+      "main_font": null,
+      "running_head": null,
+      "subtitle": [
+        {
+          "@type": "Text",
+          "value": "Engineer"
+        }
+      ],
+      "title": [
+        {
+          "@type": "Text",
+          "value": "Ann"
+        },
+        {
+          "@type": "Text",
+          "value": " "
+        },
+        {
+          "@type": "Text",
+          "value": "Lee"
+        }
+      ]
+    }
+  },
+  "labels": {},
+  "manifest_version": 1,
+  "tool": "tex2word"
+}

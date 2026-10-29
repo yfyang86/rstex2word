@@ -18,12 +18,14 @@ macro_rules! lazy_re {
     };
 }
 
-// A TeX comment runs from an unescaped `%` to the end of the line *and*
-// consumes the line-ending newline plus the next line's leading whitespace.
-// Eating the newline is essential: otherwise a full-line `% comment` collapses
-// to a blank line and is misread as a paragraph break.
-lazy_re!(COMMENT_RE, r"(?<!\\)%[^\n]*(?:\n[ \t]*)?");
-lazy_re!(INPUT_RE, r"\\(?:input|include)\s*\{([^}]+)\}");
+// \input{f}, \include{f}, and the plain-TeX \input f (ended by a space)
+lazy_re!(
+    INPUT_RE,
+    r"\\(?:input|include)\s*\{([^}]+)\}|\\input[ \t]+(?![\\{])([^\s{}%\\]+)"
+);
+// subfiles: \subfile{f} / \subfileinclude{f} inline the subfile's document body
+lazy_re!(SUBFILE_RE, r"\\subfile(?:include)?\s*\{([^}]+)\}");
+lazy_re!(ENDINPUT_RE, r"\\endinput(?![A-Za-z@])");
 // import package: \import{dir/}{file}, \subimport{dir/}{file} (and *from variants)
 lazy_re!(
     IMPORT_RE,
@@ -32,69 +34,207 @@ lazy_re!(
 // booktabs \cmidrule(lr){2-3} trim spec -- drop the (lr)/(l)/(r)
 lazy_re!(CMIDRULE_TRIM_RE, r"(\\cmidrule)\s*\([lr]*\)");
 
-/// Remove LaTeX line comments, preserving escaped `\%`.
+/// environments whose body is verbatim: a `%` there is text, not a comment
+const VERBATIM_ENVS: &[&str] = &[
+    "verbatim",
+    "verbatim*",
+    "Verbatim",
+    "Verbatim*",
+    "BVerbatim",
+    "LVerbatim",
+    "lstlisting",
+    "minted",
+    "alltt",
+    "filecontents",
+    "filecontents*",
+    "comment",
+    "spverbatim",
+    "boxedverbatim",
+];
+
+static COMMENT_SCAN_RE: LazyLock<Regex> = LazyLock::new(|| {
+    let envs: Vec<String> = VERBATIM_ENVS.iter().map(|e| re::escape(e)).collect();
+    Regex::new(&format!(
+        concat!(
+            r"\\begin\s*\{{(?P<env>{})\}}",
+            r"|\\(?P<inline>verb\*?|lstinline|url|path|nolinkurl)(?![A-Za-z])",
+            r"|\\[\\%]", // \\ and \% are not comment starts
+            r"|%"
+        ),
+        envs.join("|")
+    ))
+});
+
+/// Remove LaTeX line comments, preserving escaped `\%` and the bodies of
+/// verbatim environments, `\verb`/`\lstinline` and `\url`/`\path`
+/// arguments, where `%` is literal text.
 pub fn strip_comments(source: &str) -> String {
-    COMMENT_RE.sub("", source)
+    if !source.contains('%') {
+        return source.to_string();
+    }
+    let mut out = String::with_capacity(source.len());
+    let mut pos = 0;
+    let n = source.len();
+    loop {
+        let Some(m) = COMMENT_SCAN_RE.search_from(source, pos) else {
+            out.push_str(&source[pos..]);
+            break;
+        };
+        let start = m.start();
+        if let Some(env) = m.name("env").filter(|e| !e.is_empty()) {
+            let end_tag = format!("\\end{{{env}}}");
+            let stop = match source[m.end()..].find(&end_tag) {
+                Some(k) => m.end() + k + end_tag.len(),
+                None => n,
+            };
+            out.push_str(&source[pos..stop]);
+            pos = stop;
+        } else if let Some(cmd) = m.name("inline").filter(|c| !c.is_empty()) {
+            let stop = inline_verbatim_end(source, m.end(), cmd);
+            out.push_str(&source[pos..stop]);
+            pos = stop;
+        } else if m.as_str() == "%" {
+            out.push_str(&source[pos..start]);
+            let Some(k) = source[start..].find('\n') else {
+                break;
+            };
+            // a comment eats its newline and the next line's indentation
+            pos = start + k + 1;
+            while pos < n && matches!(source.as_bytes()[pos], b' ' | b'\t') {
+                pos += 1;
+            }
+        } else {
+            // \\ or \%
+            out.push_str(&source[pos..m.end()]);
+            pos = m.end();
+        }
+    }
+    out
+}
+
+/// End index of the argument of `\verb|..|`, `\lstinline[..]{..}`,
+/// `\url{..}` & co. that starts at `i` (`i` itself if there is none).
+fn inline_verbatim_end(s: &str, mut i: usize, cmd: &str) -> usize {
+    let n = s.len();
+    let b = s.as_bytes();
+    if cmd == "lstinline" && i < n && b[i] == b'[' {
+        i = match s[i..].find(']') {
+            Some(k) => i + k + 1,
+            None => n,
+        };
+    }
+    if i >= n {
+        return n;
+    }
+    if b[i] == b'{' && cmd != "verb" && cmd != "verb*" {
+        let mut depth = 0i64;
+        for (j, &c) in b.iter().enumerate().skip(i) {
+            match c {
+                b'{' => depth += 1,
+                b'}' => {
+                    depth -= 1;
+                    if depth == 0 {
+                        return j + 1;
+                    }
+                }
+                // never let a broken \url swallow the document
+                b'\n' if matches!(cmd, "url" | "path" | "nolinkurl") => return j,
+                _ => {}
+            }
+        }
+        return n;
+    }
+    let delim = s[i..].chars().next().unwrap();
+    if pystr::is_space(delim) || pystr::is_alpha(delim) {
+        return i;
+    }
+    let after = i + delim.len_utf8();
+    let close = s[after..].find(delim).map(|k| after + k);
+    let line_end = s[after..].find('\n').map(|k| after + k);
+    match close {
+        // not a well-formed inline verbatim: treat normally
+        None => i,
+        Some(c) if line_end.is_some_and(|l| l < c) => i,
+        Some(c) => c + delim.len_utf8(),
+    }
 }
 
 /// Inline `\input`/`\include` (and import-package `\import`) files.
 ///
-/// As in TeX, an `\input` path is relative to the main document's directory,
-/// also inside nested files; the including file's own directory is tried
-/// next, for projects that rely on that.
+/// As in TeX, a nested `\input` resolves against the main document's
+/// directory first and only then against the including file's directory
+/// (`gen/outer.tex` doing `\input{gen/inner}` means `gen/inner.tex`).
+/// Inside an `\import`-ed file, the import directory comes first.
 pub fn flatten_inputs(source: &str, base_dir: &str) -> io::Result<String> {
-    flatten_inputs_depth(source, base_dir, base_dir, 0)
-}
-
-/// True if `source[..at]` ends in a control word (`\protect`), whose name
-/// would otherwise swallow text inlined right after it.
-fn ends_in_control_word(source: &str, at: usize) -> bool {
-    let head = &source.as_bytes()[..at];
-    let letters = head
-        .iter()
-        .rev()
-        .take_while(|b| b.is_ascii_alphabetic())
-        .count();
-    if letters == 0 || letters >= head.len() {
-        return false;
-    }
-    let slash = head.len() - letters - 1;
-    // `\\name` is a line break followed by text, not a control word
-    head[slash] == b'\\' && (slash == 0 || head[slash - 1] != b'\\')
+    flatten_inputs_depth(source, base_dir, 0, &[])
 }
 
 fn flatten_inputs_depth(
     source: &str,
-    root_dir: &str,
     base_dir: &str,
     depth: usize,
+    dirs: &[String],
 ) -> io::Result<String> {
     if depth > 20 {
         return Ok(source.to_string());
     }
-    let inline = |path: &str| -> io::Result<Option<String>> {
-        if !pyos::isfile(path) {
-            return Ok(None);
-        }
-        let inner = strip_comments(&pyos::read_text(path, Errors::Strict)?);
-        let dir = pyos::dirname(path);
-        let dir = if dir.is_empty() {
-            base_dir.to_string()
-        } else {
-            dir
-        };
-        flatten_inputs_depth(&inner, root_dir, &dir, depth + 1).map(Some)
+    let dirs: Vec<String> = if dirs.is_empty() {
+        vec![base_dir.to_string()]
+    } else {
+        dirs.to_vec()
     };
-    let candidates = |name: &str| -> Vec<String> {
-        if name.ends_with(".tex") {
+    let inline = |path: &str, nested: Vec<String>, body_only: bool| -> io::Result<String> {
+        let mut inner = strip_comments(&control_chars(&pyos::read_text(path, Errors::Strict)?));
+        if body_only {
+            // a subfile: only what is between \begin/\end{document}
+            if let Some(b) = inner.find("\\begin{document}") {
+                let e = inner.rfind("\\end{document}");
+                let from = b + "\\begin{document}".len();
+                let to = match e {
+                    Some(e) if e > b => e,
+                    _ => inner.len(),
+                };
+                inner = inner[from..to.max(from)].to_string();
+            }
+        }
+        if let Some(end) = ENDINPUT_RE.search(&inner) {
+            // \endinput: TeX stops reading this file after the current line
+            let (es, ee) = (end.start(), end.end());
+            let rest = match inner[ee..].find('\n') {
+                Some(k) => inner[ee..ee + k].to_string(),
+                None => String::new(),
+            };
+            inner = format!("{}{}", &inner[..es], rest);
+        }
+        flatten_inputs_depth(&inner, base_dir, depth + 1, &dedupe(&nested))
+    };
+    let find = |name: &str, search: &[String]| -> Option<String> {
+        let candidates = if name.ends_with(".tex") {
             vec![name.to_string()]
         } else {
             vec![name.to_string(), format!("{name}.tex")]
+        };
+        for directory in search {
+            for cand in &candidates {
+                let path = pyos::join2(directory, cand);
+                if pyos::isfile(&path) {
+                    return Some(path);
+                }
+            }
         }
+        None
     };
-    // keep `\protect\input{x}` from gluing into `\protectText`
-    let separate = |src: &str, m: &re::Match, text: String| -> String {
-        if ends_in_control_word(src, m.start()) && !text.starts_with(char::is_whitespace) {
+    // \protect\input{f} must not glue f's first word onto \protect
+    let glue = |src: &str, start: usize, text: String| -> String {
+        let head = &src[..start];
+        let mut from = start;
+        for (k, (idx, _)) in head.char_indices().rev().enumerate() {
+            if k == 64 {
+                break;
+            }
+            from = idx;
+        }
+        if CONTROL_WORD_END_RE.search(&head[from..]).is_some() {
             format!(" {text}")
         } else {
             text
@@ -102,45 +242,72 @@ fn flatten_inputs_depth(
     };
     let mut err: Option<io::Error> = None;
     let source = IMPORT_RE.sub_fn(source, |m| {
-        // \import{dir/}{file}: the file lives under dir, relative to base_dir
+        // \import{dir/}{file}: the file lives under dir, relative to the
+        // current file; its own \input{}s look in dir first
         let directory = pystr::strip(m.group_str(1));
         let name = pystr::strip(m.group_str(2));
-        for cand in candidates(name) {
-            match inline(&pyos::join(base_dir, &[directory, &cand])) {
-                Ok(Some(text)) => return separate(source, m, text),
-                Ok(None) => {}
-                Err(e) => {
-                    err.get_or_insert(e);
-                    return String::new();
-                }
+        let search: Vec<String> = dirs.iter().map(|d| pyos::join2(d, directory)).collect();
+        let Some(path) = find(name, &search) else {
+            return String::new();
+        };
+        let mut nested = vec![pyos::dirname(&path)];
+        nested.extend(dirs.iter().cloned());
+        match inline(&path, nested, false) {
+            Ok(text) => glue(source, m.start(), text),
+            Err(e) => {
+                err.get_or_insert(e);
+                String::new()
             }
         }
-        String::new()
     });
-    let mut dirs = vec![root_dir];
-    if base_dir != root_dir {
-        dirs.push(base_dir);
-    }
-    let out = INPUT_RE.sub_fn(&source, |m| {
-        let name = pystr::strip(m.group_str(1));
-        for dir in &dirs {
-            for cand in candidates(name) {
-                match inline(&pyos::join2(dir, &cand)) {
-                    Ok(Some(text)) => return separate(&source, m, text),
-                    Ok(None) => {}
-                    Err(e) => {
-                        err.get_or_insert(e);
-                        return String::new();
-                    }
-                }
+    let source = SUBFILE_RE.sub_fn(&source, |m| {
+        // a subfile's own paths are relative to its directory (subfiles package)
+        let Some(path) = find(pystr::strip(m.group_str(1)), &dirs) else {
+            return String::new();
+        };
+        let nested = vec![pyos::dirname(&path), dirs[0].clone()];
+        match inline(&path, nested, true) {
+            Ok(text) => glue(&source, m.start(), text),
+            Err(e) => {
+                err.get_or_insert(e);
+                String::new()
             }
         }
-        String::new() // missing include -> drop (graceful degradation)
+    });
+    let out = INPUT_RE.sub_fn(&source, |m| {
+        let raw = match m.group(1) {
+            Some(g) if !g.is_empty() => g,
+            _ => m.group_str(2),
+        };
+        let Some(path) = find(pystr::strip(raw), &dirs) else {
+            return String::new(); // missing include -> drop (graceful degradation)
+        };
+        let nested = vec![dirs[0].clone(), pyos::dirname(&path)];
+        match inline(&path, nested, false) {
+            Ok(text) => glue(&source, m.start(), text),
+            Err(e) => {
+                err.get_or_insert(e);
+                String::new()
+            }
+        }
     });
     match err {
         Some(e) => Err(e),
         None => Ok(out),
     }
+}
+
+lazy_re!(CONTROL_WORD_END_RE, r"\\[A-Za-z@]+$");
+
+fn dedupe(dirs: &[String]) -> Vec<String> {
+    let mut out: Vec<String> = Vec::new();
+    for d in dirs {
+        let norm = pyos::normpath(if d.is_empty() { "." } else { d });
+        if !out.contains(&norm) {
+            out.push(norm);
+        }
+    }
+    out
 }
 
 // \verb* (show-spaces form) -> \verb, which pylatexenc parses natively.
@@ -158,20 +325,91 @@ lazy_re!(
 // source file verbatim (after flattening, so it is never comment-stripped).
 lazy_re!(
     LSTINPUT_RE,
-    r"\\(?:lstinputlisting|verbatiminput)\s*(?:\[[^\]]*\])?\s*\{([^}]+)\}"
+    concat!(
+        r"\\(?:lstinputlisting|verbatiminput)\s*(?:\[(?P<opts>(?:[^\[\]{}]|\{[^{}]*\})*)\])?",
+        r"\s*\{([^}]+)\}"
+    )
 );
+
+/// `key=value` pairs of a listings option list (top-level commas only).
+fn split_options(opts: &str) -> Vec<(String, String)> {
+    let mut out: Vec<(String, String)> = Vec::new();
+    let mut depth = 0i64;
+    let mut buf = String::new();
+    let mut parts: Vec<String> = Vec::new();
+    for c in opts.chars() {
+        depth += match c {
+            '{' | '[' => 1,
+            '}' | ']' => -1,
+            _ => 0,
+        };
+        if c == ',' && depth == 0 {
+            parts.push(std::mem::take(&mut buf));
+        } else {
+            buf.push(c);
+        }
+    }
+    parts.push(buf);
+    for part in parts {
+        if let Some((key, value)) = part.split_once('=') {
+            let mut value = pystr::strip(value);
+            if value.starts_with('{') && value.ends_with('}') && value.len() >= 2 {
+                value = pystr::strip(&value[1..value.len() - 1]);
+            }
+            let key = pystr::lower(pystr::strip(key));
+            match out.iter_mut().find(|(k, _)| *k == key) {
+                Some(slot) => slot.1 = value.to_string(),
+                None => out.push((key, value.to_string())),
+            }
+        }
+    }
+    out
+}
+
+/// `\twlistingcaption{label}{caption}{1|0}` for a listing's
+/// `caption=`/`title=`/`label=` options (empty if it has none).
+fn listing_marker(opts: Option<&str>) -> String {
+    let Some(opts) = opts.filter(|o| !o.is_empty()) else {
+        return String::new();
+    };
+    let kv = split_options(opts);
+    let get = |k: &str| kv.iter().find(|(key, _)| key == k).map(|(_, v)| v.clone());
+    let (mut caption, mut numbered) = (get("caption"), "1");
+    if caption.is_none() {
+        if let Some(title) = get("title") {
+            caption = Some(title);
+            numbered = "0";
+        }
+    }
+    if let Some(c) = caption.as_ref().filter(|c| c.starts_with('[')) {
+        // caption={[short]long}
+        caption = Some(match c.find(']') {
+            Some(close) => pystr::strip(&c[close + 1..]).to_string(),
+            None => c.clone(),
+        });
+    }
+    let label = get("label").unwrap_or_default();
+    if caption.as_deref().unwrap_or("").is_empty() && label.is_empty() {
+        return String::new();
+    }
+    format!(
+        "\\twlistingcaption{{{label}}}{{{}}}{{{numbered}}}",
+        caption.unwrap_or_default()
+    )
+}
 
 /// Replace `\lstinputlisting{file}`/`\verbatiminput{file}` by the file body
 /// in a `verbatim` environment.
 pub fn inline_listing_files(source: &str, base_dir: &str) -> io::Result<String> {
     let mut err = None;
     let out = LSTINPUT_RE.sub_fn(source, |m| {
-        let path = pyos::join2(base_dir, pystr::strip(m.group_str(1)));
+        let path = pyos::join2(base_dir, pystr::strip(m.group_str(2)));
         if pyos::isfile(&path) {
             match pyos::read_text(&path, Errors::Strict) {
                 Ok(text) => {
                     return format!(
-                        "\\begin{{verbatim}}\n{}\n\\end{{verbatim}}",
+                        "{}\\begin{{verbatim}}\n{}\n\\end{{verbatim}}",
+                        listing_marker(m.name("opts")),
                         pystr::rstrip_chars(&text, "\n")
                     )
                 }
@@ -195,7 +433,7 @@ lazy_re!(
     LISTING_ENV_RE,
     concat!(
         r"\\begin\{(lstlisting|minted|Verbatim\*?|verbatim\*)\}",
-        r"[ \t]*(?:\[(?:[^\[\]{}]|\{(?:[^{}]|\{[^{}]*\})*\}|\[[^\]]*\])*\])?",
+        r"[ \t]*(?:\[(?P<opts>(?:[^\[\]{}]|\{(?:[^{}]|\{[^{}]*\})*\}|\[[^\]]*\])*)\])?",
         r"[ \t]*(?:\{[^}]*\})?",
         r"(?P<body>.*?)",
         r"\\end\{\1\}"
@@ -205,13 +443,55 @@ lazy_re!(
 
 /// Rewrite `lstlisting`/`minted`/`Verbatim` blocks to `verbatim`.
 pub fn normalize_listing_envs(source: &str) -> String {
+    // lstlisting's caption=/label= become a marker the parser attaches to the
+    // code block (a numbered, referenceable "Listing N")
     LISTING_ENV_RE.sub_fn(source, |m| {
+        let marker = if m.group_str(1) == "lstlisting" {
+            listing_marker(m.name("opts"))
+        } else {
+            String::new()
+        };
         format!(
-            "\\begin{{verbatim}}{}\\end{{verbatim}}",
+            "{marker}\\begin{{verbatim}}{}\\end{{verbatim}}",
             m.name("body").unwrap_or("")
         )
     })
 }
+
+// beamer overlay specifications: \item<2->, \alert<1>{..}, \only<2-3>{..}, ...
+lazy_re!(
+    OVERLAY_RE,
+    concat!(
+        r"(\\(?:item|only|uncover|visible|invisible|onslide|alt|temporal|alert|textbf|",
+        r"textit|emph|color|textcolor|includegraphics|pause|structure|frame|column|",
+        r"hyperlink|action)\*?)\s*<[^<>\n]*>"
+    )
+);
+// overlay-only commands: \pause, \onslide<2-> (no argument) carry no content
+lazy_re!(
+    OVERLAY_ONLY_RE,
+    r"\\(?:pause|onslide)(?![A-Za-z])(?:\s*\[[^\]]*\])?"
+);
+
+/// Remove beamer overlay specifications (the slides are flattened).
+fn strip_overlays(source: &str) -> String {
+    OVERLAY_ONLY_RE.sub("", &OVERLAY_RE.sub(r"\1", source))
+}
+
+/// LaTeX reads a form feed (^^L) as `\par`; other C0 control characters
+/// have no output (and cannot be written to XML).
+fn control_chars(source: &str) -> String {
+    source
+        .replace('\x0c', "\n\n")
+        .chars()
+        .filter(|&c| !matches!(c, '\x00'..='\x08' | '\x0b' | '\x0e'..='\x1f' | '\x7f'))
+        .collect()
+}
+
+lazy_re!(
+    BEAMER_CLASS_RE,
+    r"\\documentclass\s*(?:\[[^\]]*\])?\s*\{beamer\}"
+);
 
 // amsmath \DeclareMathOperator{\name}{body} (and starred) -> a \newcommand
 // wrapping the body in \operatorname (bodies may nest two levels of braces).
@@ -528,7 +808,10 @@ pub fn inject_exam_title(source: &str) -> String {
 pub fn preprocess(source: &str, base_dir: &str) -> io::Result<String> {
     // Flatten \input/\include FIRST so every later rewrite sees the included
     // content too.
-    let mut source = flatten_inputs(&strip_comments(source), base_dir)?;
+    let mut source = flatten_inputs(&strip_comments(&control_chars(source)), base_dir)?;
+    if BEAMER_CLASS_RE.search(&source).is_some() {
+        source = strip_overlays(&source); // \item<2-> \only<1>{..} -> no overlay spec
+    }
     if uses_exam_class(&source, base_dir) {
         source = rewrite_exam_class(&source, base_dir);
         source = inject_exam_title(&source);
@@ -537,7 +820,7 @@ pub fn preprocess(source: &str, base_dir: &str) -> io::Result<String> {
     source = TIKZSTYLE_RE.sub("", &source);
     source = recover_tikz_boxes(&source);
     source = normalize_begin_star(&source);
-    source = strip_iffalse(&source);
+    source = crate::conditionals::resolve_conditionals(&source, base_dir);
     source = inline_listing_files(&source, base_dir)?;
     source = rewrite_mathoperators(&source);
     source = VERBSTAR_RE.sub(r"\\verb", &source);
@@ -750,14 +1033,6 @@ mod tests {
             replace_inline_tikz(r"see \tikz\node[circle]{3}; here"),
             "see ③ here"
         );
-    }
-
-    #[test]
-    fn control_word_detection() {
-        assert!(ends_in_control_word(r"x\protect", 9));
-        assert!(!ends_in_control_word("x protect", 9));
-        assert!(!ends_in_control_word(r"x\\protect", 10)); // \\ + text
-        assert!(!ends_in_control_word("", 0));
     }
 
     #[test]

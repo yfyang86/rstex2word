@@ -1,0 +1,11 @@
+{
+"api": "convert_source",
+"args": {
+"source": "\\documentclass{article}\n\\usepackage{listings}\n\\begin{document}\n\\begin{lstlisting}[language=C,caption={Main loop},label=lst:m]\nint x;\n\\end{lstlisting}\n\\begin{lstlisting}[title=Untitled]\ny\n\\end{lstlisting}\nSee Listing~\\ref{lst:m}.\n\\end{document}\n"
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_listings_subrefs.py::test_lstlisting_caption_label_and_title"
+]
+}

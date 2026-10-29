@@ -1,0 +1,13 @@
+{
+"api": "convert_source",
+"args": {
+"source": "\\documentclass{article}\n\\usepackage[authoryear]{natbib}\n\\usepackage{xcolor}\n\\begin{document}\n\\section{S}\\label{sec:a}\n\\textcolor{red}{see \\citet{tk1991} and \\ref{sec:a}} {\\small \\citep{tk1991}}\n\\bibliographystyle{plainnat}\\bibliography{refs}\n\\end{document}\n"
+},
+"base_dir": "base",
+"files": {
+"base/refs.bib": "7bea53b88d8db7204b2a8893d7e0b258406713c7d58f6ae6136d0e8bf0672cbd"
+},
+"tests": [
+"tests/test_issue44_refs.py::test_cite_and_ref_in_colored_and_sized_spans"
+]
+}

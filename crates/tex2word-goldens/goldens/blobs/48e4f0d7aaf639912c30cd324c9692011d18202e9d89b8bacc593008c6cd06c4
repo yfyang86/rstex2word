@@ -1,0 +1,78 @@
+{
+  "generated": "2026-01-02T00:00:00+00:00",
+  "ir": {
+    "@type": "Document",
+    "blocks": [
+      {
+        "@type": "Figure",
+        "blocks": [],
+        "caption": [
+          {
+            "@type": "Text",
+            "value": "C"
+          }
+        ],
+        "caption_numbered": true,
+        "image": {
+          "@type": "Image",
+          "alt": "fig.png",
+          "angle": null,
+          "clip": false,
+          "height": null,
+          "keep_aspect": false,
+          "original_format": "png",
+          "path": "fig.png",
+          "rel_height": null,
+          "rel_width": null,
+          "scale": null,
+          "trim": null,
+          "width": null
+        },
+        "label": "fig:x",
+        "source": "\\begin{figure}\\includegraphics{fig.png}\\caption{C}\\label{fig:x}\\end{figure}",
+        "spanning": false,
+        "subfigures": []
+      }
+    ],
+    "book": false,
+    "label_aliases": {},
+    "labels": {
+      "fig:x": {
+        "@type": "LabelInfo",
+        "bookmark": "fig_x",
+        "counter_name": "Figure",
+        "kind": "figure",
+        "name": "C",
+        "number": null,
+        "sub": null
+      }
+    },
+    "meta": {
+      "@type": "DocumentMeta",
+      "abstract": null,
+      "affiliations": [],
+      "authors": [],
+      "cjk_main_font": null,
+      "cjk_mono_font": null,
+      "cjk_sans_font": null,
+      "columns": 1,
+      "date": null,
+      "front_notes": [],
+      "keywords": null,
+      "language": null,
+      "main_font": null,
+      "running_head": null,
+      "subtitle": null,
+      "title": null
+    }
+  },
+  "labels": {
+    "fig:x": {
+      "bookmark": "fig_x",
+      "counter": "Figure",
+      "kind": "figure"
+    }
+  },
+  "manifest_version": 1,
+  "tool": "tex2word"
+}

@@ -1,0 +1,13 @@
+{
+"api": "validate_docx",
+"args": {
+"docx_bytes": {
+"@blob": "f1a2af55a6d1d9f7c8dffe49c474cdad7e7fedc87df31d53e749539450e1ff51"
+}
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_acceptance_papers.py::test_amsart_paper"
+]
+}

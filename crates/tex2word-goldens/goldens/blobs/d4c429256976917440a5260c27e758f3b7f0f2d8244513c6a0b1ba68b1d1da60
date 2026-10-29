@@ -1,0 +1,192 @@
+{
+  "generated": "2026-10-29T12:36:24+00:00",
+  "ir": {
+    "@type": "Document",
+    "blocks": [
+      {
+        "@type": "Theorem",
+        "blocks": [
+          {
+            "@type": "Paragraph",
+            "align": null,
+            "inlines": [
+              {
+                "@type": "Text",
+                "value": "As in "
+              },
+              {
+                "@type": "Cite",
+                "keys": [
+                  "tk1991"
+                ],
+                "mode": "text",
+                "prefix": null,
+                "rendered": "Tversky & Kahneman (1991)",
+                "suffix": null
+              },
+              {
+                "@type": "Text",
+                "value": "."
+              }
+            ]
+          }
+        ],
+        "counter": "Theorem",
+        "kind": "Theorem",
+        "label": null,
+        "title": null,
+        "within": null
+      },
+      {
+        "@type": "Figure",
+        "blocks": [],
+        "caption": [
+          {
+            "@type": "Text",
+            "value": "Cap "
+          },
+          {
+            "@type": "Cite",
+            "keys": [
+              "tk1991"
+            ],
+            "mode": "paren",
+            "prefix": null,
+            "rendered": "(Tversky & Kahneman, 1991)",
+            "suffix": null
+          },
+          {
+            "@type": "Text",
+            "value": "."
+          }
+        ],
+        "caption_numbered": true,
+        "image": null,
+        "label": null,
+        "source": "\\begin{figure}\\caption{Cap \\citep{tk1991}.}\\end{figure}",
+        "spanning": false,
+        "subfigures": []
+      },
+      {
+        "@type": "Table",
+        "booktabs": false,
+        "caption": [
+          {
+            "@type": "Text",
+            "value": "T "
+          },
+          {
+            "@type": "Cite",
+            "keys": [
+              "tk1991"
+            ],
+            "mode": "paren",
+            "prefix": null,
+            "rendered": "(Tversky & Kahneman, 1991)",
+            "suffix": null
+          },
+          {
+            "@type": "Text",
+            "value": "."
+          }
+        ],
+        "caption_numbered": true,
+        "colspec": [
+          "left"
+        ],
+        "colwidths": [
+          null
+        ],
+        "label": null,
+        "layout": false,
+        "rows": [
+          {
+            "@type": "TableRow",
+            "cells": [
+              {
+                "@type": "TableCell",
+                "align": "left",
+                "blocks": [
+                  {
+                    "@type": "Paragraph",
+                    "align": null,
+                    "inlines": [
+                      {
+                        "@type": "Text",
+                        "value": "a"
+                      }
+                    ]
+                  }
+                ],
+                "border_bottom": false,
+                "colspan": 1,
+                "rowspan": 1,
+                "shade": null
+              }
+            ],
+            "is_header": false,
+            "rule_above": false,
+            "rule_below": false
+          }
+        ],
+        "spanning": false
+      },
+      {
+        "@type": "Bibliography",
+        "entries": [
+          {
+            "@type": "CSLItem",
+            "csl_fields": {
+              "author": [
+                {
+                  "family": "Tversky",
+                  "given": "Amos"
+                },
+                {
+                  "family": "Kahneman",
+                  "given": "Daniel"
+                }
+              ],
+              "container-title": "The Quarterly Journal of Economics",
+              "issued": {
+                "date-parts": [
+                  [
+                    1991
+                  ]
+                ]
+              },
+              "title": "Loss Aversion in Riskless Choice"
+            },
+            "id": "tk1991",
+            "type": "article-journal"
+          }
+        ],
+        "style": "author-year"
+      }
+    ],
+    "book": false,
+    "label_aliases": {},
+    "labels": {},
+    "meta": {
+      "@type": "DocumentMeta",
+      "abstract": null,
+      "affiliations": [],
+      "authors": [],
+      "cjk_main_font": null,
+      "cjk_mono_font": null,
+      "cjk_sans_font": null,
+      "columns": 1,
+      "date": null,
+      "front_notes": [],
+      "keywords": null,
+      "language": null,
+      "main_font": null,
+      "running_head": null,
+      "subtitle": null,
+      "title": null
+    }
+  },
+  "labels": {},
+  "manifest_version": 1,
+  "tool": "tex2word"
+}

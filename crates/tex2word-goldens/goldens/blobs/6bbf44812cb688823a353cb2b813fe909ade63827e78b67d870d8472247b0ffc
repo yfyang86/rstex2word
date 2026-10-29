@@ -1,0 +1,48 @@
+{
+  "generated": "2026-10-29T12:36:23+00:00",
+  "ir": {
+    "@type": "Document",
+    "blocks": [
+      {
+        "@type": "Figure",
+        "blocks": [],
+        "caption": [
+          {
+            "@type": "Text",
+            "value": "T"
+          }
+        ],
+        "caption_numbered": true,
+        "image": null,
+        "label": null,
+        "source": "\\begin{figure}\\begin{tikzpicture}\\draw (0,0)--(1,1);\\end{tikzpicture}\\caption{T}\\end{figure}",
+        "spanning": false,
+        "subfigures": []
+      }
+    ],
+    "book": false,
+    "label_aliases": {},
+    "labels": {},
+    "meta": {
+      "@type": "DocumentMeta",
+      "abstract": null,
+      "affiliations": [],
+      "authors": [],
+      "cjk_main_font": null,
+      "cjk_mono_font": null,
+      "cjk_sans_font": null,
+      "columns": 1,
+      "date": null,
+      "front_notes": [],
+      "keywords": null,
+      "language": null,
+      "main_font": null,
+      "running_head": null,
+      "subtitle": null,
+      "title": null
+    }
+  },
+  "labels": {},
+  "manifest_version": 1,
+  "tool": "tex2word"
+}

@@ -1,0 +1,13 @@
+{
+"api": "validate_docx",
+"args": {
+"docx_bytes": {
+"@blob": "d687df2313a0c92f46775ec2d20e736e5ae99cbe088c3730c66b64aa04982b53"
+}
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_csquotes_inline.py::test_valid"
+]
+}

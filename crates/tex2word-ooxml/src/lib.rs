@@ -13,4 +13,6 @@ pub mod parse;
 pub mod xml;
 pub mod zip;
 
-pub use xml::{el, preserve_space, qn, serialize, sub, text_el, Element, Kind, XmlError, NS};
+pub use xml::{
+    el, preserve_space, qn, serialize, sub, text_el, xml_safe, Element, Kind, XmlError, NS,
+};

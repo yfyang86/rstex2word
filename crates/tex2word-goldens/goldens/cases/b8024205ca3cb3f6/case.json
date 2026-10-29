@@ -1,0 +1,13 @@
+{
+"api": "to_latex",
+"args": {
+"docx_bytes": {
+"@blob": "388d46daba88bd5cb906b57fe3ba10bfb30da6eda87bf7c96829c36c9ace90b5"
+}
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_caption_star.py::test_caption_star_round_trips"
+]
+}

@@ -1,0 +1,13 @@
+{
+"api": "recover_ir",
+"args": {
+"docx_bytes": {
+"@blob": "72ae59c0550e5c463234222ee80236937f594f91db9f9378843e9c985d909479"
+}
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_uat_arxiv.py::test_uat_roundtrips_to_same_ir"
+]
+}

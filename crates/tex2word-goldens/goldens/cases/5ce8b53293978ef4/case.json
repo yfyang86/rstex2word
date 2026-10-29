@@ -1,0 +1,13 @@
+{
+"api": "validate_docx",
+"args": {
+"docx_bytes": {
+"@blob": "1a5709c69cff8264bb19d26564e02b8e2081330ec7fe506bba032e37ad4b4d18"
+}
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_acronym_package.py::test_no_warnings_and_valid"
+]
+}

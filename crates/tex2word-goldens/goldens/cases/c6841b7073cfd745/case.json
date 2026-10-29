@@ -1,0 +1,11 @@
+{
+"api": "convert_source",
+"args": {
+"source": "\\documentclass{article}\n\\usepackage{caption,makecell,graphicx}\n\\begin{document}\n\\begin{table}\\rotatebox{90}{\\begin{minipage}{5cm}\\captionof{table}{Rotated.}\\label{tab:r}\n\\begin{tabular}{l} \\makecell{a\\\\b} \\\\ c \\\\ \\end{tabular}\\end{minipage}}\\end{table}\nSee Table~\\ref{tab:r}.\n\\end{document}\n"
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_issue44_macros.py::test_rotated_minipage_table_keeps_caption_label_and_rows"
+]
+}

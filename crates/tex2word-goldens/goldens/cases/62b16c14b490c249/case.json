@@ -1,0 +1,13 @@
+{
+"api": "recover_ir",
+"args": {
+"docx_bytes": {
+"@blob": "09625d57bbcf5d2e2c16f9057de95f042fe6e96382fefe191195c321728de843"
+}
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_reconcile.py::test_unedited_docs_reconcile_to_identity[corpus/longtable.tex]"
+]
+}

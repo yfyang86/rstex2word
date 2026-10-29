@@ -1,0 +1,13 @@
+{
+"api": "convert_source",
+"args": {
+"source": "\\documentclass{article}\n\\usepackage[authoryear]{natbib}\n\\begin{document}\n\\section{S}\\label{sec:a}\\label{sec:b}\nSee \\ref{sec:b} and \\ref{sec:a}.\n\\bibliographystyle{plainnat}\\bibliography{refs}\n\\end{document}\n"
+},
+"base_dir": "base",
+"files": {
+"base/refs.bib": "7bea53b88d8db7204b2a8893d7e0b258406713c7d58f6ae6136d0e8bf0672cbd"
+},
+"tests": [
+"tests/test_issue44_refs.py::test_second_label_is_an_alias"
+]
+}

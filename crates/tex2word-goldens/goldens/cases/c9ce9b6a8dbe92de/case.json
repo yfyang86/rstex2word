@@ -1,0 +1,14 @@
+{
+"api": "validate_docx",
+"args": {
+"docx_bytes": {
+"@blob": "63c2525d2a8e3ab73645edb8b259643d052990379b3d2c31511d88fdeb0cab7b"
+}
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_acceptance_papers.py::test_tikz_paper[installed]",
+"tests/test_acceptance_papers.py::test_tikz_paper[none]"
+]
+}

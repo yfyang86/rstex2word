@@ -1,0 +1,11 @@
+{
+"api": "expand_macros",
+"args": {
+"source": "\\def\\pt(#1,#2){#1+#2}\\pt[A]"
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_macros_primitives.py::test_csname_namedef_and_delimited_def"
+]
+}

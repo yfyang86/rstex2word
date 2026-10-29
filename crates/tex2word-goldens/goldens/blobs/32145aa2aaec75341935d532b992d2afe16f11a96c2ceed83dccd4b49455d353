@@ -1,0 +1,430 @@
+{
+  "generated": "2026-01-02T00:00:00+00:00",
+  "ir": {
+    "@type": "Document",
+    "blocks": [
+      {
+        "@type": "Heading",
+        "appendix": false,
+        "inlines": [
+          {
+            "@type": "Text",
+            "value": "Introduction"
+          }
+        ],
+        "label": null,
+        "level": 1,
+        "numbered": true,
+        "part": false
+      },
+      {
+        "@type": "Paragraph",
+        "align": null,
+        "inlines": [
+          {
+            "@type": "Text",
+            "value": "A popular tool for evaluating generative models is the classifier two-sample test (C2ST). It reframes distributional comparison between "
+          },
+          {
+            "@type": "Math",
+            "latex": "p(x)"
+          },
+          {
+            "@type": "Text",
+            "value": " and "
+          },
+          {
+            "@type": "Math",
+            "latex": "q(x)"
+          },
+          {
+            "@type": "Text",
+            "value": " as a classification task over the space "
+          },
+          {
+            "@type": "Math",
+            "latex": "{\\mathcal X}"
+          },
+          {
+            "@type": "Text",
+            "value": ", with the Bayes-optimal classifier bisecting "
+          },
+          {
+            "@type": "Math",
+            "latex": "\\mathbb{R}^2"
+          },
+          {
+            "@type": "Text",
+            "value": " between the two means."
+          }
+        ]
+      },
+      {
+        "@type": "Heading",
+        "appendix": false,
+        "inlines": [
+          {
+            "@type": "Text",
+            "value": "Summary of contributions."
+          }
+        ],
+        "label": null,
+        "level": 4,
+        "numbered": false,
+        "part": false
+      },
+      {
+        "@type": "Paragraph",
+        "align": null,
+        "inlines": [
+          {
+            "@type": "Text",
+            "value": "We introduce the Conformal C2ST and give a robustness theory for weak classifiers. We show that conformal calibration decouples type-I error control from discriminative accuracy."
+          }
+        ]
+      },
+      {
+        "@type": "Heading",
+        "appendix": false,
+        "inlines": [
+          {
+            "@type": "Text",
+            "value": "A toy example."
+          }
+        ],
+        "label": null,
+        "level": 4,
+        "numbered": false,
+        "part": false
+      },
+      {
+        "@type": "Paragraph",
+        "align": null,
+        "inlines": [
+          {
+            "@type": "Text",
+            "value": "Consider "
+          },
+          {
+            "@type": "Math",
+            "latex": "{\\mathcal N}(\\mathbf{0}, I_2)"
+          },
+          {
+            "@type": "Text",
+            "value": " versus a mean shift, so that "
+          },
+          {
+            "@type": "Math",
+            "latex": "q"
+          },
+          {
+            "@type": "Text",
+            "value": " is "
+          },
+          {
+            "@type": "Math",
+            "latex": "{\\mathcal N}([0.5, 0]^\\top, I_2)"
+          },
+          {
+            "@type": "Text",
+            "value": ". The rank statistic"
+          }
+        ]
+      },
+      {
+        "@type": "MathBlock",
+        "env": "displaymath",
+        "label": null,
+        "latex": "r = \\sum_{i=1}^{M} {\\mathbb I}\\{\\theta \\le \\tilde\\theta_i\\}",
+        "line_labels": [],
+        "numbered": false
+      },
+      {
+        "@type": "Paragraph",
+        "align": null,
+        "inlines": [
+          {
+            "@type": "Text",
+            "value": "is uniform over "
+          },
+          {
+            "@type": "Math",
+            "latex": "\\{0, 1, \\dots, M\\}"
+          },
+          {
+            "@type": "Text",
+            "value": " when "
+          },
+          {
+            "@type": "Math",
+            "latex": "q"
+          },
+          {
+            "@type": "Text",
+            "value": " matches "
+          },
+          {
+            "@type": "Math",
+            "latex": "p"
+          },
+          {
+            "@type": "Text",
+            "value": "."
+          }
+        ]
+      },
+      {
+        "@type": "Heading",
+        "appendix": false,
+        "inlines": [
+          {
+            "@type": "Text",
+            "value": "Robustness of the uniform test"
+          }
+        ],
+        "label": null,
+        "level": 1,
+        "numbered": true,
+        "part": false
+      },
+      {
+        "@type": "Paragraph",
+        "align": null,
+        "inlines": [
+          {
+            "@type": "Text",
+            "value": "Let "
+          },
+          {
+            "@type": "Math",
+            "latex": "{\\mathcal O}"
+          },
+          {
+            "@type": "Text",
+            "value": " denote an oracle and write the conformal "
+          },
+          {
+            "@type": "Math",
+            "latex": "p"
+          },
+          {
+            "@type": "Text",
+            "value": "-value as a function of the score. We control the variance "
+          },
+          {
+            "@type": "Math",
+            "latex": "\\text{Var}[r]"
+          },
+          {
+            "@type": "Text",
+            "value": " and the expectation "
+          },
+          {
+            "@type": "Math",
+            "latex": "\\mathbb{E}[r]"
+          },
+          {
+            "@type": "Text",
+            "value": " of the rank statistic under the null."
+          }
+        ]
+      },
+      {
+        "@type": "Theorem",
+        "blocks": [
+          {
+            "@type": "Paragraph",
+            "align": null,
+            "inlines": [
+              {
+                "@type": "Text",
+                "value": "For any plug-in classifier with score "
+              },
+              {
+                "@type": "Math",
+                "latex": "s"
+              },
+              {
+                "@type": "Text",
+                "value": ", the conformal calibration map satisfies"
+              }
+            ]
+          },
+          {
+            "@type": "MathBlock",
+            "env": "displaymath",
+            "label": null,
+            "latex": "\\Big| \\mathbb{E}\\big[ \\phi(s) \\big] - \\alpha \\Big| \\le \\left\\| {s - s^\\star} \\right\\|\n  \\xrightarrow{\\;n \\to \\infty\\;} 0 ,",
+            "line_labels": [],
+            "numbered": false
+          },
+          {
+            "@type": "Paragraph",
+            "align": null,
+            "inlines": [
+              {
+                "@type": "Text",
+                "value": "where "
+              },
+              {
+                "@type": "Math",
+                "latex": "s^\\star"
+              },
+              {
+                "@type": "Text",
+                "value": " is the Bayes-optimal score and "
+              },
+              {
+                "@type": "Math",
+                "latex": "\\left| {\\alpha} \\right| \\le 1"
+              },
+              {
+                "@type": "Text",
+                "value": "."
+              }
+            ]
+          }
+        ],
+        "counter": "Theorem",
+        "kind": "Theorem",
+        "label": "thm:decouple",
+        "title": [
+          {
+            "@type": "Text",
+            "value": "Decoupling"
+          }
+        ],
+        "within": null
+      },
+      {
+        "@type": "Paragraph",
+        "align": null,
+        "inlines": [
+          {
+            "@type": "Text",
+            "value": "As shown in Theorem "
+          },
+          {
+            "@type": "Ref",
+            "bookmark": "thm_decouple",
+            "key": "thm:decouple",
+            "ref_kind": "theorem",
+            "style": "plain"
+          },
+          {
+            "@type": "Text",
+            "value": ", the conformal test maintains validity even when the classifier is weak, since the ranking signal "
+          },
+          {
+            "@type": "Math",
+            "latex": "\\overset{\\text{rank}}{\\longrightarrow}"
+          },
+          {
+            "@type": "Text",
+            "value": " aggregates across draws."
+          }
+        ]
+      }
+    ],
+    "book": false,
+    "label_aliases": {},
+    "labels": {
+      "thm:decouple": {
+        "@type": "LabelInfo",
+        "bookmark": "thm_decouple",
+        "counter_name": "Theorem",
+        "kind": "theorem",
+        "name": "Decoupling",
+        "number": null,
+        "sub": null
+      }
+    },
+    "meta": {
+      "@type": "DocumentMeta",
+      "abstract": [
+        {
+          "@type": "Paragraph",
+          "align": null,
+          "inlines": [
+            {
+              "@type": "Text",
+              "value": "We study the "
+            },
+            {
+              "@type": "Math",
+              "latex": "{\\mathcal M}"
+            },
+            {
+              "@type": "Text",
+              "value": "-closed validation of a generative model "
+            },
+            {
+              "@type": "Math",
+              "latex": "q"
+            },
+            {
+              "@type": "Text",
+              "value": " against a target "
+            },
+            {
+              "@type": "Math",
+              "latex": "p"
+            },
+            {
+              "@type": "Text",
+              "value": " over the space "
+            },
+            {
+              "@type": "Math",
+              "latex": "{\\mathcal X}"
+            },
+            {
+              "@type": "Text",
+              "value": ". Conformal calibration turns a weak plug-in classifier into a powerful two-sample test with finite-sample type-I control."
+            }
+          ]
+        }
+      ],
+      "affiliations": [],
+      "authors": [
+        [
+          {
+            "@type": "Text",
+            "value": "UAT Fixture"
+          }
+        ]
+      ],
+      "cjk_main_font": null,
+      "cjk_mono_font": null,
+      "cjk_sans_font": null,
+      "columns": 1,
+      "date": [
+        {
+          "@type": "Text",
+          "value": "January 2, 2026"
+        }
+      ],
+      "front_notes": [],
+      "keywords": null,
+      "language": null,
+      "main_font": null,
+      "running_head": null,
+      "subtitle": null,
+      "title": [
+        {
+          "@type": "Text",
+          "value": "The Conformal Classifier Two-Sample Test"
+        }
+      ]
+    }
+  },
+  "labels": {
+    "thm:decouple": {
+      "bookmark": "thm_decouple",
+      "counter": "Theorem",
+      "kind": "theorem"
+    }
+  },
+  "manifest_version": 1,
+  "tool": "tex2word"
+}

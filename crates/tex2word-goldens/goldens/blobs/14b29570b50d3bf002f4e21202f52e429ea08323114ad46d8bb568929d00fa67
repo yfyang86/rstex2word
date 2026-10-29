@@ -1,0 +1,95 @@
+{
+  "generated": "2026-01-02T00:00:00+00:00",
+  "ir": {
+    "@type": "Document",
+    "blocks": [
+      {
+        "@type": "CodeBlock",
+        "caption": [
+          {
+            "@type": "Text",
+            "value": "Main loop"
+          }
+        ],
+        "caption_numbered": true,
+        "label": "lst:m",
+        "lang": null,
+        "text": "int x;"
+      },
+      {
+        "@type": "CodeBlock",
+        "caption": [
+          {
+            "@type": "Text",
+            "value": "Untitled"
+          }
+        ],
+        "caption_numbered": false,
+        "label": null,
+        "lang": null,
+        "text": "y"
+      },
+      {
+        "@type": "Paragraph",
+        "align": null,
+        "inlines": [
+          {
+            "@type": "Text",
+            "value": "See Listing "
+          },
+          {
+            "@type": "Ref",
+            "bookmark": "lst_m",
+            "key": "lst:m",
+            "ref_kind": "listing",
+            "style": "plain"
+          },
+          {
+            "@type": "Text",
+            "value": "."
+          }
+        ]
+      }
+    ],
+    "book": false,
+    "label_aliases": {},
+    "labels": {
+      "lst:m": {
+        "@type": "LabelInfo",
+        "bookmark": "lst_m",
+        "counter_name": "Listing",
+        "kind": "listing",
+        "name": "Main loop",
+        "number": null,
+        "sub": null
+      }
+    },
+    "meta": {
+      "@type": "DocumentMeta",
+      "abstract": null,
+      "affiliations": [],
+      "authors": [],
+      "cjk_main_font": null,
+      "cjk_mono_font": null,
+      "cjk_sans_font": null,
+      "columns": 1,
+      "date": null,
+      "front_notes": [],
+      "keywords": null,
+      "language": null,
+      "main_font": null,
+      "running_head": null,
+      "subtitle": null,
+      "title": null
+    }
+  },
+  "labels": {
+    "lst:m": {
+      "bookmark": "lst_m",
+      "counter": "Listing",
+      "kind": "listing"
+    }
+  },
+  "manifest_version": 1,
+  "tool": "tex2word"
+}

@@ -1,0 +1,13 @@
+{
+"api": "to_latex",
+"args": {
+"docx_bytes": {
+"@blob": "ba452b7a58266c63937c35ea81b52ee5c621f9c6c98648b8a4d41218c8580f06"
+}
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_inline_extras.py::test_text_spans_roundtrip"
+]
+}

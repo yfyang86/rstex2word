@@ -4,7 +4,7 @@
 
 use std::cell::Cell;
 
-use tex2word_ooxml::xml::{el, preserve_space, qn, sub, text_el, Element};
+use tex2word_ooxml::xml::{el, preserve_space, qn, sub, text_el, xml_safe, Element};
 
 thread_local! {
     static BOOKMARK_IDS: Cell<u64> = const { Cell::new(1) };
@@ -38,7 +38,7 @@ pub(crate) fn instr_run(code: &str) -> Element {
     let mut r = el("w:r", &[]);
     let instr = sub(&mut r, "w:instrText", &[]);
     preserve_space(instr);
-    instr.text = Some(code.to_string());
+    instr.text = Some(xml_safe(code));
     r
 }
 
@@ -74,17 +74,25 @@ pub fn seq_field(counter: &str, cached: &str) -> Vec<Element> {
     field(&format!("SEQ {counter} \\* ARABIC"), cached)
 }
 
-/// Runs for a live number: flat `SEQ`, or per-section `N.M`
-/// (`STYLEREF 1 \s` + `.` + `SEQ counter \s 1`).
-pub fn number_field(counter: &str, by_section: bool) -> Vec<Element> {
+/// Runs for a live number: flat `SEQ` or per-section `N.M`.
+///
+/// With `by_section` the number is `STYLEREF 1 \n` (the paragraph number
+/// of the nearest Heading 1) + `.` + `SEQ counter \s 1` (a counter that
+/// resets at each Heading 1). `restart` adds `\r 1` to the first number
+/// of a section: Word resets on `\s` alone, LibreOffice only on `\r`.
+pub fn number_field(counter: &str, by_section: bool, restart: bool) -> Vec<Element> {
     if !by_section {
         return seq_field(counter, "1");
     }
-    let mut runs = field("STYLEREF 1 \\s", "1");
+    let mut runs = field("STYLEREF 1 \\n", "1");
     let mut dot = el("w:r", &[]);
     dot.append(text_el("w:t", ".", &[]));
     runs.push(dot);
-    runs.extend(field(&format!("SEQ {counter} \\s 1 \\* ARABIC"), "1"));
+    let reset = if restart { " \\r 1" } else { "" };
+    runs.extend(field(
+        &format!("SEQ {counter}{reset} \\s 1 \\* ARABIC"),
+        "1",
+    ));
     runs
 }
 

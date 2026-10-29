@@ -1,0 +1,130 @@
+{
+  "generated": "2026-01-02T00:00:00+00:00",
+  "ir": {
+    "@type": "Document",
+    "blocks": [],
+    "book": false,
+    "label_aliases": {},
+    "labels": {},
+    "meta": {
+      "@type": "DocumentMeta",
+      "abstract": null,
+      "affiliations": [
+        [
+          {
+            "@type": "Emphasis",
+            "inlines": [
+              {
+                "@type": "Text",
+                "value": "1"
+              }
+            ],
+            "kind_": "superscript"
+          },
+          {
+            "@type": "Text",
+            "value": "UX"
+          }
+        ],
+        [
+          {
+            "@type": "Emphasis",
+            "inlines": [
+              {
+                "@type": "Text",
+                "value": "2"
+              }
+            ],
+            "kind_": "superscript"
+          },
+          {
+            "@type": "Text",
+            "value": "UY"
+          }
+        ]
+      ],
+      "authors": [
+        [
+          {
+            "@type": "Text",
+            "value": "A"
+          },
+          {
+            "@type": "Emphasis",
+            "inlines": [
+              {
+                "@type": "Text",
+                "value": "1"
+              }
+            ],
+            "kind_": "superscript"
+          }
+        ],
+        [
+          {
+            "@type": "Text",
+            "value": "B"
+          },
+          {
+            "@type": "Emphasis",
+            "inlines": [
+              {
+                "@type": "Text",
+                "value": "2,1"
+              }
+            ],
+            "kind_": "superscript"
+          }
+        ]
+      ],
+      "cjk_main_font": null,
+      "cjk_mono_font": null,
+      "cjk_sans_font": null,
+      "columns": 2,
+      "date": [
+        {
+          "@type": "Text",
+          "value": "January 2, 2026"
+        }
+      ],
+      "front_notes": [
+        [
+          {
+            "@type": "Text",
+            "value": "Correspondence to: "
+          },
+          {
+            "@type": "Text",
+            "value": "A"
+          },
+          {
+            "@type": "Text",
+            "value": " <"
+          },
+          {
+            "@type": "Text",
+            "value": "a@b"
+          },
+          {
+            "@type": "Text",
+            "value": ">"
+          }
+        ]
+      ],
+      "keywords": null,
+      "language": null,
+      "main_font": null,
+      "running_head": null,
+      "subtitle": null,
+      "title": [
+        {
+          "@type": "Text",
+          "value": "T"
+        }
+      ]
+    }
+  },
+  "labels": {},
+  "manifest_version": 1,
+  "tool": "tex2word"
+}

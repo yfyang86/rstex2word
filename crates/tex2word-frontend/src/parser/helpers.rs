@@ -55,8 +55,57 @@ pub(crate) fn is_drop_macro(name: &str) -> bool {
 pub(crate) fn is_transparent_box(name: &str) -> bool {
     matches!(
         name,
-        "mbox" | "fbox" | "framebox" | "makebox" | "raisebox" | "rotatebox" | "makecell" | "thead"
+        "fbox"
+            | "foreignlanguage"
+            | "framebox"
+            | "makebox"
+            | "makecell"
+            | "mbox"
+            | "otherlanguage"
+            | "parbox"
+            | "raisebox"
+            | "resizebox"
+            | "rotatebox"
+            | "scalebox"
+            | "thead"
     )
+}
+
+/// tabular-like environments (all parsed by `tabular`)
+pub(crate) fn is_tabular_env(base: &str) -> bool {
+    matches!(
+        base,
+        "array"
+            | "longtable"
+            | "mpsupertabular"
+            | "supertabular"
+            | "tabular"
+            | "tabularx"
+            | "tabulary"
+            | "xtabular"
+    )
+}
+
+/// environments whose content is not part of the document
+pub(crate) fn is_dropped_env(base: &str) -> bool {
+    matches!(base, "CCSXML" | "comment" | "filecontents")
+}
+
+/// acknowledgment environments -> an unnumbered heading over their content
+pub(crate) fn ack_heading(base: &str) -> Option<&'static str> {
+    Some(match base {
+        "acknowledgments" => "Acknowledgments",
+        "acknowledgements" => "Acknowledgements",
+        "acknowledgment" => "Acknowledgment",
+        "acknowledgement" => "Acknowledgement",
+        "acks" => "Acknowledgments",
+        _ => return None,
+    })
+}
+
+/// scaling/rotation wrappers whose last {} argument is their content
+pub(crate) fn is_box_wrapper(name: &str) -> bool {
+    matches!(name, "resizebox" | "scalebox" | "rotatebox")
 }
 
 /// IEEEtran author-block wrappers: render their content.
@@ -175,7 +224,8 @@ pub(crate) fn ref_kind(name: &str) -> Option<&'static str> {
             "generic"
         }
         "eqref" => "equation",
-        "pageref" => "page",
+        "pageref" | "vpageref" | "cpageref" | "Cpageref" => "page",
+        "subref" => "subref",
         "nameref" | "Nameref" => "name",
         _ => return None,
     })
@@ -193,6 +243,39 @@ pub(crate) fn ref_style(name: &str) -> &'static str {
 pub(crate) static TEXT_SYMBOLS: LazyLock<HashMap<&'static str, &'static str>> =
     LazyLock::new(|| {
         [
+            // non-ASCII letters (T1/OT1 text commands), German/French quotes
+            ("ss", "ß"),
+            ("SS", "SS"),
+            ("o", "ø"),
+            ("O", "Ø"),
+            ("aa", "å"),
+            ("AA", "Å"),
+            ("l", "ł"),
+            ("L", "Ł"),
+            ("ae", "æ"),
+            ("AE", "Æ"),
+            ("oe", "œ"),
+            ("OE", "Œ"),
+            ("i", "ı"),
+            ("j", "ȷ"),
+            ("dh", "ð"),
+            ("DH", "Ð"),
+            ("th", "þ"),
+            ("TH", "Þ"),
+            ("ng", "ŋ"),
+            ("NG", "Ŋ"),
+            ("dj", "đ"),
+            ("DJ", "Đ"),
+            ("glqq", "„"),
+            ("grqq", "“"),
+            ("glq", "‚"),
+            ("grq", "‘"),
+            ("flqq", "«"),
+            ("frqq", "»"),
+            ("flq", "‹"),
+            ("frq", "›"),
+            ("quotedblbase", "„"),
+            ("quotesinglbase", "‚"),
             ("LaTeX", "LaTeX"),
             ("TeX", "TeX"),
             ("ldots", "…"),
@@ -350,21 +433,31 @@ pub(crate) fn ding_char(code: &str) -> String {
 pub(crate) fn is_transparent_env(base: &str) -> bool {
     matches!(
         base,
-        "subequations"
-            | "samepage"
-            | "sloppypar"
-            | "spacing"
-            | "singlespace"
+        "Large"
+            | "adjustbox"
+            | "alltt"
+            | "column"
+            | "columns"
             | "doublespace"
-            | "onehalfspace"
-            | "noindent"
-            | "raggedright"
-            | "raggedleft"
-            | "small"
-            | "footnotesize"
-            | "large"
-            | "Large"
             | "flushleftright"
+            | "footnotesize"
+            | "frontmatter"
+            | "fullwidth"
+            | "landscape"
+            | "large"
+            | "multicols"
+            | "noindent"
+            | "onehalfspace"
+            | "otherlanguage"
+            | "raggedleft"
+            | "raggedright"
+            | "samepage"
+            | "singlespace"
+            | "sloppypar"
+            | "small"
+            | "spacing"
+            | "subequations"
+            | "titlepage"
     )
 }
 
@@ -405,111 +498,110 @@ pub(crate) fn toc_kind(name: &str) -> Option<&'static str> {
 pub(crate) fn is_ignore_macro(name: &str) -> bool {
     matches!(
         name,
-        "maketitle"
-            | "frontmatter"
-            | "mainmatter"
-            | "backmatter"
-            | "newpage"
-            | "clearpage"
-            | "pagebreak"
-            | "noindent"
-            | "centering"
-            | "small"
-            | "large"
-            | "Large"
-            | "LARGE"
-            | "normalsize"
-            | "footnotesize"
-            | "scriptsize"
-            | "tiny"
-            | "huge"
-            | "Huge"
-            | "vspace"
-            | "hspace"
-            | "vfill"
-            | "bigskip"
-            | "medskip"
-            | "smallskip"
-            | "indent"
-            | "par"
-            | "protect"
-            | "displaystyle"
-            | "unskip"
-            | "ignorespaces"
-            | "leavevmode"
-            | "/"
-            | "sloppy"
-            | "fussy"
-            | "raggedright"
-            | "raggedleft"
-            | "flushbottom"
-            | "samepage"
-            | "frenchspacing"
-            | "boldmath"
-            | "unboldmath"
-            | "selectfont"
-            | "rmfamily"
-            | "sffamily"
-            | "normalfont"
-            | "floatbarrier"
-            | "rm"
-            | "sf"
-            | "md"
-            | "up"
-            | "mdseries"
-            | "upshape"
-            | "FloatBarrier"
-            | "height"
-            | "width"
-            | "depth"
-            | "totalheight"
-            | "fontfamily"
-            | "fontsize"
-            | "nohyphens"
-            | "documentclass"
-            | "usepackage"
-            | "RequirePackage"
-            | "pagestyle"
-            | "thispagestyle"
-            | "setlength"
-            | "setcounter"
-            | "hypersetup"
-            | "graphicspath"
-            | "definecolor"
-            | "pagenumbering"
-            | "renewcommand"
-            | "newcommand"
-            | "providecommand"
-            | "setitemize"
-            | "setenumerate"
-            | "hyphenation"
-            | "settopmatter"
-            | "begingroup"
-            | "endgroup"
-            | "bgroup"
-            | "egroup"
-            | "AddToShipoutPicture"
+        "/" | "AddToShipoutPicture"
             | "ClearShipoutPicture"
-            | "newcounter"
+            | "FloatBarrier"
+            | "Huge"
+            | "LARGE"
+            | "Large"
+            | "RequirePackage"
+            | "acmnote"
             | "addtocounter"
-            | "refstepcounter"
-            | "stepcounter"
+            | "addtolength"
             | "authornote"
             | "authornotemark"
+            | "backmatter"
             | "balance"
+            | "begingroup"
+            | "bgroup"
+            | "bigskip"
+            | "boldmath"
+            | "centering"
+            | "clearpage"
+            | "definecolor"
+            | "deflength"
+            | "depth"
+            | "displaystyle"
+            | "documentclass"
+            | "egroup"
+            | "endgroup"
+            | "floatbarrier"
+            | "flushbottom"
+            | "fontfamily"
+            | "fontsize"
+            | "footnotesize"
+            | "frenchspacing"
+            | "frontmatter"
+            | "fussy"
+            | "graphicspath"
+            | "height"
+            | "hspace"
+            | "huge"
+            | "hypersetup"
+            | "hyphenation"
+            | "ignorespaces"
+            | "indent"
+            | "large"
+            | "leavevmode"
+            | "mainmatter"
+            | "makeatletter"
+            | "makeatother"
+            | "maketitle"
+            | "md"
+            | "mdseries"
+            | "medskip"
+            | "newcommand"
+            | "newcounter"
+            | "newpage"
             | "nobalance"
+            | "nohyphens"
+            | "noindent"
+            | "normalfont"
+            | "normalsize"
             | "onecolumn"
+            | "pagebreak"
+            | "pagenumbering"
+            | "pagestyle"
+            | "par"
+            | "protect"
+            | "providecommand"
+            | "raggedleft"
+            | "raggedright"
+            | "refstepcounter"
+            | "renewcommand"
+            | "rm"
+            | "rmfamily"
+            | "samepage"
+            | "scriptsize"
+            | "selectfont"
+            | "selectlanguage"
+            | "setcounter"
+            | "setenumerate"
+            | "setitemize"
+            | "setlength"
+            | "settodepth"
+            | "settoheight"
+            | "settopmatter"
+            | "settowidth"
+            | "sf"
+            | "sffamily"
+            | "sloppy"
+            | "small"
+            | "smallskip"
+            | "stepcounter"
+            | "thispagestyle"
+            | "tiny"
+            | "totalheight"
             | "twocolumn"
             | "typeout"
-            | "acmnote"
-            | "institution"
-            | "department"
-            | "city"
-            | "state"
-            | "country"
-            | "postcode"
-            | "streetaddress"
-            | "position"
+            | "unboldmath"
+            | "unskip"
+            | "up"
+            | "upshape"
+            | "usepackage"
+            | "vfill"
+            | "vspace"
+            | "width"
     )
 }
 
@@ -1381,7 +1473,15 @@ pub(crate) fn apply_text_accent(name: &str, base: &str) -> String {
     let mut chars = base.chars();
     match chars.next() {
         None => comb.to_string(),
-        Some(first) => pystr::nfc(&format!("{first}{comb}{}", chars.as_str())),
+        Some(first) => {
+            // \"{\i} is an i with a diaeresis: the dotless form exists only to take one
+            let first = match first {
+                'ı' => 'i',
+                'ȷ' => 'j',
+                c => c,
+            };
+            pystr::nfc(&format!("{first}{comb}{}", chars.as_str()))
+        }
     }
 }
 
@@ -1596,7 +1696,7 @@ lazy_re!(
     NEWTHEOREM_RE,
     concat!(
         r"\\newtheorem(\*?)\s*\{([^}]*)\}\s*(?:\[([^\]]*)\])?\s*",
-        r"\{((?:[^{}]|\{[^{}]*\})*)\}"
+        r"\{((?:[^{}]|\{[^{}]*\})*)\}(?:[ \t]*\[([^\]]*)\])?"
     )
 );
 lazy_re!(
@@ -1638,6 +1738,37 @@ pub(crate) fn collect_newtheorems(
         }
     }
     (envs, unnumbered, shared)
+}
+
+/// Theorem env -> the division its counter resets in
+/// (`\newtheorem{thm}{Theorem}[section]` -> `{"thm": "section"}`); an env
+/// sharing another's counter inherits its reset (`_collect_theorem_within`).
+pub(crate) fn collect_theorem_within(source: &str) -> HashMap<String, String> {
+    let mut within: HashMap<String, String> = HashMap::new();
+    let mut shared: tex2word_ir::Dict<String> = tex2word_ir::Dict::new();
+    for m in NEWTHEOREM_RE.find_iter(source) {
+        let name = pystr::strip(m.group_str(2)).to_string();
+        if let Some(s) = m.group(3).filter(|s| !s.is_empty()) {
+            shared.insert(name, pystr::strip(s).to_string());
+        } else if let Some(w) = m.group(5).filter(|s| !s.is_empty()) {
+            within.insert(name, pystr::strip(w).to_string());
+        }
+    }
+    for (name, root) in shared.iter() {
+        let mut root = root.clone();
+        let mut seen = std::collections::HashSet::from([name.clone()]);
+        while let Some(next) = shared.get(&root) {
+            if seen.contains(&root) {
+                break;
+            }
+            seen.insert(root.clone());
+            root = next.clone();
+        }
+        if let Some(w) = within.get(&root).cloned() {
+            within.insert(name.clone(), w);
+        }
+    }
+    within
 }
 
 /// Counter *display name* each theorem env numbers against.
@@ -1983,26 +2114,84 @@ pub(crate) fn font_cmd(preamble: &str, cmd: &str) -> Option<String> {
 
 pub use tex2word_ir::pyos::today_text;
 
-/// Block-level bibliography commands; a `{\small ...}` group around them is
-/// descended into instead of being read as inline text.
-pub(crate) fn is_block_macro_node(node: &Node) -> bool {
+/// bibliography commands that may sit in a size group (`{\small \bibliography{x}}`)
+pub(crate) fn is_bib_block_macro(node: &Node) -> bool {
     matches!(
         node.macroname(),
-        Some("bibliography" | "printbibliography" | "bibliographystyle")
+        Some("bibliography" | "bibliographystyle" | "printbibliography" | "nocite")
     )
 }
 
-/// Drawing environments compiled as pictures (`tikzpicture` & co.).
-pub(crate) fn is_drawing_env(name: &str) -> bool {
+/// True if `nodes` hold an environment or a paragraph break.
+pub(crate) fn has_block_content(nodes: &[Node]) -> bool {
+    nodes.iter().any(|n| match &n.kind {
+        NodeKind::Environment { .. } => true,
+        NodeKind::Chars { chars } => PAR_BREAK_RE.search(chars).is_some(),
+        NodeKind::Macro { macroname, .. } => macroname == "par",
+        NodeKind::Group { nodelist, .. } => has_block_content(nodelist),
+        _ => false,
+    })
+}
+
+static PAR_BREAK_RE: LazyLock<re::Regex> = LazyLock::new(|| re::Regex::new(r"\n[ \t]*\n"));
+
+/// True if `nodes` (recursively through groups and environments) hold a
+/// `\caption`/`\captionof`.
+pub(crate) fn has_caption(nodes: &[Node]) -> bool {
+    nodes.iter().any(|n| match &n.kind {
+        NodeKind::Macro { macroname, .. } => macroname == "caption" || macroname == "captionof",
+        NodeKind::Group { nodelist, .. } | NodeKind::Environment { nodelist, .. } => {
+            has_caption(nodelist)
+        }
+        _ => false,
+    })
+}
+
+/// environments a table float's caption/label/tabular may sit in
+pub(crate) fn is_table_wrap_env(name: &str) -> bool {
     matches!(
         name,
-        "tikzpicture" | "pgfpicture" | "circuitikz" | "tikzcd" | "forest" | "pspicture"
+        "threeparttable"
+            | "threeparttablex"
+            | "adjustbox"
+            | "center"
+            | "small"
+            | "footnotesize"
+            | "scriptsize"
     )
 }
 
-/// The children of a `table` float with layout wrappers opened up: a
-/// `\rotatebox`/`\resizebox`/`\scalebox` contributes its content, and a lone
-/// `minipage` (the landscape-table idiom `\rotatebox{90}{\begin{minipage}...}`)
+/// First number of an ordered list: enumitem `[start=5]`, or a
+/// `\setcounter{enumi}{4}` before the first `\item` (LaTeX steps the counter
+/// before printing, so that also starts at 5).
+pub(crate) fn list_start(node: &Node) -> i64 {
+    for a in argnlist(node).iter().flatten() {
+        if is_bracket_group(a) {
+            if let Some(m) = LIST_START_RE.search(a.latex_verbatim()) {
+                return pystr::parse_int(m.group_str(1)).unwrap_or(1);
+            }
+        }
+    }
+    let verb = node.latex_verbatim();
+    let head = match verb.find("\\item") {
+        Some(k) => &verb[..k],
+        None => verb,
+    };
+    match SETCOUNTER_ENUM_RE.search(head) {
+        Some(m) => pystr::parse_int(m.group_str(1)).unwrap_or(0) + 1,
+        None => 1,
+    }
+}
+
+static LIST_START_RE: LazyLock<re::Regex> =
+    LazyLock::new(|| re::Regex::new(r"\bstart\s*=\s*(\d+)"));
+static SETCOUNTER_ENUM_RE: LazyLock<re::Regex> =
+    LazyLock::new(|| re::Regex::new(r"\\setcounter\s*\{enum[iv]+\}\s*\{\s*(\d+)\s*\}"));
+
+/// The children of a `table` float with layout wrappers opened up.
+///
+/// `\rotatebox`/`\resizebox`/`\scalebox` contribute their content, and a
+/// lone `minipage` (the landscape idiom `\rotatebox{90}{\begin{minipage}...}`)
 /// its body, so the float's caption, label and tabular are found inside.
 pub(crate) fn unwrap_table_layout(nodes: &[Node]) -> Vec<Node> {
     let minipages = nodes
@@ -2011,8 +2200,14 @@ pub(crate) fn unwrap_table_layout(nodes: &[Node]) -> Vec<Node> {
         .count();
     let mut out = Vec::new();
     for n in nodes {
-        if matches!(n.macroname(), Some("rotatebox" | "resizebox" | "scalebox")) {
-            out.extend(unwrap_table_layout(&group_nodes(n)));
+        if n.macroname().is_some_and(is_box_wrapper) {
+            if let Some(last) = brace_groups(n).last() {
+                out.extend(unwrap_table_layout(last));
+            }
+        } else if n.environmentname().is_some_and(is_table_wrap_env) {
+            // threeparttable / adjustbox / center inside a float: the caption,
+            // label and tabular are the float's
+            out.extend(unwrap_table_layout(n.nodelist().unwrap_or(&[])));
         } else if minipages == 1 && n.environmentname() == Some("minipage") {
             out.extend(unwrap_table_layout(n.nodelist().unwrap_or(&[])));
         } else {
@@ -2036,5 +2231,67 @@ mod tests {
             vec!["left", "center", "right"]
         );
         assert_eq!(apply_text_accent("'", "e"), "é");
+    }
+}
+
+lazy_re!(URL_ESCAPE_RE, r"\\([#%_&~$])");
+
+/// A URL argument verbatim (`~`, `#`, `%` are part of it), with TeX escapes
+/// such as `\#`, `\%`, `\_` undone (`_url_text`).
+pub(crate) fn url_text(nodes: &[Node]) -> String {
+    let raw: String = nodes.iter().map(Node::latex_verbatim).collect();
+    URL_ESCAPE_RE.sub(r"\1", pystr::strip(&raw))
+}
+
+/// The inline children of a styled span, link or note (`hasattr(n, "inlines")`).
+pub(crate) fn child_inlines(n: &Inline) -> Option<&Vec<Inline>> {
+    match n {
+        Inline::Emphasis(e) => Some(&e.inlines),
+        Inline::Link(e) => Some(&e.inlines),
+        Inline::Footnote(e) => Some(&e.inlines),
+        Inline::Endnote(e) => Some(&e.inlines),
+        Inline::Colored(e) => Some(&e.inlines),
+        Inline::FontSize(e) => Some(&e.inlines),
+        _ => None,
+    }
+}
+
+/// Plain text of rendered inlines (styles dropped, a no-break space kept)
+/// (`_flat_text`).
+pub(crate) fn flat_text(inlines: &[Inline]) -> String {
+    let mut out = String::new();
+    for n in inlines {
+        match n {
+            Inline::Text(t) => out.push_str(&t.value),
+            Inline::LineBreak(_) => out.push(' '),
+            _ => {
+                if let Some(c) = child_inlines(n) {
+                    out.push_str(&flat_text(c));
+                }
+            }
+        }
+    }
+    pystr::strip(&out).to_string()
+}
+
+/// Upper-/lower-case the text of `inlines` in place (math is left alone)
+/// (`_change_case`).
+pub(crate) fn change_case(inlines: &mut [Inline], upper: bool) {
+    for n in inlines.iter_mut() {
+        match n {
+            Inline::Text(t) => {
+                t.value = if upper {
+                    pystr::upper(&t.value)
+                } else {
+                    pystr::lower(&t.value)
+                }
+            }
+            Inline::Emphasis(e) => change_case(&mut e.inlines, upper),
+            Inline::Link(e) => change_case(&mut e.inlines, upper),
+            Inline::Endnote(e) => change_case(&mut e.inlines, upper),
+            Inline::Colored(e) => change_case(&mut e.inlines, upper),
+            Inline::FontSize(e) => change_case(&mut e.inlines, upper),
+            _ => {}
+        }
     }
 }

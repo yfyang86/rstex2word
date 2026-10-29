@@ -1,0 +1,13 @@
+{
+"api": "to_latex",
+"args": {
+"docx_bytes": {
+"@blob": "0317d136bc8574a822e360c8d64783d5e5ea2c1d43789e5bfed4207d1c220439"
+}
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_images.py::test_inline_image_round_trips"
+]
+}

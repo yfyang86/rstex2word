@@ -1,0 +1,11 @@
+{
+"api": "expand_macros",
+"args": {
+"source": "\\let\\oldsection\\section\\renewcommand{\\section}[1]{\\oldsection{#1!}}\\section{T}"
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_macros_primitives.py::test_let_copies_and_protects"
+]
+}

@@ -1,0 +1,11 @@
+{
+"api": "convert_source",
+"args": {
+"source": "\\documentclass{article}\n\\usepackage{subfig}\n\\begin{document}\n\\begin{figure}\\subfloat[Left\\label{s:l}]{x}\\subfloat[Right]{y}\\caption{C}\\end{figure}\\ref{s:l}\n\\end{document}\n"
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_listings_subrefs.py::test_subfloat_label_in_the_caption"
+]
+}

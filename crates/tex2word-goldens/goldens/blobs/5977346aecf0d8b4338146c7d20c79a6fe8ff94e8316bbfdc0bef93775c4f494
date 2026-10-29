@@ -1,0 +1,107 @@
+{
+  "generated": "2026-10-29T12:36:23+00:00",
+  "ir": {
+    "@type": "Document",
+    "blocks": [],
+    "book": false,
+    "label_aliases": {},
+    "labels": {},
+    "meta": {
+      "@type": "DocumentMeta",
+      "abstract": null,
+      "affiliations": [
+        [
+          {
+            "@type": "Emphasis",
+            "inlines": [
+              {
+                "@type": "Text",
+                "value": "1"
+              }
+            ],
+            "kind_": "superscript"
+          },
+          {
+            "@type": "Text",
+            "value": "U1"
+          }
+        ],
+        [
+          {
+            "@type": "Emphasis",
+            "inlines": [
+              {
+                "@type": "Text",
+                "value": "2"
+              }
+            ],
+            "kind_": "superscript"
+          },
+          {
+            "@type": "Text",
+            "value": "U2"
+          }
+        ]
+      ],
+      "authors": [
+        [
+          {
+            "@type": "Text",
+            "value": "A"
+          },
+          {
+            "@type": "Emphasis",
+            "inlines": [
+              {
+                "@type": "Text",
+                "value": "1"
+              }
+            ],
+            "kind_": "superscript"
+          }
+        ],
+        [
+          {
+            "@type": "Text",
+            "value": "B"
+          },
+          {
+            "@type": "Emphasis",
+            "inlines": [
+              {
+                "@type": "Text",
+                "value": "2"
+              }
+            ],
+            "kind_": "superscript"
+          }
+        ]
+      ],
+      "cjk_main_font": null,
+      "cjk_mono_font": null,
+      "cjk_sans_font": null,
+      "columns": 1,
+      "date": [
+        {
+          "@type": "Text",
+          "value": "January 2, 2026"
+        }
+      ],
+      "front_notes": [],
+      "keywords": null,
+      "language": null,
+      "main_font": null,
+      "running_head": null,
+      "subtitle": null,
+      "title": [
+        {
+          "@type": "Text",
+          "value": "T"
+        }
+      ]
+    }
+  },
+  "labels": {},
+  "manifest_version": 1,
+  "tool": "tex2word"
+}

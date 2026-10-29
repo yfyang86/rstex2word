@@ -299,18 +299,18 @@ impl LatexWriter {
                 Some(rh) => format!("[{}]", latex_escape(rh)),
                 None => String::new(),
             };
-            out.push(format!("\\title{head}{{{}}}", self.inlines(title)));
+            out.push(format!("\\title{head}{{{}}}", self.inlines(title)?));
         } else if let Some(rh) = nonempty(&meta.running_head) {
             out.push(format!("\\markright{{{}}}", latex_escape(rh)));
         }
         for author in &meta.authors {
-            out.push(format!("\\author{{{}}}", self.inlines(author)));
+            out.push(format!("\\author{{{}}}", self.inlines(author)?));
         }
         for affil in &meta.affiliations {
-            out.push(format!("\\affiliation{{{}}}", self.inlines(affil)));
+            out.push(format!("\\affiliation{{{}}}", self.inlines(affil)?));
         }
         if let Some(date) = truthy(&meta.date) {
-            out.push(format!("\\date{{{}}}", self.inlines(date)));
+            out.push(format!("\\date{{{}}}", self.inlines(date)?));
         }
         if truthy(&meta.title).is_some() {
             out.push("\\maketitle".into());
@@ -321,7 +321,7 @@ impl LatexWriter {
             out.push("\\end{abstract}".into());
         }
         if let Some(k) = truthy(&meta.keywords) {
-            out.push(format!("\\keywords{{{}}}", self.inlines(k)));
+            out.push(format!("\\keywords{{{}}}", self.inlines(k)?));
         }
         Ok(out.join("\n"))
     }
@@ -356,11 +356,11 @@ impl LatexWriter {
                 }
                 format!(
                     "{prefix}\\{cmd}{star}{{{}}}{label}",
-                    self.inlines(&h.inlines)
+                    self.inlines(&h.inlines)?
                 )
             }
             Block::Paragraph(p) => {
-                let body = self.inlines(&p.inlines);
+                let body = self.inlines(&p.inlines)?;
                 let env = match p.align.as_deref().unwrap_or("") {
                     "center" => "center",
                     "left" => "flushleft",
@@ -382,7 +382,7 @@ impl LatexWriter {
             Block::CodeBlock(c) => format!("\\begin{{verbatim}}\n{}\n\\end{{verbatim}}", c.text),
             Block::Quote(q) => {
                 let head = match truthy(&q.title) {
-                    Some(t) => format!("\\textbf{{{}}}\n\n", self.inlines(t)),
+                    Some(t) => format!("\\textbf{{{}}}\n\n", self.inlines(t)?),
                     None => String::new(),
                 };
                 format!(
@@ -393,7 +393,7 @@ impl LatexWriter {
             Block::Theorem(t) => {
                 let env = theorem_env(&t.kind);
                 let title = match truthy(&t.title) {
-                    Some(ti) => format!("[{}]", self.inlines(ti)),
+                    Some(ti) => format!("[{}]", self.inlines(ti)?),
                     None => String::new(),
                 };
                 let label = match nonempty(&t.label) {
@@ -405,7 +405,7 @@ impl LatexWriter {
                     self.blocks(&t.blocks)?
                 )
             }
-            Block::Algorithm(a) => self.algorithm(a),
+            Block::Algorithm(a) => self.algorithm(a)?,
             Block::Bibliography(b) => bibliography(b),
             Block::TableOfContents(t) => match t.kind.as_str() {
                 "contents" => "\\tableofcontents".into(),
@@ -429,7 +429,7 @@ impl LatexWriter {
         let mut rows = Vec::new();
         for item in &block.items {
             let term = match truthy(&item.term) {
-                Some(t) => format!("[{}]", self.inlines(t)),
+                Some(t) => format!("[{}]", self.inlines(t)?),
                 None => String::new(),
             };
             let row = format!("\\item{term} {}", self.blocks(&item.blocks)?);
@@ -493,7 +493,7 @@ impl LatexWriter {
         let star = if block.caption_numbered { "" } else { "*" };
         let cap = format!(
             "\\caption{star}{{{}}}",
-            self.inlines(block.caption.as_deref().unwrap_or(&[]))
+            self.inlines(block.caption.as_deref().unwrap_or(&[]))?
         );
         let label = match nonempty(&block.label) {
             Some(l) => format!("\\label{{{l}}}"),
@@ -530,7 +530,7 @@ impl LatexWriter {
                 lines.push(format!("\\includegraphics{{{}}}", img.path));
             }
             if let Some(c) = truthy(&sub.caption) {
-                lines.push(format!("\\caption{{{}}}", self.inlines(c)));
+                lines.push(format!("\\caption{{{}}}", self.inlines(c)?));
             }
             if let Some(l) = nonempty(&sub.label) {
                 lines.push(format!("\\label{{{l}}}"));
@@ -546,7 +546,7 @@ impl LatexWriter {
         }
         if let Some(c) = truthy(&block.caption) {
             let star = if block.caption_numbered { "" } else { "*" };
-            lines.push(format!("\\caption{star}{{{}}}", self.inlines(c)));
+            lines.push(format!("\\caption{star}{{{}}}", self.inlines(c)?));
         }
         if let Some(l) = nonempty(&block.label) {
             lines.push(format!("\\label{{{l}}}"));
@@ -555,10 +555,10 @@ impl LatexWriter {
         Ok(lines.join("\n"))
     }
 
-    fn algorithm(&self, block: &Algorithm) -> String {
+    fn algorithm(&mut self, block: &Algorithm) -> R<String> {
         let mut lines = vec!["\\begin{algorithm}".to_string()];
         if let Some(c) = truthy(&block.caption) {
-            lines.push(format!("\\caption{{{}}}", self.inlines(c)));
+            lines.push(format!("\\caption{{{}}}", self.inlines(c)?));
         }
         if let Some(l) = nonempty(&block.label) {
             lines.push(format!("\\label{{{l}}}"));
@@ -566,41 +566,49 @@ impl LatexWriter {
         lines.push("\\begin{algorithmic}[1]".into());
         for aline in &block.lines {
             let indent = "  ".repeat(aline.indent.max(0) as usize);
-            lines.push(format!("{indent}\\State {}", self.inlines(&aline.inlines)));
+            lines.push(format!("{indent}\\State {}", self.inlines(&aline.inlines)?));
         }
         lines.push("\\end{algorithmic}".into());
         lines.push("\\end{algorithm}".into());
-        lines.join("\n")
+        Ok(lines.join("\n"))
     }
 
     // -- inline -------------------------------------------------------------------
 
-    fn inlines(&self, inlines: &[Inline]) -> String {
-        inlines.iter().map(|n| self.inline(n)).collect()
+    fn inlines(&mut self, inlines: &[Inline]) -> R<String> {
+        let mut out = String::new();
+        for n in inlines {
+            out.push_str(&self.inline(n)?);
+        }
+        Ok(out)
     }
 
-    fn inline(&self, node: &Inline) -> String {
-        match node {
+    fn inline(&mut self, node: &Inline) -> R<String> {
+        Ok(match node {
             Inline::Text(t) => latex_escape(&t.value),
             Inline::Emphasis(e) => {
-                format!("\\{}{{{}}}", emph_cmd(&e.kind), self.inlines(&e.inlines))
+                format!("\\{}{{{}}}", emph_cmd(&e.kind), self.inlines(&e.inlines)?)
             }
             Inline::Math(m) => format!("${}$", m.latex),
             Inline::Ref(r) => ref_latex(r),
             Inline::Cite(c) => cite_latex(c),
             Inline::Link(l) => {
-                let text = self.inlines(&l.inlines);
+                let text = self.inlines(&l.inlines)?;
                 match nonempty(&l.anchor) {
                     Some(a) => format!("\\hyperref[{a}]{{{text}}}"),
                     None => format!("\\href{{{}}}{{{text}}}", l.url),
                 }
             }
             Inline::LineBreak(_) => "\\\\".into(),
-            Inline::Footnote(f) => format!("\\footnote{{{}}}", self.inlines(&f.inlines)),
-            Inline::Endnote(e) => format!("\\endnote{{{}}}", self.inlines(&e.inlines)),
+            Inline::Footnote(f) if !f.blocks.is_empty() => {
+                let body = self.blocks(&f.blocks)?;
+                format!("\\footnote{{{}}}", pystr::strip(&body))
+            }
+            Inline::Footnote(f) => format!("\\footnote{{{}}}", self.inlines(&f.inlines)?),
+            Inline::Endnote(e) => format!("\\endnote{{{}}}", self.inlines(&e.inlines)?),
             Inline::IndexEntry(i) => format!("\\index{{{}}}", i.term),
             Inline::Colored(c) => {
-                let inner = self.inlines(&c.inlines);
+                let inner = self.inlines(&c.inlines)?;
                 if let Some(bg) = &c.bg {
                     format!("\\colorbox[HTML]{{{bg}}}{{{inner}}}")
                 } else if let Some(fg) = &c.fg {
@@ -610,7 +618,7 @@ impl LatexWriter {
                 }
             }
             Inline::FontSize(f) => {
-                let inner = self.inlines(&f.inlines);
+                let inner = self.inlines(&f.inlines)?;
                 match hp_size_cmd(f.half_points) {
                     Some(cmd) => format!("{{\\{cmd} {inner}}}"),
                     None => inner,
@@ -627,7 +635,7 @@ impl LatexWriter {
                 };
                 format!("\n% comment: {who}{note}\n")
             }
-        }
+        })
     }
 }
 

@@ -1,0 +1,13 @@
+{
+"api": "validate_docx",
+"args": {
+"docx_bytes": {
+"@blob": "be326448922422d9ce70a3af40024bc8ffaa115b5340e7c37d72bc450bbb7b6a"
+}
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_tabular_variants.py::test_variants_valid"
+]
+}

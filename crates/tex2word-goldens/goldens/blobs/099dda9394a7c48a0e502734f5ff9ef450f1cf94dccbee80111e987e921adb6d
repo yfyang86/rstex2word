@@ -1,0 +1,121 @@
+{
+  "generated": "2026-01-02T00:00:00+00:00",
+  "ir": {
+    "@type": "Document",
+    "blocks": [
+      {
+        "@type": "Paragraph",
+        "align": null,
+        "inlines": [
+          {
+            "@type": "Text",
+            "value": "icon "
+          },
+          {
+            "@type": "Image",
+            "alt": "a.png",
+            "angle": null,
+            "clip": false,
+            "height": null,
+            "keep_aspect": false,
+            "original_format": "png",
+            "path": "a.png",
+            "rel_height": null,
+            "rel_width": null,
+            "scale": null,
+            "trim": null,
+            "width": null
+          },
+          {
+            "@type": "Text",
+            "value": " x"
+          }
+        ]
+      },
+      {
+        "@type": "Figure",
+        "blocks": [],
+        "caption": [
+          {
+            "@type": "Text",
+            "value": "1"
+          }
+        ],
+        "caption_numbered": true,
+        "image": {
+          "@type": "Image",
+          "alt": "a.png",
+          "angle": null,
+          "clip": false,
+          "height": null,
+          "keep_aspect": false,
+          "original_format": "png",
+          "path": "a.png",
+          "rel_height": null,
+          "rel_width": null,
+          "scale": null,
+          "trim": null,
+          "width": null
+        },
+        "label": null,
+        "source": "\\begin{figure}\\includegraphics{a.png}\\caption{1}\\end{figure}",
+        "spanning": false,
+        "subfigures": []
+      },
+      {
+        "@type": "Figure",
+        "blocks": [],
+        "caption": [
+          {
+            "@type": "Text",
+            "value": "2"
+          }
+        ],
+        "caption_numbered": true,
+        "image": {
+          "@type": "Image",
+          "alt": "a.png",
+          "angle": null,
+          "clip": false,
+          "height": null,
+          "keep_aspect": false,
+          "original_format": "png",
+          "path": "a.png",
+          "rel_height": null,
+          "rel_width": null,
+          "scale": null,
+          "trim": null,
+          "width": null
+        },
+        "label": null,
+        "source": "\\begin{figure}\\includegraphics{a.png}\\caption{2}\\end{figure}",
+        "spanning": false,
+        "subfigures": []
+      }
+    ],
+    "book": false,
+    "label_aliases": {},
+    "labels": {},
+    "meta": {
+      "@type": "DocumentMeta",
+      "abstract": null,
+      "affiliations": [],
+      "authors": [],
+      "cjk_main_font": null,
+      "cjk_mono_font": null,
+      "cjk_sans_font": null,
+      "columns": 1,
+      "date": null,
+      "front_notes": [],
+      "keywords": null,
+      "language": null,
+      "main_font": null,
+      "running_head": null,
+      "subtitle": null,
+      "title": null
+    }
+  },
+  "labels": {},
+  "manifest_version": 1,
+  "tool": "tex2word"
+}

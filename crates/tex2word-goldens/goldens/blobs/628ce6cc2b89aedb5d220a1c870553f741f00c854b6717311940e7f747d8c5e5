@@ -1,0 +1,171 @@
+{
+  "generated": "2026-01-02T00:00:00+00:00",
+  "ir": {
+    "@type": "Document",
+    "blocks": [
+      {
+        "@type": "Heading",
+        "appendix": false,
+        "inlines": [
+          {
+            "@type": "Text",
+            "value": "Intro"
+          }
+        ],
+        "label": "s:i",
+        "level": 1,
+        "numbered": true,
+        "part": false
+      },
+      {
+        "@type": "Paragraph",
+        "align": null,
+        "inlines": [
+          {
+            "@type": "Text",
+            "value": "Text "
+          },
+          {
+            "@type": "Emphasis",
+            "inlines": [
+              {
+                "@type": "Text",
+                "value": "bold"
+              }
+            ],
+            "kind_": "bold"
+          },
+          {
+            "@type": "Text",
+            "value": " and "
+          },
+          {
+            "@type": "Math",
+            "latex": "x^2"
+          },
+          {
+            "@type": "Text",
+            "value": " and "
+          },
+          {
+            "@type": "Ref",
+            "bookmark": "eq_e",
+            "key": "eq:e",
+            "ref_kind": "equation",
+            "style": "plain"
+          },
+          {
+            "@type": "Text",
+            "value": "."
+          }
+        ]
+      },
+      {
+        "@type": "MathBlock",
+        "env": "equation",
+        "label": "eq:e",
+        "latex": "E=mc^2",
+        "line_labels": [
+          "eq:e"
+        ],
+        "numbered": true
+      },
+      {
+        "@type": "ItemList",
+        "description": false,
+        "items": [
+          {
+            "@type": "ListItem",
+            "blocks": [
+              {
+                "@type": "Paragraph",
+                "align": null,
+                "inlines": [
+                  {
+                    "@type": "Text",
+                    "value": "one"
+                  }
+                ]
+              }
+            ],
+            "label": null,
+            "term": null
+          },
+          {
+            "@type": "ListItem",
+            "blocks": [
+              {
+                "@type": "Paragraph",
+                "align": null,
+                "inlines": [
+                  {
+                    "@type": "Text",
+                    "value": "two"
+                  }
+                ]
+              }
+            ],
+            "label": null,
+            "term": null
+          }
+        ],
+        "ordered": false,
+        "start": 1
+      }
+    ],
+    "book": false,
+    "label_aliases": {},
+    "labels": {
+      "eq:e": {
+        "@type": "LabelInfo",
+        "bookmark": "eq_e",
+        "counter_name": "Equation",
+        "kind": "equation",
+        "name": null,
+        "number": null,
+        "sub": null
+      },
+      "s:i": {
+        "@type": "LabelInfo",
+        "bookmark": "s_i",
+        "counter_name": "Section",
+        "kind": "section",
+        "name": "Intro",
+        "number": null,
+        "sub": null
+      }
+    },
+    "meta": {
+      "@type": "DocumentMeta",
+      "abstract": null,
+      "affiliations": [],
+      "authors": [],
+      "cjk_main_font": null,
+      "cjk_mono_font": null,
+      "cjk_sans_font": null,
+      "columns": 1,
+      "date": null,
+      "front_notes": [],
+      "keywords": null,
+      "language": null,
+      "main_font": null,
+      "running_head": null,
+      "subtitle": null,
+      "title": null
+    }
+  },
+  "labels": {
+    "eq:e": {
+      "bookmark": "eq_e",
+      "counter": "Equation",
+      "kind": "equation"
+    },
+    "s:i": {
+      "bookmark": "s_i",
+      "counter": "Section",
+      "kind": "section"
+    }
+  },
+  "manifest_version": 1,
+  "tool": "tex2word"
+}

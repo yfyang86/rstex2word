@@ -1,0 +1,15 @@
+{
+"api": "convert_source",
+"args": {
+"source": "\\documentclass{article}\n\\usepackage{subfiles}\n\\begin{document}\n\\input{part}\n\n\\input plain\n\n\\subfile{sub/s}\n\\end{document}\n"
+},
+"base_dir": "base",
+"files": {
+"base/part.tex": "72d0046e06896de689170e9a3c75c2fe7ad09e8d18d6b037e9056e404933810f",
+"base/plain.tex": "83cd37702c453c5f58421770e98083fd871cad495f026f744597f3d348384e4b",
+"base/sub/s.tex": "12964d99ab4366e4a36e222f3623f6cb3915e88b1f6321b44991a44ba9bf759e"
+},
+"tests": [
+"tests/test_macros_primitives.py::test_endinput_input_without_braces_and_subfile"
+]
+}

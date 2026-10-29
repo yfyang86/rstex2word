@@ -1,0 +1,89 @@
+{
+  "generated": "2026-01-02T00:00:00+00:00",
+  "ir": {
+    "@type": "Document",
+    "blocks": [
+      {
+        "@type": "Figure",
+        "blocks": [],
+        "caption": [
+          {
+            "@type": "Text",
+            "value": "A nice plot"
+          }
+        ],
+        "caption_numbered": true,
+        "image": null,
+        "label": "fig:p",
+        "source": "\\begin{figure}\\caption{A nice plot}\\label{fig:p}\\end{figure}",
+        "spanning": false,
+        "subfigures": []
+      },
+      {
+        "@type": "Paragraph",
+        "align": null,
+        "inlines": [
+          {
+            "@type": "Text",
+            "value": "Recall "
+          },
+          {
+            "@type": "Link",
+            "anchor": "fig_p",
+            "inlines": [
+              {
+                "@type": "Text",
+                "value": "A nice plot"
+              }
+            ],
+            "url": ""
+          },
+          {
+            "@type": "Text",
+            "value": "."
+          }
+        ]
+      }
+    ],
+    "book": false,
+    "label_aliases": {},
+    "labels": {
+      "fig:p": {
+        "@type": "LabelInfo",
+        "bookmark": "fig_p",
+        "counter_name": "Figure",
+        "kind": "figure",
+        "name": "A nice plot",
+        "number": null,
+        "sub": null
+      }
+    },
+    "meta": {
+      "@type": "DocumentMeta",
+      "abstract": null,
+      "affiliations": [],
+      "authors": [],
+      "cjk_main_font": null,
+      "cjk_mono_font": null,
+      "cjk_sans_font": null,
+      "columns": 1,
+      "date": null,
+      "front_notes": [],
+      "keywords": null,
+      "language": null,
+      "main_font": null,
+      "running_head": null,
+      "subtitle": null,
+      "title": null
+    }
+  },
+  "labels": {
+    "fig:p": {
+      "bookmark": "fig_p",
+      "counter": "Figure",
+      "kind": "figure"
+    }
+  },
+  "manifest_version": 1,
+  "tool": "tex2word"
+}

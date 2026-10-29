@@ -1,0 +1,13 @@
+{
+"api": "read_docx",
+"args": {
+"docx_bytes": {
+"@blob": "57d4bc69b168a92aea965c577029efa24cb6e419484a28795a19ff26f03fbac3"
+}
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_labels.py::test_without_map_unknown_prefix_is_left_alone"
+]
+}

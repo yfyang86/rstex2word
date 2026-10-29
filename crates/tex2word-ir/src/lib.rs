@@ -27,6 +27,7 @@ pub mod re;
 pub mod report;
 mod unicode_norm;
 mod unicode_tables;
+pub mod walk;
 
 pub use dict::Dict;
 pub use json::{FromJson, JsonError, ToJson, Value};

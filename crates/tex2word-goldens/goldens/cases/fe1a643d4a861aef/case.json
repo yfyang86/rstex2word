@@ -1,0 +1,13 @@
+{
+"api": "to_latex",
+"args": {
+"docx_bytes": {
+"@blob": "d6ddd4131c40bad7c4e35b2eb41c4a88ab3e2357b2a287767aed8de17ffd2f0b"
+}
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_corpus_harness.py::test_corpus_latex_roundtrip_preserves_structure[longtable.tex]"
+]
+}

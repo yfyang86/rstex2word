@@ -1,0 +1,11 @@
+{
+"api": "convert_source",
+"args": {
+"source": "\\documentclass{article}\n\\usepackage{minted}\n\\begin{document}\n\\begin{listing}\\begin{minted}{python}\nx = 1\n\\end{minted}\\caption{Example}\\label{lst:e}\\end{listing}\\ref{lst:e}\n\\end{document}\n"
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_listings_subrefs.py::test_minted_listing_float"
+]
+}

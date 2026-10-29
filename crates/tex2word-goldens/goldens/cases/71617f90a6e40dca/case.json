@@ -1,0 +1,13 @@
+{
+"api": "to_latex",
+"args": {
+"docx_bytes": {
+"@blob": "e9259f968af8d729010f694187a7de12cbc5f910c0c3174208f75a370ad89eb1"
+}
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_toc.py::test_toc_to_latex"
+]
+}

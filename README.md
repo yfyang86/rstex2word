@@ -5,20 +5,19 @@ OfficeMath (OMML) equations and live Word fields, and convert the `.docx` back
 to LaTeX.
 
 This is a Rust port of the Python [`tex2word`](https://pypi.org/project/tex2word/)
-**1.0.9**, matching what `pip install tex2word` gives you without extras. It
+**1.1.0**, matching what `pip install tex2word` gives you without extras. It
 has **no crate dependencies**: the XML parser, ZIP container, zlib-compatible
 compressor, regex engine, LaTeX walker and the LaTeX→OMML math engine are all
 in the workspace.
 
-> **Version 2.3.0.** amsart manuscripts convert cleanly: citations and
-> references resolve inside tables, captions and theorem blocks, sums own
-> their operands (no placeholder boxes in Word), minus signs and operator
-> names render properly, and landscape `\rotatebox` tables keep their
-> captions. 2.2.0 added TikZ-heavy papers; 2.1.0 extended the math engine
-> beyond the Python 1.0.9 reference. For the inputs recorded from the Python
-> test suite the Rust port still produces the same IR and conversion report;
-> `.docx` bytes differ only where the documented improvements change them.
-> See [Parity with Python](#parity-with-python) and
+> **Version 2.4.0.** Catches up with the Python 1.1.0 reference: journal
+> front matter for 17 classes, `threeparttable`/`sidewaystable`/sub-tables,
+> real cached field numbers, ordered lists that restart, `\pageref`,
+> `\subref` and listing captions, `\let`/`\csname`/conditionals/counters,
+> block footnotes, and the reference's math fixes. For the inputs recorded
+> from the Python test suite the Rust port produces the same IR and
+> conversion report; `.docx` bytes differ only where Rust's broader math
+> coverage changes them. See [Parity with Python](#parity-with-python) and
 > [`CHANGELOG.md`](CHANGELOG.md).
 
 ## Install
@@ -79,7 +78,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
 ## What it converts
 
-Everything the Python 1.0.9 core install converts, including:
+Everything the Python 1.1.0 core install converts, including:
 
 - **Structure**: title block and abstract, `\part`/`\chapter`/`\section`…
   with auto-numbered multilevel headings, `\appendix`, book/report classes,
@@ -119,12 +118,11 @@ The `tex2word-goldens` crate checks the port against outputs recorded from
 the Python reference (CPython 3.12, pylatexenc 2.11, lxml 6 / libxml2 2.14,
 zlib 1.3):
 
-- **Conversion**: all 431 recorded `convert_source` calls give the same IR
+- **Conversion**: all 496 recorded `convert_source` calls give the same IR
   and report, and the same `.docx` bytes except where a documented
-  improvement changes the output on purpose (mostly math OMML: broader
-  symbol coverage, n-ary operands, minus signs; see the CHANGELOG's
-  "Golden parity" notes); all 606 `parse_document` calls give the same IR
-  and report.
+  improvement changes the output on purpose (Rust's broader math symbol
+  coverage; see the CHANGELOG's "Golden parity" notes); all 671
+  `parse_document` calls give the same IR and report.
 - **Reverse path**: `read_docx`, `to_latex` (with and without reconciliation,
   and after simulated Word edits), `recover_ir` and `write_latex` match on
   every recorded conversion.
