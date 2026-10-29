@@ -221,6 +221,8 @@ fn glyphs_to_latex(text: &str) -> String {
                 out.push_str(cmd);
                 out.push(' ');
             }
+            // the minus sign the writer emits for `-` reads back as `-`
+            None if ch == '\u{2212}' => out.push('-'),
             None => out.push(ch),
         }
     }

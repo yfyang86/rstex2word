@@ -61,6 +61,8 @@ pub(crate) struct Builder {
     pub nocite_keys: Vec<String>,
     /// book/report class: \chapter is the top level
     pub book_mode: bool,
+    /// amsart `\subjclass[X]` labels declared via `\@namedef{subjclassname@X}`
+    pub subjclass_names: HashMap<String, String>,
     /// seen \appendix -> later sections use letters
     pub in_appendix: bool,
     /// \footnotemark slots awaiting their \footnotetext{...} content
@@ -128,6 +130,7 @@ impl Builder {
             labels: Vec::new(),
             in_picture: false,
             label_aliases: HashMap::new(),
+            subjclass_names: HashMap::new(),
             footmarks: Vec::new(),
         }
     }
@@ -1027,6 +1030,37 @@ impl Builder {
                     }));
                     continue;
                 }
+                if name == "subjclass" {
+                    // amsart subject classification: "<label>: codes"
+                    flush(&mut inline_buf, &mut scope_marks, &mut out);
+                    let scheme = optional_group(node)
+                        .map(|g| pystr::strip(&chars_of(g)).to_string())
+                        .unwrap_or_default();
+                    let label = match self.subjclass_names.get(&scheme) {
+                        Some(l) => l.clone(),
+                        None if scheme == "JEL" => "JEL classification".to_string(),
+                        None if !scheme.is_empty()
+                            && scheme.chars().all(|c| c.is_ascii_digit()) =>
+                        {
+                            format!("{scheme} Mathematics Subject Classification")
+                        }
+                        None => "Mathematics Subject Classification".to_string(),
+                    };
+                    let codes = match brace_groups(node).last() {
+                        Some(g) => self.inlines(g),
+                        None => Vec::new(),
+                    };
+                    let mut inlines = vec![Inline::Emphasis(Emphasis {
+                        inlines: vec![Inline::text(format!("{label}: "))],
+                        kind: "bold".into(),
+                    })];
+                    inlines.extend(codes);
+                    out.push(Block::Paragraph(Paragraph {
+                        inlines,
+                        ..Paragraph::default()
+                    }));
+                    continue;
+                }
                 if matches!(
                     name,
                     "title"
@@ -1048,7 +1082,7 @@ impl Builder {
                     self.meta_macro(node);
                     continue;
                 }
-                if name == "resizebox" || name == "scalebox" {
+                if name == "resizebox" || name == "scalebox" || name == "rotatebox" {
                     // box-scaling wrappers are transparent
                     flush(&mut inline_buf, &mut scope_marks, &mut out);
                     if let Some(last) = brace_groups(node).last() {
@@ -2003,9 +2037,17 @@ impl Builder {
         let mut caption_numbered = true;
         let mut label: Option<String> = None;
         let mut content: Vec<Node> = Vec::new();
-        for child in node.nodelist().unwrap_or(&[]) {
+        for child in &unwrap_table_layout(node.nodelist().unwrap_or(&[])) {
             match child.macroname() {
                 Some("caption") => {
+                    caption = Some(self.inlines(&group_nodes(child)));
+                    caption_numbered = !has_star(child);
+                }
+                // \captionof{table}{...} inside the float (e.g. in a rotated
+                // minipage) is the float's caption
+                Some("captionof")
+                    if caption.is_none() && has_captionof(std::slice::from_ref(child), "table") =>
+                {
                     caption = Some(self.inlines(&group_nodes(child)));
                     caption_numbered = !has_star(child);
                 }

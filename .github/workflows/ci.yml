@@ -74,7 +74,7 @@ jobs:
             target
           key: ${{ runner.os }}-cargo-tikz-${{ hashFiles('**/Cargo.lock') }}
 
-      - name: TikZ acceptance test
+      - name: Acceptance tests with figures rendered
         env:
           T2W_REQUIRE_TIKZ: "1"
-        run: cargo test -p tex2word --test tikz_paper -- --nocapture
+        run: cargo test -p tex2word --test tikz_paper --test amsart_paper -- --nocapture

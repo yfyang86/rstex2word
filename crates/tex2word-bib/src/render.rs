@@ -303,8 +303,9 @@ pub fn build_bibliography(items: &Dict<CSLItem>, cited_keys: &[String], style: &
     biblio
 }
 
-/// Visit every `Cite` in body order (paragraphs/headings, quotes, figure
-/// bodies, list items; through emphasis, links and footnotes).
+/// Visit every `Cite` in body order: paragraphs/headings, quotes, theorem
+/// bodies, figure and table captions, figure bodies, table cells and list
+/// items; through emphasis, links, colour/size spans and foot/endnotes.
 fn walk_cites(blocks: &mut [Block], f: &mut dyn FnMut(&mut Cite)) {
     fn inl(inlines: &mut [Inline], f: &mut dyn FnMut(&mut Cite)) {
         for n in inlines {
@@ -313,6 +314,9 @@ fn walk_cites(blocks: &mut [Block], f: &mut dyn FnMut(&mut Cite)) {
                 Inline::Emphasis(e) => inl(&mut e.inlines, f),
                 Inline::Link(l) => inl(&mut l.inlines, f),
                 Inline::Footnote(x) => inl(&mut x.inlines, f),
+                Inline::Endnote(x) => inl(&mut x.inlines, f),
+                Inline::Colored(x) => inl(&mut x.inlines, f),
+                Inline::FontSize(x) => inl(&mut x.inlines, f),
                 _ => {}
             }
         }
@@ -322,7 +326,23 @@ fn walk_cites(blocks: &mut [Block], f: &mut dyn FnMut(&mut Cite)) {
             Block::Paragraph(p) => inl(&mut p.inlines, f),
             Block::Heading(h) => inl(&mut h.inlines, f),
             Block::Quote(q) => walk_cites(&mut q.blocks, f),
-            Block::Figure(fig) if !fig.blocks.is_empty() => walk_cites(&mut fig.blocks, f),
+            Block::Theorem(t) => walk_cites(&mut t.blocks, f),
+            Block::Figure(fig) => {
+                if let Some(cap) = fig.caption.as_mut() {
+                    inl(cap, f);
+                }
+                walk_cites(&mut fig.blocks, f);
+            }
+            Block::Table(t) => {
+                if let Some(cap) = t.caption.as_mut() {
+                    inl(cap, f);
+                }
+                for row in t.rows.iter_mut() {
+                    for cell in row.cells.iter_mut() {
+                        walk_cites(&mut cell.blocks, f);
+                    }
+                }
+            }
             Block::ItemList(l) => {
                 for item in l.items.iter_mut() {
                     walk_cites(&mut item.blocks, f);

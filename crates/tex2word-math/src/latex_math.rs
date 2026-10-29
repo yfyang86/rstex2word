@@ -299,6 +299,44 @@ impl Tok {
     }
 }
 
+/// Past the `*` and `[<dimen>]` that may follow `\\` (from `at`).
+fn skip_row_spacing(chars: &[char], at: usize) -> usize {
+    let mut i = at;
+    if chars.get(i) == Some(&'*') {
+        i += 1;
+    }
+    let mut k = i;
+    while chars.get(k) == Some(&' ') {
+        k += 1;
+    }
+    if chars.get(k) == Some(&'[') {
+        if let Some(close) = chars[k..].iter().position(|&c| c == ']') {
+            let inner: String = chars[k + 1..k + close].iter().collect();
+            if is_dimen(&inner) {
+                return k + close + 1;
+            }
+        }
+    }
+    i
+}
+
+/// A TeX length such as `2pt`, `-.5ex`, `1.2em` or `\jot`.
+pub fn is_dimen(s: &str) -> bool {
+    let t = s.trim();
+    if let Some(name) = t.strip_prefix('\\') {
+        return !name.is_empty() && name.chars().all(|c| c.is_ascii_alphabetic());
+    }
+    let num_end = t
+        .find(|c: char| !(c.is_ascii_digit() || matches!(c, '.' | '-' | '+' | ' ')))
+        .unwrap_or(t.len());
+    let (num, unit) = t.split_at(num_end);
+    num.chars().any(|c| c.is_ascii_digit())
+        && matches!(
+            unit.trim(),
+            "pt" | "em" | "ex" | "mm" | "cm" | "in" | "bp" | "pc" | "sp" | "mu" | "dd" | "cc"
+        )
+}
+
 pub fn tokenize(s: &str) -> Vec<Tok> {
     let chars: Vec<char> = s.chars().collect();
     let n = chars.len();
@@ -312,6 +350,9 @@ pub fn tokenize(s: &str) -> Vec<Tok> {
                 // control symbol: \{ \} \, \\ \; \! \| etc.
                 if chars[j] == '\\' {
                     toks.push(Tok::Newline);
+                    // `\\*` and the row-spacing argument `\\[2pt]` are layout
+                    i = skip_row_spacing(&chars, j + 1);
+                    continue;
                 } else {
                     toks.push(Tok::Cmd(chars[j].to_string()));
                 }
@@ -463,6 +504,7 @@ impl Parser {
             }
         }
         self.expect("}")?;
+        text_hyphens(&mut items);
         Ok(items)
     }
 
@@ -1095,6 +1137,9 @@ impl Parser {
 fn char_atom(c: char) -> MNode {
     if pystr::is_alpha(c) {
         MNode::Lit(Lit::new(c.to_string())) // italic by default in Word math
+    } else if c == '-' {
+        // TeX typesets `-` in math as the minus sign, not a hyphen
+        MNode::Lit(Lit::upright("\u{2212}"))
     } else {
         MNode::Lit(Lit::upright(c.to_string()))
     }
@@ -1105,7 +1150,40 @@ fn styled(mut row: Row, upright: bool, bold: bool, script: Option<&str>) -> MNod
     for item in row.0.iter_mut() {
         apply_style(item, upright, bold, script);
     }
-    MNode::Group(row)
+    MNode::Group(merge_lits(row))
+}
+
+/// Join neighbouring leaves of the same style into one run, so `\mathrm{Beta}`
+/// or an `\operatorname{rel}` is one word, not four separately spaced letters.
+fn merge_lits(row: Row) -> Row {
+    let mut out: Vec<MNode> = Vec::with_capacity(row.0.len());
+    for node in row.0 {
+        if let (Some(MNode::Lit(prev)), MNode::Lit(cur)) = (out.last_mut(), &node) {
+            if prev.upright == cur.upright
+                && prev.bold == cur.bold
+                && prev.script == cur.script
+                && !prev.text.is_empty()
+            {
+                prev.text.push_str(&cur.text);
+                continue;
+            }
+        }
+        out.push(node);
+    }
+    Row(out)
+}
+
+/// Text inside `\text{...}` & co.: a `-` there is a hyphen.
+fn text_hyphens(items: &mut [MNode]) {
+    for item in items {
+        match item {
+            MNode::Lit(l) if l.text.contains('\u{2212}') => {
+                l.text = l.text.replace('\u{2212}', "-");
+            }
+            MNode::Group(r) | MNode::Row(r) => text_hyphens(&mut r.0),
+            _ => {}
+        }
+    }
 }
 
 fn apply_style(node: &mut MNode, upright: bool, bold: bool, script: Option<&str>) {
@@ -1157,9 +1235,173 @@ pub fn parse(latex: &str) -> Result<Row, MathError> {
         i: 0,
         depth: 0,
     };
-    let row = p.parse_row(STOP_NONE)?;
+    let mut row = p.parse_row(STOP_NONE)?;
     if p.peek() != Tok::Eof {
         return Err(MathError::unsupported("syntax", "trailing tokens"));
     }
+    attach_nary_bodies(&mut row);
     Ok(row)
+}
+
+/// +1 for a bare opening bracket leaf, -1 for a closing one, else 0.
+fn bracket_delta(node: &MNode) -> i32 {
+    match node {
+        MNode::Lit(l) => match l.text.as_str() {
+            "(" | "[" | "{" | "⟨" | "⌊" | "⌈" => 1,
+            ")" | "]" | "}" | "⟩" | "⌋" | "⌉" => -1,
+            _ => 0,
+        },
+        _ => 0,
+    }
+}
+
+/// True for a leaf that ends an n-ary operand at its level: a binary `+`/`−`,
+/// a relation, punctuation, or a wide space (`\quad`).
+fn ends_operand(node: &MNode) -> bool {
+    let MNode::Lit(l) = node else {
+        return false;
+    };
+    let t = l.text.trim_matches(' ');
+    if t.is_empty() {
+        // `\quad`/`\qquad` separate formulas; thin spaces do not
+        return l.text.contains(['\u{2003}', '\u{2002}']) || l.text.chars().count() > 1;
+    }
+    matches!(
+        t,
+        "+" | "\u{2212}"
+            | "-"
+            | "±"
+            | "∓"
+            | "="
+            | "≠"
+            | "<"
+            | ">"
+            | "≤"
+            | "≥"
+            | "≦"
+            | "≧"
+            | "≪"
+            | "≫"
+            | "≈"
+            | "≃"
+            | "≅"
+            | "≡"
+            | "∼"
+            | "∝"
+            | "→"
+            | "←"
+            | "↦"
+            | "⇒"
+            | "⟹"
+            | "⇐"
+            | "⇔"
+            | "⟺"
+            | "↔"
+            | "∈"
+            | "∉"
+            | "⊂"
+            | "⊆"
+            | "⊃"
+            | "⊇"
+            | ","
+            | ";"
+            | ":"
+            | "≔"
+            | "≜"
+            | "≺"
+            | "≻"
+            | "⪯"
+            | "⪰"
+            | "∣"
+            | "|"
+            | "."
+            | "&"
+    )
+}
+
+/// TeX reads `\sum_i e_i \sigma` as the sum of `e_i \sigma`: move each
+/// n-ary operator's operand (up to the next binary operator or relation at
+/// the same level) into its body. An empty `m:e` shows as a dotted
+/// placeholder box in Word.
+fn attach_nary_bodies(row: &mut Row) {
+    let items = std::mem::take(&mut row.0);
+    let mut out: Vec<MNode> = Vec::with_capacity(items.len());
+    let mut iter = items.into_iter().peekable();
+    while let Some(mut node) = iter.next() {
+        if let MNode::Nary(n) = &mut node {
+            if n.body.is_none() {
+                let mut body: Vec<MNode> = Vec::new();
+                // bare brackets are separate leaves: only break outside them,
+                // and never swallow a closer that belongs to an outer group
+                let mut depth = 0i32;
+                while let Some(next) = iter.peek() {
+                    match bracket_delta(next) {
+                        1 => depth += 1,
+                        -1 if depth == 0 => break,
+                        -1 => depth -= 1,
+                        _ if depth == 0 && ends_operand(next) => break,
+                        _ => {}
+                    }
+                    body.push(iter.next().unwrap());
+                }
+                // leading thin spaces belong to the layout, not the operand
+                while matches!(body.first(), Some(MNode::Lit(l)) if l.text.trim().is_empty()) {
+                    out.push(body.remove(0));
+                }
+                if !body.is_empty() {
+                    let mut inner = Row(body);
+                    attach_nary_bodies(&mut inner); // nested sums
+                    n.body = Some(Box::new(MNode::Row(inner)));
+                }
+            }
+        }
+        attach_in_children(&mut node);
+        out.push(node);
+    }
+    row.0 = out;
+}
+
+fn attach_in_children(node: &mut MNode) {
+    let one = |b: &mut Box<MNode>| attach_in_children(b);
+    match node {
+        MNode::Row(r) | MNode::Group(r) | MNode::Sqrt(r) | MNode::BorderBox(r) => {
+            attach_nary_bodies(r)
+        }
+        MNode::Accent(r, _) | MNode::Fenced(_, _, r) | MNode::GroupChr(r, _, _) => {
+            attach_nary_bodies(r)
+        }
+        MNode::Frac(a, b) | MNode::Root(a, b) => {
+            attach_nary_bodies(a);
+            attach_nary_bodies(b);
+        }
+        MNode::Sup(a, b) | MNode::Sub(a, b) | MNode::LimLow(a, b) | MNode::LimUpp(a, b) => {
+            one(a);
+            one(b);
+        }
+        MNode::SubSup(a, b, c) => {
+            one(a);
+            one(b);
+            one(c);
+        }
+        MNode::SPre(a, b, c) => {
+            one(a);
+            if let Some(b) = b {
+                one(b);
+            }
+            if let Some(c) = c {
+                one(c);
+            }
+        }
+        MNode::Nary(n) => {
+            for b in [&mut n.sub, &mut n.sup].into_iter().flatten() {
+                one(b);
+            }
+        }
+        MNode::Matrix(rows, _) => {
+            for cell in rows.iter_mut().flatten() {
+                attach_nary_bodies(cell);
+            }
+        }
+        MNode::Lit(_) => {}
+    }
 }

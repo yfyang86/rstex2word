@@ -53,7 +53,10 @@ pub(crate) fn is_drop_macro(name: &str) -> bool {
 
 /// box wrappers that are visually transparent: emit the (last) content group
 pub(crate) fn is_transparent_box(name: &str) -> bool {
-    matches!(name, "mbox" | "fbox" | "framebox" | "makebox" | "raisebox")
+    matches!(
+        name,
+        "mbox" | "fbox" | "framebox" | "makebox" | "raisebox" | "rotatebox" | "makecell" | "thead"
+    )
 }
 
 /// IEEEtran author-block wrappers: render their content.
@@ -1995,6 +1998,28 @@ pub(crate) fn is_drawing_env(name: &str) -> bool {
         name,
         "tikzpicture" | "pgfpicture" | "circuitikz" | "tikzcd" | "forest" | "pspicture"
     )
+}
+
+/// The children of a `table` float with layout wrappers opened up: a
+/// `\rotatebox`/`\resizebox`/`\scalebox` contributes its content, and a lone
+/// `minipage` (the landscape-table idiom `\rotatebox{90}{\begin{minipage}...}`)
+/// its body, so the float's caption, label and tabular are found inside.
+pub(crate) fn unwrap_table_layout(nodes: &[Node]) -> Vec<Node> {
+    let minipages = nodes
+        .iter()
+        .filter(|n| n.environmentname() == Some("minipage"))
+        .count();
+    let mut out = Vec::new();
+    for n in nodes {
+        if matches!(n.macroname(), Some("rotatebox" | "resizebox" | "scalebox")) {
+            out.extend(unwrap_table_layout(&group_nodes(n)));
+        } else if minipages == 1 && n.environmentname() == Some("minipage") {
+            out.extend(unwrap_table_layout(n.nodelist().unwrap_or(&[])));
+        } else {
+            out.push(n.clone());
+        }
+    }
+    out
 }
 
 #[cfg(test)]
