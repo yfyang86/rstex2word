@@ -276,8 +276,6 @@ pub enum Tok {
     Amp,
     Num(String),
     Char(char),
-    /// a blank; ignored in math mode, significant inside `\text{...}`
-    Space,
     Eof,
 }
 
@@ -293,14 +291,58 @@ impl Tok {
             Tok::Amp => "&",
             Tok::Num(_) => "num",
             Tok::Char(_) => "char",
-            Tok::Space => "space",
             Tok::Eof => "eof",
         }
     }
 }
 
-/// Past the `*` and `[<dimen>]` that may follow `\\` (from `at`).
-fn skip_row_spacing(chars: &[char], at: usize) -> usize {
+/// The minus sign TeX sets for `-` in math (a hyphen only inside `\text{}`).
+pub const MINUS: &str = "\u{2212}";
+
+/// Text-mode commands inside math.
+fn is_text_mode(name: &str) -> bool {
+    matches!(
+        name,
+        "text"
+            | "mbox"
+            | "textrm"
+            | "textnormal"
+            | "textsf"
+            | "texttt"
+            | "textsc"
+            | "textbf"
+            // Rust since 2.1.0 (the reference drops their blanks):
+            // `\textit{ constant}` keeps its space, as in TeX
+            | "textit"
+            | "textsl"
+            | "emph"
+    )
+}
+
+/// Index past the `*` and `[<dimen>]` that may follow `\\` in `s`, from byte
+/// `at`. (The markers are ASCII, so byte and code-point scans agree.)
+pub fn skip_row_spacing(s: &str, at: usize) -> usize {
+    let b = s.as_bytes();
+    let mut i = at;
+    if b.get(i) == Some(&b'*') {
+        i += 1;
+    }
+    let mut k = i;
+    while b.get(k) == Some(&b' ') {
+        k += 1;
+    }
+    if b.get(k) == Some(&b'[') {
+        if let Some(close) = s[k..].find(']') {
+            if is_dimen(&s[k + 1..k + close]) {
+                return k + close + 1;
+            }
+        }
+    }
+    i
+}
+
+/// [`skip_row_spacing`] over code points (the tokenizer's indices).
+fn skip_row_spacing_chars(chars: &[char], at: usize) -> usize {
     let mut i = at;
     if chars.get(i) == Some(&'*') {
         i += 1;
@@ -322,17 +364,17 @@ fn skip_row_spacing(chars: &[char], at: usize) -> usize {
 
 /// A TeX length such as `2pt`, `-.5ex`, `1.2em` or `\jot`.
 pub fn is_dimen(s: &str) -> bool {
-    let t = s.trim();
+    let t = pystr::strip(s);
     if let Some(name) = t.strip_prefix('\\') {
-        return !name.is_empty() && name.chars().all(|c| c.is_ascii_alphabetic());
+        return pystr::is_all_alpha(name);
     }
     let num_end = t
-        .find(|c: char| !(c.is_ascii_digit() || matches!(c, '.' | '-' | '+' | ' ')))
+        .find(|c: char| !(pystr::is_digit(c) || matches!(c, '.' | '-' | '+' | ' ')))
         .unwrap_or(t.len());
     let (num, unit) = t.split_at(num_end);
-    num.chars().any(|c| c.is_ascii_digit())
+    num.chars().any(pystr::is_digit)
         && matches!(
-            unit.trim(),
+            pystr::strip(unit),
             "pt" | "em" | "ex" | "mm" | "cm" | "in" | "bp" | "pc" | "sp" | "mu" | "dd" | "cc"
         )
 }
@@ -351,21 +393,32 @@ pub fn tokenize(s: &str) -> Vec<Tok> {
                 if chars[j] == '\\' {
                     toks.push(Tok::Newline);
                     // `\\*` and the row-spacing argument `\\[2pt]` are layout
-                    i = skip_row_spacing(&chars, j + 1);
-                    continue;
+                    i = skip_row_spacing_chars(&chars, j + 1);
                 } else {
                     toks.push(Tok::Cmd(chars[j].to_string()));
+                    i = j + 1;
                 }
-                i = j + 1;
             } else {
                 let mut k = j;
                 while k < n && pystr::is_alpha(chars[k]) {
                     k += 1;
                 }
-                toks.push(Tok::Cmd(chars[j..k].iter().collect()));
+                let name: String = chars[j..k].iter().collect();
                 i = k;
                 while i < n && chars[i] == ' ' {
                     i += 1;
+                }
+                let text_mode = is_text_mode(&name);
+                toks.push(Tok::Cmd(name));
+                if text_mode && i < n && chars[i] == '{' {
+                    // text-mode argument: its spaces are text (\text{ if })
+                    if let Some(end) = group_end(&chars, i) {
+                        toks.push(Tok::LBrace);
+                        let inner: String = chars[i + 1..end].iter().collect();
+                        toks.extend(tokenize_text(&inner));
+                        toks.push(Tok::RBrace);
+                        i = end + 1;
+                    }
                 }
             }
         } else if c == '{' {
@@ -383,10 +436,7 @@ pub fn tokenize(s: &str) -> Vec<Tok> {
         } else if c == '&' {
             toks.push(Tok::Amp);
             i += 1;
-        } else if c == ' ' {
-            toks.push(Tok::Space);
-            i += 1;
-        } else if matches!(c, '\n' | '\t') {
+        } else if matches!(c, ' ' | '\n' | '\t') {
             i += 1;
         } else if pystr::is_digit(c) {
             let mut k = i;
@@ -401,6 +451,100 @@ pub fn tokenize(s: &str) -> Vec<Tok> {
         }
     }
     toks
+}
+
+/// Index of the `}` closing the group that opens at `chars[i] == '{'`.
+fn group_end(chars: &[char], i: usize) -> Option<usize> {
+    let mut depth = 0i64;
+    let mut k = i;
+    while k < chars.len() {
+        let c = chars[k];
+        if c == '\\' {
+            k += 2;
+            continue;
+        }
+        if c == '{' {
+            depth += 1;
+        } else if c == '}' {
+            depth -= 1;
+            if depth == 0 {
+                return Some(k);
+            }
+        }
+        k += 1;
+    }
+    None
+}
+
+/// `re.split(r"(?<!\\)\$", s)`: split on each `$` not preceded by `\`.
+fn split_unescaped_dollars(s: &str) -> Vec<&str> {
+    let mut out = Vec::new();
+    let mut start = 0;
+    let mut prev: Option<char> = None;
+    for (i, c) in s.char_indices() {
+        if c == '$' && prev != Some('\\') {
+            out.push(&s[start..i]);
+            start = i + 1;
+        }
+        prev = Some(c);
+    }
+    out.push(&s[start..]);
+    out
+}
+
+/// `re.split(r"([ \t\n]+)", s)` without the empty pieces: alternating runs of
+/// ASCII blanks and of everything else.
+fn split_ascii_blanks(s: &str) -> Vec<&str> {
+    let is_blank = |c: char| matches!(c, ' ' | '\t' | '\n');
+    let mut out = Vec::new();
+    let mut start = 0;
+    let mut cur: Option<bool> = None;
+    for (i, c) in s.char_indices() {
+        let b = is_blank(c);
+        if cur.is_some_and(|x| x != b) {
+            out.push(&s[start..i]);
+            start = i;
+        }
+        cur = Some(b);
+    }
+    if start < s.len() {
+        out.push(&s[start..]);
+    }
+    out
+}
+
+/// `re.search(r"\\[A-Za-z]+$", s)`: `s` ends in a control word. (`$` also
+/// matches before a final newline, but only blank pieces hold newlines.)
+fn ends_with_control_word(s: &str) -> bool {
+    let head = s.trim_end_matches(|c: char| c.is_ascii_alphabetic());
+    head.len() < s.len() && head.ends_with('\\')
+}
+
+/// Tokens of a text-mode argument: like [`tokenize`], but a run of spaces is
+/// a space character (except right after a control word, where TeX eats it),
+/// and `$...$` inside is math.
+fn tokenize_text(s: &str) -> Vec<Tok> {
+    let mut out = Vec::new();
+    for (k, segment) in split_unescaped_dollars(s).into_iter().enumerate() {
+        if k % 2 == 1 {
+            // inside $...$
+            out.extend(tokenize(segment));
+            continue;
+        }
+        let mut prev = "";
+        // ASCII whitespace only: a thin space (U+2009, from \, or \pmod) is a glyph
+        for piece in split_ascii_blanks(segment) {
+            if pystr::strip_chars(piece, " \t\n").is_empty() {
+                if !ends_with_control_word(prev) {
+                    out.push(Tok::Char(' '));
+                }
+            } else {
+                out.extend(tokenize(piece));
+            }
+            prev = piece;
+        }
+    }
+    out
 }
 
 // --------------------------------------------------------------------------- //
@@ -480,32 +624,6 @@ impl Parser {
             return Ok(row);
         }
         Ok(Row(self.parse_atom()?.into_iter().collect()))
-    }
-
-    /// A `\text{...}`-style group: blanks between atoms become blank runs.
-    fn parse_text_group(&mut self) -> R<Vec<MNode>> {
-        if self.peek() != Tok::LBrace {
-            return Ok(self.parse_atom()?.into_iter().collect());
-        }
-        self.next();
-        let mut items = Vec::new();
-        loop {
-            match self.peek() {
-                Tok::RBrace | Tok::Eof => break,
-                Tok::Space => {
-                    self.next();
-                    items.push(MNode::Lit(Lit::upright(" ")));
-                    continue;
-                }
-                _ => {}
-            }
-            if let Some(atom) = self.parse_atom()? {
-                items.push(self.maybe_scripts(atom)?);
-            }
-        }
-        self.expect("}")?;
-        text_hyphens(&mut items);
-        Ok(items)
     }
 
     /// A group holding only `_{x}^{y}` scripts on an implicit empty base
@@ -593,7 +711,6 @@ impl Parser {
             Tok::Newline | Tok::Amp => {
                 return Err(MathError::unsupported("alignment", "stray & or \\\\"))
             }
-            // blanks are skipped in math mode (kept only by parse_text_group)
             _ => None,
         };
         self.depth -= 1;
@@ -782,28 +899,20 @@ impl Parser {
             // no precomposed glyph: overlay a combining long solidus
             return Ok(MNode::Accent(self.parse_group()?, "\u{338}".into()));
         }
+        if is_text_mode(name) {
+            // text inside math: a `-` there is a hyphen, not a minus sign
+            let mut row = self.parse_group()?;
+            text_hyphens(&mut row.0);
+            return Ok(styled(row, true, name == "textbf", None));
+        }
         if matches!(
             name,
-            "text"
-                | "mathrm"
-                | "operatorname"
-                | "operatorname*"
-                | "mathsf"
-                | "mathtt"
-                | "mbox"
-                | "textrm"
-                | "textnormal"
-                | "textsf"
-                | "texttt"
-                | "textsc"
+            "mathrm" | "operatorname" | "operatorname*" | "mathsf" | "mathtt"
         ) {
-            return Ok(styled(Row(self.parse_text_group()?), true, false, None));
-        }
-        if name == "textbf" {
-            return Ok(styled(Row(self.parse_text_group()?), true, true, None));
+            return Ok(styled(self.parse_group()?, true, false, None));
         }
         if matches!(name, "textit" | "textsl" | "emph") {
-            return Ok(MNode::Group(Row(self.parse_text_group()?)));
+            return Ok(MNode::Group(self.parse_group()?));
         }
         if matches!(name, "mathbf" | "boldsymbol" | "bm") {
             return Ok(styled(self.parse_group()?, false, true, None));
@@ -1139,7 +1248,7 @@ fn char_atom(c: char) -> MNode {
         MNode::Lit(Lit::new(c.to_string())) // italic by default in Word math
     } else if c == '-' {
         // TeX typesets `-` in math as the minus sign, not a hyphen
-        MNode::Lit(Lit::upright("\u{2212}"))
+        MNode::Lit(Lit::upright(MINUS))
     } else {
         MNode::Lit(Lit::upright(c.to_string()))
     }
@@ -1177,8 +1286,8 @@ fn merge_lits(row: Row) -> Row {
 fn text_hyphens(items: &mut [MNode]) {
     for item in items {
         match item {
-            MNode::Lit(l) if l.text.contains('\u{2212}') => {
-                l.text = l.text.replace('\u{2212}', "-");
+            MNode::Lit(l) if l.text.contains(MINUS) => {
+                l.text = l.text.replace(MINUS, "-");
             }
             MNode::Group(r) | MNode::Row(r) => text_hyphens(&mut r.0),
             _ => {}
@@ -1261,10 +1370,10 @@ fn ends_operand(node: &MNode) -> bool {
     let MNode::Lit(l) = node else {
         return false;
     };
-    let t = l.text.trim_matches(' ');
+    let t = pystr::strip(&l.text);
     if t.is_empty() {
-        // `\quad`/`\qquad` separate formulas; thin spaces do not
-        return l.text.contains(['\u{2003}', '\u{2002}']) || l.text.chars().count() > 1;
+        // `\quad`/`\qquad` (em spaces) separate formulas; thin spaces do not
+        return l.text.contains('\u{2003}');
     }
     matches!(
         t,
@@ -1345,7 +1454,8 @@ fn attach_nary_bodies(row: &mut Row) {
                     body.push(iter.next().unwrap());
                 }
                 // leading thin spaces belong to the layout, not the operand
-                while matches!(body.first(), Some(MNode::Lit(l)) if l.text.trim().is_empty()) {
+                while matches!(body.first(), Some(MNode::Lit(l)) if pystr::strip(&l.text).is_empty())
+                {
                     out.push(body.remove(0));
                 }
                 if !body.is_empty() {
@@ -1403,5 +1513,120 @@ fn attach_in_children(node: &mut MNode) {
             }
         }
         MNode::Lit(_) => {}
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    // Expected values below were produced by the Python reference (1.1.0).
+
+    #[test]
+    fn is_dimen_matches_the_reference() {
+        for ok in [
+            "2pt",
+            "-.5ex",
+            "1.2em",
+            "\\jot",
+            " 3 mm",
+            "²pt",
+            "\\jöt",
+            "2 pt\u{a0}",
+        ] {
+            assert!(is_dimen(ok), "{ok:?}");
+        }
+        for bad in ["b", "2", "x pt", "", "\\"] {
+            assert!(!is_dimen(bad), "{bad:?}");
+        }
+    }
+
+    #[test]
+    fn skip_row_spacing_matches_the_reference() {
+        assert_eq!(skip_row_spacing("*[2pt]x", 0), 6);
+        assert_eq!(skip_row_spacing("* [2pt]x", 0), 7);
+        assert_eq!(skip_row_spacing("[b]x", 0), 0);
+        assert_eq!(skip_row_spacing("  [1ex]", 0), 7);
+        assert_eq!(skip_row_spacing("*x", 0), 1);
+        assert_eq!(skip_row_spacing("[2pt", 0), 0);
+        // byte offsets (Python: code point 3 -> 8)
+        assert_eq!(skip_row_spacing("é\\\\[2pt]x", 4), 9);
+        assert_eq!(
+            skip_row_spacing_chars(&"é\\\\[2pt]x".chars().collect::<Vec<_>>(), 3),
+            8
+        );
+    }
+
+    #[test]
+    fn text_mode_arguments_tokenize_their_spaces() {
+        use Tok::*;
+        let text = || Cmd("text".into());
+        assert_eq!(
+            tokenize(r"\text{ a  b }"),
+            vec![
+                text(),
+                LBrace,
+                Char(' '),
+                Char('a'),
+                Char(' '),
+                Char('b'),
+                Char(' '),
+                RBrace
+            ]
+        );
+        assert_eq!(
+            tokenize(r"\text{\alpha b}"),
+            vec![text(), LBrace, Cmd("alpha".into()), Char('b'), RBrace]
+        );
+        assert_eq!(
+            tokenize(r"\text{a $x y$ b}"),
+            vec![
+                text(),
+                LBrace,
+                Char('a'),
+                Char(' '),
+                Char('x'),
+                Char('y'),
+                Char(' '),
+                Char('b'),
+                RBrace
+            ]
+        );
+        assert_eq!(
+            tokenize(r"\mbox {a b}"),
+            vec![
+                Cmd("mbox".into()),
+                LBrace,
+                Char('a'),
+                Char(' '),
+                Char('b'),
+                RBrace
+            ]
+        );
+        // an unclosed group tokenizes as math
+        assert_eq!(
+            tokenize(r"\text{a{b"),
+            vec![text(), LBrace, Char('a'), LBrace, Char('b')]
+        );
+        // math mode drops blanks
+        assert_eq!(
+            tokenize(r"\mathrm{a b}"),
+            vec![Cmd("mathrm".into()), LBrace, Char('a'), Char('b'), RBrace]
+        );
+    }
+
+    #[test]
+    fn em_space_ends_the_nary_operand_thin_space_does_not() {
+        let body_len = |latex: &str| match &parse(latex).unwrap().0[0] {
+            MNode::Nary(n) => match n.body.as_deref() {
+                Some(MNode::Row(r)) => r.0.len(),
+                other => panic!("{other:?}"),
+            },
+            other => panic!("{other:?}"),
+        };
+        assert_eq!(body_len(r"\sum_i e_i \quad x"), 1);
+        assert_eq!(body_len(r"\sum_i e_i \qquad x"), 1);
+        assert_eq!(body_len(r"\sum_i e_i \, x"), 3);
+        assert_eq!(body_len(r"\sum_i e_i \; x"), 3);
     }
 }

@@ -12,9 +12,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 Ports the Python tex2word **1.1.0** fixes (yfyang86/tex2word#45/#46) into the
 Rust line, so the two again agree on everything the reference converts
 ([rstex2word#9](https://github.com/yfyang86/rstex2word/issues/9)). On the
-issue's 7,980 synthetic probes, Rust 2.3.0 failed 1,711; 2.4.0 fails
-@@PROBES@@ (Python 1.1.0: @@PYPROBES@@ under the same oracles), and every probe that
-fails only in Rust is gone.
+issue's 7,980 synthetic probes, Rust 2.3.0 failed 1,711; 2.4.0 fails 135
+(Python 1.1.0: 145 under the same oracles). No probe fails only in Rust
+except six `math-roundtrip` findings, which come from the harness reading
+Rust's `\overset`/`\stackrel` (`m:limUpp`) back with Python's reader and
+re-rendering it with Python's writer (a 2-row matrix); Rust's own
+round trip of those formulas is stable. The 16 probes that fail only in
+Python are math Rust has covered since 2.1.0.
 
 ### Added
 
@@ -60,7 +64,14 @@ fails only in Rust is gone.
   `\resizebox`, inline `tabular`, URL specials, `%` inside verbatim and
   `alltt`; lists, quotes and tables inside footnotes and margin notes become
   block footnotes.
-@@MATH@@
+- **Math, from the reference**: text-mode groups tokenise as in TeX (`$…$`
+  inside `\text{}` is math, tabs and newlines are blanks), row spacing after
+  `\\` is skipped wherever rows are split, a lone operator nested in
+  groups (`x^{{+}}`) keeps its normal-text flag, control characters are
+  dropped from OMML text, and an upright run of prose reads back as
+  `\text{…}`. `\underset{x}{\arg\min}` now reads back as written instead of
+  `\arg\min_{x}`.
+
 ### Fixed
 
 - NUL and other control characters in the source no longer abort the
@@ -78,7 +89,13 @@ fails only in Rust is gone.
 
 The goldens are re-recorded from Python 1.1.0: all 496 `convert_source`
 and 671 `parse_document` calls give the same IR and report as Python,
-@@GOLDEN@@
+and the same `.docx` bytes except where Rust's broader math changes them on
+purpose: `\overset`/`\stackrel` as `m:limUpp`, negated relations via
+`\not`, `\big(` delimiters, and blanks kept in `\textit`/`\textsl`/`\emph`
+(3 conversions, 84 OMML function rows and their reverse-path digests,
+regenerated with `T2W_GOLDEN_UPDATE=1`). Two recorded reports keep the
+`pdftoppm` hint, and one keeps Rust's `\not` support. The re-recording pins
+`SOURCE_DATE_EPOCH=1767312000`, as the original capture did.
 
 ## 2.3.0 — 2026-10-29 — amsart manuscripts: tables, captions and formulas
 
