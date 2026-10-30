@@ -1,0 +1,11 @@
+{
+"api": "convert_source",
+"args": {
+"source": "\\documentclass{article}\n\\begin{document}\n\\newcommand{\\today}{1 May 2020}\\today\n\\end{document}\n"
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_issue44_macros.py::test_plain_redefinition_of_structural_name_still_expands"
+]
+}

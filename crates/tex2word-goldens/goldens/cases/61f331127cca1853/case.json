@@ -1,0 +1,13 @@
+{
+"api": "recover_ir",
+"args": {
+"docx_bytes": {
+"@blob": "19ada55c68a794d76a74ee12b5f4f97561a5b5f5d8a7711ea0a90f43ad2628bd"
+}
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_corpus_harness.py::test_corpus_file_converts_cleanly[longtable.tex]"
+]
+}

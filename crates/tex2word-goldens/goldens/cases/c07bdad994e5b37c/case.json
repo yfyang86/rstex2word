@@ -1,0 +1,11 @@
+{
+"api": "convert_source",
+"args": {
+"source": "\\documentclass{scrartcl}\n\n\\begin{document}\n\\subject{Sub}\\title{T}\\subtitle{ST}\\author{A}\\publishers{Pub}\\date{}\\maketitle\\addsec{Pre}x\\minisec{Mini}y\n\\end{document}\n"
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_front_matter_classes.py::test_koma_title_page_and_divisions"
+]
+}

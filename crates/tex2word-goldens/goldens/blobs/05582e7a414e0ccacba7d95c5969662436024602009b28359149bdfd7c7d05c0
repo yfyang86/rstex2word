@@ -1,0 +1,106 @@
+{
+  "generated": "2026-01-02T00:00:00+00:00",
+  "ir": {
+    "@type": "Document",
+    "blocks": [
+      {
+        "@type": "Heading",
+        "appendix": false,
+        "inlines": [
+          {
+            "@type": "Text",
+            "value": "Acknowledgments"
+          }
+        ],
+        "label": null,
+        "level": 1,
+        "numbered": false,
+        "part": false
+      },
+      {
+        "@type": "Paragraph",
+        "align": null,
+        "inlines": [
+          {
+            "@type": "Text",
+            "value": "THANKS"
+          }
+        ]
+      },
+      {
+        "@type": "Paragraph",
+        "align": null,
+        "inlines": [
+          {
+            "@type": "Emphasis",
+            "inlines": [
+              {
+                "@type": "Text",
+                "value": "Jane Roe"
+              }
+            ],
+            "kind_": "bold"
+          },
+          {
+            "@type": "Text",
+            "value": " "
+          },
+          {
+            "@type": "Text",
+            "value": "Bio."
+          }
+        ]
+      },
+      {
+        "@type": "Paragraph",
+        "align": null,
+        "inlines": [
+          {
+            "@type": "Text",
+            "value": "COLS"
+          }
+        ]
+      }
+    ],
+    "book": false,
+    "label_aliases": {},
+    "labels": {},
+    "meta": {
+      "@type": "DocumentMeta",
+      "abstract": [
+        {
+          "@type": "Paragraph",
+          "align": null,
+          "inlines": [
+            {
+              "@type": "Text",
+              "value": "A"
+            }
+          ]
+        }
+      ],
+      "affiliations": [],
+      "authors": [],
+      "cjk_main_font": null,
+      "cjk_mono_font": null,
+      "cjk_sans_font": null,
+      "columns": 2,
+      "date": null,
+      "front_notes": [],
+      "keywords": [
+        {
+          "@type": "Text",
+          "value": "kw1, kw2"
+        }
+      ],
+      "language": null,
+      "main_font": null,
+      "running_head": null,
+      "subtitle": null,
+      "title": null
+    }
+  },
+  "labels": {},
+  "manifest_version": 1,
+  "tool": "tex2word"
+}

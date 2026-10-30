@@ -1,0 +1,13 @@
+{
+"api": "validate_docx",
+"args": {
+"docx_bytes": {
+"@blob": "03ddf3a3e093e0d1a85cf5893e8706db90ffc11236514b892d68b5c0d90e3bbf"
+}
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_text_symbols_extra.py::test_valid_output"
+]
+}

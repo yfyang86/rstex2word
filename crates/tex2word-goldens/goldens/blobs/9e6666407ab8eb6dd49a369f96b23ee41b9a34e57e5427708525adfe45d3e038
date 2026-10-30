@@ -1,0 +1,200 @@
+{
+  "generated": "2026-01-02T00:00:00+00:00",
+  "ir": {
+    "@type": "Document",
+    "blocks": [
+      {
+        "@type": "Paragraph",
+        "align": "center",
+        "inlines": [
+          {
+            "@type": "Text",
+            "value": "(a) "
+          },
+          {
+            "@type": "Text",
+            "value": "One"
+          }
+        ]
+      },
+      {
+        "@type": "Table",
+        "booktabs": false,
+        "caption": [
+          {
+            "@type": "Text",
+            "value": "Main"
+          }
+        ],
+        "caption_numbered": true,
+        "colspec": [
+          "left"
+        ],
+        "colwidths": [
+          null
+        ],
+        "label": "m",
+        "layout": false,
+        "rows": [
+          {
+            "@type": "TableRow",
+            "cells": [
+              {
+                "@type": "TableCell",
+                "align": "left",
+                "blocks": [
+                  {
+                    "@type": "Paragraph",
+                    "align": null,
+                    "inlines": [
+                      {
+                        "@type": "Text",
+                        "value": "x"
+                      }
+                    ]
+                  }
+                ],
+                "border_bottom": false,
+                "colspan": 1,
+                "rowspan": 1,
+                "shade": null
+              }
+            ],
+            "is_header": false,
+            "rule_above": false,
+            "rule_below": false
+          }
+        ],
+        "spanning": false
+      },
+      {
+        "@type": "Paragraph",
+        "align": "center",
+        "inlines": [
+          {
+            "@type": "Text",
+            "value": "(b) "
+          },
+          {
+            "@type": "Text",
+            "value": "Two"
+          }
+        ]
+      },
+      {
+        "@type": "Table",
+        "booktabs": false,
+        "caption": null,
+        "caption_numbered": true,
+        "colspec": [
+          "left"
+        ],
+        "colwidths": [
+          null
+        ],
+        "label": null,
+        "layout": false,
+        "rows": [
+          {
+            "@type": "TableRow",
+            "cells": [
+              {
+                "@type": "TableCell",
+                "align": "left",
+                "blocks": [
+                  {
+                    "@type": "Paragraph",
+                    "align": null,
+                    "inlines": [
+                      {
+                        "@type": "Text",
+                        "value": "y"
+                      }
+                    ]
+                  }
+                ],
+                "border_bottom": false,
+                "colspan": 1,
+                "rowspan": 1,
+                "shade": null
+              }
+            ],
+            "is_header": false,
+            "rule_above": false,
+            "rule_below": false
+          }
+        ],
+        "spanning": false
+      },
+      {
+        "@type": "Paragraph",
+        "align": null,
+        "inlines": [
+          {
+            "@type": "Ref",
+            "bookmark": "m",
+            "key": "s",
+            "ref_kind": "table",
+            "style": "plain"
+          }
+        ]
+      }
+    ],
+    "book": false,
+    "label_aliases": {
+      "s": "m"
+    },
+    "labels": {
+      "m": {
+        "@type": "LabelInfo",
+        "bookmark": "m",
+        "counter_name": "Table",
+        "kind": "table",
+        "name": "Main",
+        "number": null,
+        "sub": null
+      },
+      "s": {
+        "@type": "LabelInfo",
+        "bookmark": "m",
+        "counter_name": "Table",
+        "kind": "table",
+        "name": "Main",
+        "number": null,
+        "sub": null
+      }
+    },
+    "meta": {
+      "@type": "DocumentMeta",
+      "abstract": null,
+      "affiliations": [],
+      "authors": [],
+      "cjk_main_font": null,
+      "cjk_mono_font": null,
+      "cjk_sans_font": null,
+      "columns": 1,
+      "date": null,
+      "front_notes": [],
+      "keywords": null,
+      "language": null,
+      "main_font": null,
+      "running_head": null,
+      "subtitle": null,
+      "title": null
+    }
+  },
+  "labels": {
+    "m": {
+      "bookmark": "m",
+      "counter": "Table",
+      "kind": "table"
+    },
+    "s": {
+      "bookmark": "m",
+      "counter": "Table",
+      "kind": "table"
+    }
+  },
+  "manifest_version": 1,
+  "tool": "tex2word"
+}

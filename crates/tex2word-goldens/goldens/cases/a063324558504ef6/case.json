@@ -1,0 +1,11 @@
+{
+"api": "convert_source",
+"args": {
+"source": "\\documentclass{letter}\n\\address{From Me}\\signature{Me}\n\\begin{document}\n\\begin{letter}{To Person\\\\Street}\\opening{Dear X,}Body.\\closing{Regards,}\\ps{PS.}\\end{letter}\n\\end{document}\n"
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_front_matter_classes.py::test_letter_class"
+]
+}

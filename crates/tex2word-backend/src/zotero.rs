@@ -47,7 +47,8 @@ fn citation_item(cite: &Cite, key: &str, item: &CSLItem) -> Value {
         ("itemData".to_string(), item_data(item)),
     ];
     if let Some(s) = cite.suffix.as_deref().filter(|s| !s.is_empty()) {
-        out.push(("locator".into(), Value::Str(s.into())));
+        // Zotero parses locators
+        out.push(("locator".into(), Value::Str(s.replace('\u{a0}', " "))));
     }
     if let Some(p) = cite.prefix.as_deref().filter(|p| !p.is_empty()) {
         out.push(("prefix".into(), Value::Str(p.into())));

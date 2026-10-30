@@ -1,0 +1,11 @@
+{
+"api": "convert_source",
+"args": {
+"source": "\\documentclass{amsart}\n\\begin{document}\n\\title{T}\\author{A}\\thanks{Funded.}\\subjclass[2010]{91B16}\n\\maketitle\nBody\\thanks{Later.}\n\\end{document}\n"
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_issue44_macros.py::test_amsart_thanks_before_maketitle_goes_on_the_title"
+]
+}

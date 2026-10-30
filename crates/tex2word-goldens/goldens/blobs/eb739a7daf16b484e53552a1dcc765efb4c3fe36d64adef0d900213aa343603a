@@ -1,0 +1,58 @@
+{
+  "generated": "2026-10-29T12:36:31+00:00",
+  "ir": {
+    "@type": "Document",
+    "blocks": [
+      {
+        "@type": "Figure",
+        "blocks": [],
+        "caption": [
+          {
+            "@type": "Text",
+            "value": "See CELLA CELLB"
+          }
+        ],
+        "caption_numbered": true,
+        "image": null,
+        "label": null,
+        "source": "\\begin{figure}\\caption{See \\begin{tabular}{ll}CELLA & CELLB\\end{tabular}}\\end{figure}",
+        "spanning": false,
+        "subfigures": []
+      },
+      {
+        "@type": "Paragraph",
+        "align": null,
+        "inlines": [
+          {
+            "@type": "Text",
+            "value": "CELLC"
+          }
+        ]
+      }
+    ],
+    "book": false,
+    "label_aliases": {},
+    "labels": {},
+    "meta": {
+      "@type": "DocumentMeta",
+      "abstract": null,
+      "affiliations": [],
+      "authors": [],
+      "cjk_main_font": null,
+      "cjk_mono_font": null,
+      "cjk_sans_font": null,
+      "columns": 1,
+      "date": null,
+      "front_notes": [],
+      "keywords": null,
+      "language": null,
+      "main_font": null,
+      "running_head": null,
+      "subtitle": null,
+      "title": null
+    }
+  },
+  "labels": {},
+  "manifest_version": 1,
+  "tool": "tex2word"
+}

@@ -1,0 +1,1388 @@
+{
+  "generated": "2026-01-02T00:00:00+00:00",
+  "ir": {
+    "@type": "Document",
+    "blocks": [
+      {
+        "@type": "Paragraph",
+        "align": null,
+        "inlines": [
+          {
+            "@type": "Emphasis",
+            "inlines": [
+              {
+                "@type": "Text",
+                "value": "JEL classification: "
+              }
+            ],
+            "kind_": "bold"
+          },
+          {
+            "@type": "Text",
+            "value": "D91, E21, J63"
+          }
+        ]
+      },
+      {
+        "@type": "Heading",
+        "appendix": false,
+        "inlines": [
+          {
+            "@type": "Text",
+            "value": "Model"
+          }
+        ],
+        "label": "sec:model",
+        "level": 1,
+        "numbered": true,
+        "part": false
+      },
+      {
+        "@type": "Heading",
+        "appendix": false,
+        "inlines": [
+          {
+            "@type": "Text",
+            "value": "Reference-dependent adoption "
+          },
+          {
+            "@type": "Cite",
+            "keys": [
+              "tk1991"
+            ],
+            "mode": "paren",
+            "prefix": null,
+            "rendered": "(Tversky & Kahneman, 1991)",
+            "suffix": null
+          },
+          {
+            "@type": "Text",
+            "value": "."
+          }
+        ],
+        "label": null,
+        "level": 4,
+        "numbered": false,
+        "part": false
+      },
+      {
+        "@type": "Paragraph",
+        "align": null,
+        "inlines": [
+          {
+            "@type": "Text",
+            "value": "Adoption follows the share of exposed tasks, drawn from a "
+          },
+          {
+            "@type": "Math",
+            "latex": "\\mathrm{Beta}(2,3)"
+          },
+          {
+            "@type": "Text",
+            "value": " distribution; Table "
+          },
+          {
+            "@type": "Ref",
+            "bookmark": "tab_priors",
+            "key": "tab:priors",
+            "ref_kind": "table",
+            "style": "plain"
+          },
+          {
+            "@type": "Text",
+            "value": " lists the priors and Section "
+          },
+          {
+            "@type": "Ref",
+            "bookmark": "sec_calib",
+            "key": "sec:calib",
+            "ref_kind": "section",
+            "style": "plain"
+          },
+          {
+            "@type": "Text",
+            "value": " their basis. The displaced share is"
+          }
+        ]
+      },
+      {
+        "@type": "MathBlock",
+        "env": "equation",
+        "label": "eq:share",
+        "latex": "D_t = \\frac{\\sum_{i \\in A_t} e_i\\, \\sigma}{\\sum_i e_i},\n\\qquad\n\\Delta C = \\bar m\\,\\Delta Y + \\sum_k (m_k - \\bar m)\\,\\Delta Y_k ,",
+        "line_labels": [
+          "eq:share"
+        ],
+        "numbered": true
+      },
+      {
+        "@type": "Paragraph",
+        "align": null,
+        "inlines": [
+          {
+            "@type": "Text",
+            "value": "and the buffer inflow is"
+          }
+        ]
+      },
+      {
+        "@type": "MathBlock",
+        "env": "equation",
+        "label": "eq:inflow",
+        "latex": "\\alpha_t = \\begin{cases} \\min\\!\\left(\\tfrac{1}{2}\\Delta D_t,\\; (B_{t-1} - 4 b_{t-1})^{+}\\right) & B_{t-1} > 0, \\\\[2pt] 0 & B_{t-1} \\le 0, \\end{cases}",
+        "line_labels": [
+          "eq:inflow"
+        ],
+        "numbered": true
+      },
+      {
+        "@type": "Paragraph",
+        "align": null,
+        "inlines": [
+          {
+            "@type": "Text",
+            "value": "with the stocks updated as"
+          }
+        ]
+      },
+      {
+        "@type": "MathBlock",
+        "env": "align",
+        "label": "eq:gap",
+        "latex": "b_t &= b_{t-1} + \\alpha_t - \\operatorname{rel}_t, \\\\[4pt]\nG_t &= \\frac{C_t}{C_0} - \\frac{Y_t}{Y_0}, \\qquad G^{\\min} = \\min_t G_t.",
+        "line_labels": [
+          null,
+          "eq:gap"
+        ],
+        "numbered": true
+      },
+      {
+        "@type": "Theorem",
+        "blocks": [
+          {
+            "@type": "Paragraph",
+            "align": null,
+            "inlines": [
+              {
+                "@type": "Text",
+                "value": "Finance the buffer from the margin, as present-biased households "
+              },
+              {
+                "@type": "Cite",
+                "keys": [
+                  "laibson1997"
+                ],
+                "mode": "paren",
+                "prefix": null,
+                "rendered": "(Laibson, 1997)",
+                "suffix": null
+              },
+              {
+                "@type": "Text",
+                "value": " consume transfers at once."
+              }
+            ]
+          }
+        ],
+        "counter": "Design rule",
+        "kind": "Design rule",
+        "label": "rule:levy",
+        "title": null,
+        "within": null
+      },
+      {
+        "@type": "Table",
+        "booktabs": true,
+        "caption": [
+          {
+            "@type": "Text",
+            "value": "Behavioural parameters and priors."
+          }
+        ],
+        "caption_numbered": true,
+        "colspec": [
+          "left",
+          "center",
+          "left",
+          "center"
+        ],
+        "colwidths": [
+          null,
+          null,
+          null,
+          null
+        ],
+        "label": "tab:priors",
+        "layout": false,
+        "rows": [
+          {
+            "@type": "TableRow",
+            "cells": [
+              {
+                "@type": "TableCell",
+                "align": "left",
+                "blocks": [
+                  {
+                    "@type": "Paragraph",
+                    "align": null,
+                    "inlines": [
+                      {
+                        "@type": "Text",
+                        "value": "Parameter"
+                      }
+                    ]
+                  }
+                ],
+                "border_bottom": false,
+                "colspan": 1,
+                "rowspan": 1,
+                "shade": null
+              },
+              {
+                "@type": "TableCell",
+                "align": "center",
+                "blocks": [
+                  {
+                    "@type": "Paragraph",
+                    "align": null,
+                    "inlines": [
+                      {
+                        "@type": "Text",
+                        "value": "Prior"
+                      }
+                    ]
+                  }
+                ],
+                "border_bottom": false,
+                "colspan": 1,
+                "rowspan": 1,
+                "shade": null
+              },
+              {
+                "@type": "TableCell",
+                "align": "left",
+                "blocks": [
+                  {
+                    "@type": "Paragraph",
+                    "align": null,
+                    "inlines": [
+                      {
+                        "@type": "Text",
+                        "value": "Basis"
+                      }
+                    ]
+                  }
+                ],
+                "border_bottom": false,
+                "colspan": 1,
+                "rowspan": 1,
+                "shade": null
+              }
+            ],
+            "is_header": true,
+            "rule_above": false,
+            "rule_below": false
+          },
+          {
+            "@type": "TableRow",
+            "cells": [
+              {
+                "@type": "TableCell",
+                "align": "left",
+                "blocks": [
+                  {
+                    "@type": "Paragraph",
+                    "align": null,
+                    "inlines": [
+                      {
+                        "@type": "Text",
+                        "value": "Loss aversion "
+                      },
+                      {
+                        "@type": "Math",
+                        "latex": "\\lambda"
+                      }
+                    ]
+                  }
+                ],
+                "border_bottom": false,
+                "colspan": 1,
+                "rowspan": 1,
+                "shade": null
+              },
+              {
+                "@type": "TableCell",
+                "align": "center",
+                "blocks": [
+                  {
+                    "@type": "Paragraph",
+                    "align": null,
+                    "inlines": [
+                      {
+                        "@type": "Math",
+                        "latex": "U(1.5,\\,3.0)"
+                      }
+                    ]
+                  }
+                ],
+                "border_bottom": false,
+                "colspan": 1,
+                "rowspan": 1,
+                "shade": null
+              },
+              {
+                "@type": "TableCell",
+                "align": "left",
+                "blocks": [
+                  {
+                    "@type": "Paragraph",
+                    "align": null,
+                    "inlines": [
+                      {
+                        "@type": "Text",
+                        "value": "Around the "
+                      },
+                      {
+                        "@type": "Cite",
+                        "keys": [
+                          "tk1991"
+                        ],
+                        "mode": "text",
+                        "prefix": null,
+                        "rendered": "Tversky & Kahneman (1991)",
+                        "suffix": null
+                      },
+                      {
+                        "@type": "Text",
+                        "value": " estimate"
+                      }
+                    ]
+                  }
+                ],
+                "border_bottom": false,
+                "colspan": 1,
+                "rowspan": 1,
+                "shade": null
+              }
+            ],
+            "is_header": false,
+            "rule_above": false,
+            "rule_below": false
+          },
+          {
+            "@type": "TableRow",
+            "cells": [
+              {
+                "@type": "TableCell",
+                "align": "left",
+                "blocks": [
+                  {
+                    "@type": "Paragraph",
+                    "align": null,
+                    "inlines": [
+                      {
+                        "@type": "Text",
+                        "value": "Present bias "
+                      },
+                      {
+                        "@type": "Math",
+                        "latex": "\\beta"
+                      }
+                    ]
+                  }
+                ],
+                "border_bottom": false,
+                "colspan": 1,
+                "rowspan": 1,
+                "shade": null
+              },
+              {
+                "@type": "TableCell",
+                "align": "center",
+                "blocks": [
+                  {
+                    "@type": "Paragraph",
+                    "align": null,
+                    "inlines": [
+                      {
+                        "@type": "Math",
+                        "latex": "U(0.6,\\,0.9)"
+                      }
+                    ]
+                  }
+                ],
+                "border_bottom": false,
+                "colspan": 1,
+                "rowspan": 1,
+                "shade": null
+              },
+              {
+                "@type": "TableCell",
+                "align": "left",
+                "blocks": [
+                  {
+                    "@type": "Paragraph",
+                    "align": null,
+                    "inlines": [
+                      {
+                        "@type": "Cite",
+                        "keys": [
+                          "laibson1997"
+                        ],
+                        "mode": "text",
+                        "prefix": null,
+                        "rendered": "Laibson (1997)",
+                        "suffix": null
+                      },
+                      {
+                        "@type": "Text",
+                        "value": "; see Section "
+                      },
+                      {
+                        "@type": "Ref",
+                        "bookmark": "sec_calib",
+                        "key": "sec:calib",
+                        "ref_kind": "section",
+                        "style": "plain"
+                      }
+                    ]
+                  }
+                ],
+                "border_bottom": false,
+                "colspan": 1,
+                "rowspan": 1,
+                "shade": null
+              }
+            ],
+            "is_header": false,
+            "rule_above": false,
+            "rule_below": false
+          }
+        ],
+        "spanning": false
+      },
+      {
+        "@type": "Table",
+        "booktabs": true,
+        "caption": [
+          {
+            "@type": "Text",
+            "value": "Sources."
+          }
+        ],
+        "caption_numbered": true,
+        "colspec": [
+          "left",
+          "center",
+          "left",
+          "center"
+        ],
+        "colwidths": [
+          null,
+          null,
+          null,
+          null
+        ],
+        "label": "tab:sources",
+        "layout": false,
+        "rows": [
+          {
+            "@type": "TableRow",
+            "cells": [
+              {
+                "@type": "TableCell",
+                "align": "left",
+                "blocks": [
+                  {
+                    "@type": "Paragraph",
+                    "align": null,
+                    "inlines": [
+                      {
+                        "@type": "Text",
+                        "value": "Source"
+                      }
+                    ]
+                  }
+                ],
+                "border_bottom": false,
+                "colspan": 1,
+                "rowspan": 1,
+                "shade": null
+              },
+              {
+                "@type": "TableCell",
+                "align": "center",
+                "blocks": [
+                  {
+                    "@type": "Paragraph",
+                    "align": null,
+                    "inlines": [
+                      {
+                        "@type": "Text",
+                        "value": "Reference"
+                      }
+                    ]
+                  }
+                ],
+                "border_bottom": false,
+                "colspan": 1,
+                "rowspan": 1,
+                "shade": null
+              }
+            ],
+            "is_header": true,
+            "rule_above": false,
+            "rule_below": false
+          },
+          {
+            "@type": "TableRow",
+            "cells": [
+              {
+                "@type": "TableCell",
+                "align": "left",
+                "blocks": [
+                  {
+                    "@type": "Paragraph",
+                    "align": null,
+                    "inlines": [
+                      {
+                        "@type": "Text",
+                        "value": "Survey"
+                      }
+                    ]
+                  }
+                ],
+                "border_bottom": false,
+                "colspan": 1,
+                "rowspan": 1,
+                "shade": null
+              },
+              {
+                "@type": "TableCell",
+                "align": "center",
+                "blocks": [
+                  {
+                    "@type": "Paragraph",
+                    "align": null,
+                    "inlines": [
+                      {
+                        "@type": "Cite",
+                        "keys": [
+                          "laibson1997"
+                        ],
+                        "mode": "text",
+                        "prefix": null,
+                        "rendered": "Laibson (1997)",
+                        "suffix": null
+                      }
+                    ]
+                  }
+                ],
+                "border_bottom": false,
+                "colspan": 1,
+                "rowspan": 1,
+                "shade": null
+              }
+            ],
+            "is_header": false,
+            "rule_above": false,
+            "rule_below": false
+          },
+          {
+            "@type": "TableRow",
+            "cells": [
+              {
+                "@type": "TableCell",
+                "align": "left",
+                "blocks": [
+                  {
+                    "@type": "Paragraph",
+                    "align": null,
+                    "inlines": [
+                      {
+                        "@type": "Text",
+                        "value": "Model"
+                      }
+                    ]
+                  }
+                ],
+                "border_bottom": false,
+                "colspan": 1,
+                "rowspan": 1,
+                "shade": null
+              },
+              {
+                "@type": "TableCell",
+                "align": "center",
+                "blocks": [
+                  {
+                    "@type": "Paragraph",
+                    "align": null,
+                    "inlines": [
+                      {
+                        "@type": "Text",
+                        "value": "Design rule "
+                      },
+                      {
+                        "@type": "Ref",
+                        "bookmark": "rule_levy",
+                        "key": "rule:levy",
+                        "ref_kind": "theorem",
+                        "style": "plain"
+                      },
+                      {
+                        "@type": "Text",
+                        "value": " and "
+                      },
+                      {
+                        "@type": "Cite",
+                        "keys": [
+                          "tk1991"
+                        ],
+                        "mode": "paren",
+                        "prefix": null,
+                        "rendered": "(Tversky & Kahneman, 1991)",
+                        "suffix": null
+                      }
+                    ]
+                  }
+                ],
+                "border_bottom": false,
+                "colspan": 1,
+                "rowspan": 1,
+                "shade": null
+              }
+            ],
+            "is_header": false,
+            "rule_above": false,
+            "rule_below": false
+          }
+        ],
+        "spanning": false
+      },
+      {
+        "@type": "Figure",
+        "blocks": [],
+        "caption": [
+          {
+            "@type": "Text",
+            "value": "Adoption paths (source: "
+          },
+          {
+            "@type": "Cite",
+            "keys": [
+              "tk1991"
+            ],
+            "mode": "paren",
+            "prefix": null,
+            "rendered": "(Tversky & Kahneman, 1991)",
+            "suffix": null
+          },
+          {
+            "@type": "Text",
+            "value": ")."
+          }
+        ],
+        "caption_numbered": true,
+        "image": {
+          "@type": "Image",
+          "alt": "figures/bars.pdf",
+          "angle": null,
+          "clip": false,
+          "height": null,
+          "keep_aspect": false,
+          "original_format": "pdf",
+          "path": "figures/bars.pdf",
+          "rel_height": null,
+          "rel_width": 0.6,
+          "scale": null,
+          "trim": null,
+          "width": null
+        },
+        "label": "fig:bars",
+        "source": "\\begin{figure}[tb]\n\\centering\n\\includegraphics[width=0.6\\textwidth]{figures/bars.pdf}\n\\caption{Adoption paths (source: \\citealp{tk1991}).}\\label{fig:bars}\n\\end{figure}",
+        "spanning": false,
+        "subfigures": []
+      },
+      {
+        "@type": "Paragraph",
+        "align": null,
+        "inlines": [
+          {
+            "@type": "Text",
+            "value": "Figure "
+          },
+          {
+            "@type": "Ref",
+            "bookmark": "fig_bars",
+            "key": "fig:bars",
+            "ref_kind": "figure",
+            "style": "plain"
+          },
+          {
+            "@type": "Text",
+            "value": " and Table "
+          },
+          {
+            "@type": "Ref",
+            "bookmark": "tab_results",
+            "key": "tab:results",
+            "ref_kind": "table",
+            "style": "plain"
+          },
+          {
+            "@type": "Text",
+            "value": " report the scenarios."
+          }
+        ]
+      },
+      {
+        "@type": "Table",
+        "booktabs": true,
+        "caption": [
+          {
+            "@type": "Text",
+            "value": "Stress-test results; "
+          },
+          {
+            "@type": "Math",
+            "latex": "G^{\\min}"
+          },
+          {
+            "@type": "Text",
+            "value": " is defined in equation "
+          },
+          {
+            "@type": "Ref",
+            "bookmark": "eq_gap",
+            "key": "eq:gap",
+            "ref_kind": "equation",
+            "style": "plain"
+          },
+          {
+            "@type": "Text",
+            "value": "."
+          }
+        ],
+        "caption_numbered": true,
+        "colspec": [
+          "left",
+          "center",
+          "right"
+        ],
+        "colwidths": [
+          null,
+          null,
+          null
+        ],
+        "label": "tab:results",
+        "layout": false,
+        "rows": [
+          {
+            "@type": "TableRow",
+            "cells": [
+              {
+                "@type": "TableCell",
+                "align": "left",
+                "blocks": [
+                  {
+                    "@type": "Paragraph",
+                    "align": null,
+                    "inlines": [
+                      {
+                        "@type": "Text",
+                        "value": "Scenario"
+                      }
+                    ]
+                  }
+                ],
+                "border_bottom": false,
+                "colspan": 1,
+                "rowspan": 1,
+                "shade": null
+              },
+              {
+                "@type": "TableCell",
+                "align": "center",
+                "blocks": [
+                  {
+                    "@type": "Paragraph",
+                    "align": null,
+                    "inlines": [
+                      {
+                        "@type": "Text",
+                        "value": "Peak junior"
+                      },
+                      {
+                        "@type": "LineBreak"
+                      },
+                      {
+                        "@type": "Text",
+                        "value": "unemployment"
+                      }
+                    ]
+                  }
+                ],
+                "border_bottom": false,
+                "colspan": 1,
+                "rowspan": 1,
+                "shade": null
+              },
+              {
+                "@type": "TableCell",
+                "align": "right",
+                "blocks": [
+                  {
+                    "@type": "Paragraph",
+                    "align": null,
+                    "inlines": [
+                      {
+                        "@type": "Text",
+                        "value": "Consumption"
+                      },
+                      {
+                        "@type": "LineBreak"
+                      },
+                      {
+                        "@type": "Text",
+                        "value": "trough"
+                      }
+                    ]
+                  }
+                ],
+                "border_bottom": false,
+                "colspan": 1,
+                "rowspan": 1,
+                "shade": null
+              }
+            ],
+            "is_header": true,
+            "rule_above": false,
+            "rule_below": false
+          },
+          {
+            "@type": "TableRow",
+            "cells": [
+              {
+                "@type": "TableCell",
+                "align": "left",
+                "blocks": [
+                  {
+                    "@type": "Paragraph",
+                    "align": null,
+                    "inlines": [
+                      {
+                        "@type": "Text",
+                        "value": "S0 Baseline"
+                      }
+                    ]
+                  }
+                ],
+                "border_bottom": false,
+                "colspan": 1,
+                "rowspan": 1,
+                "shade": null
+              },
+              {
+                "@type": "TableCell",
+                "align": "center",
+                "blocks": [
+                  {
+                    "@type": "Paragraph",
+                    "align": null,
+                    "inlines": [
+                      {
+                        "@type": "Text",
+                        "value": "9.2 [6.7, 13.6]"
+                      }
+                    ]
+                  }
+                ],
+                "border_bottom": false,
+                "colspan": 1,
+                "rowspan": 1,
+                "shade": null
+              },
+              {
+                "@type": "TableCell",
+                "align": "right",
+                "blocks": [
+                  {
+                    "@type": "Paragraph",
+                    "align": null,
+                    "inlines": [
+                      {
+                        "@type": "Math",
+                        "latex": "-1.82"
+                      },
+                      {
+                        "@type": "Text",
+                        "value": "%"
+                      }
+                    ]
+                  }
+                ],
+                "border_bottom": false,
+                "colspan": 1,
+                "rowspan": 1,
+                "shade": null
+              }
+            ],
+            "is_header": false,
+            "rule_above": false,
+            "rule_below": false
+          },
+          {
+            "@type": "TableRow",
+            "cells": [
+              {
+                "@type": "TableCell",
+                "align": "left",
+                "blocks": [
+                  {
+                    "@type": "Paragraph",
+                    "align": null,
+                    "inlines": [
+                      {
+                        "@type": "Text",
+                        "value": "S1 Acceleration"
+                      }
+                    ]
+                  }
+                ],
+                "border_bottom": false,
+                "colspan": 1,
+                "rowspan": 1,
+                "shade": null
+              },
+              {
+                "@type": "TableCell",
+                "align": "center",
+                "blocks": [
+                  {
+                    "@type": "Paragraph",
+                    "align": null,
+                    "inlines": [
+                      {
+                        "@type": "Text",
+                        "value": "10.4 [7.1, 14.8]"
+                      }
+                    ]
+                  }
+                ],
+                "border_bottom": false,
+                "colspan": 1,
+                "rowspan": 1,
+                "shade": null
+              },
+              {
+                "@type": "TableCell",
+                "align": "right",
+                "blocks": [
+                  {
+                    "@type": "Paragraph",
+                    "align": null,
+                    "inlines": [
+                      {
+                        "@type": "Math",
+                        "latex": "-1.91"
+                      },
+                      {
+                        "@type": "Text",
+                        "value": "%"
+                      }
+                    ]
+                  }
+                ],
+                "border_bottom": false,
+                "colspan": 1,
+                "rowspan": 1,
+                "shade": null
+              }
+            ],
+            "is_header": false,
+            "rule_above": false,
+            "rule_below": false
+          }
+        ],
+        "spanning": false
+      },
+      {
+        "@type": "Heading",
+        "appendix": false,
+        "inlines": [
+          {
+            "@type": "Text",
+            "value": "Calibration"
+          }
+        ],
+        "label": "sec:calib",
+        "level": 1,
+        "numbered": true,
+        "part": false
+      },
+      {
+        "@type": "Paragraph",
+        "align": null,
+        "inlines": [
+          {
+            "@type": "Text",
+            "value": "Calibrations follow "
+          },
+          {
+            "@type": "Cite",
+            "keys": [
+              "laibson1997"
+            ],
+            "mode": "text",
+            "prefix": null,
+            "rendered": "Laibson (1997)",
+            "suffix": null
+          },
+          {
+            "@type": "Text",
+            "value": " and Design rule "
+          },
+          {
+            "@type": "Ref",
+            "bookmark": "rule_levy",
+            "key": "rule:levy",
+            "ref_kind": "theorem",
+            "style": "plain"
+          },
+          {
+            "@type": "Text",
+            "value": "."
+          }
+        ]
+      },
+      {
+        "@type": "Bibliography",
+        "entries": [
+          {
+            "@type": "CSLItem",
+            "csl_fields": {
+              "author": [
+                {
+                  "family": "Laibson",
+                  "given": "David"
+                }
+              ],
+              "container-title": "Quarterly Journal of Economics",
+              "issue": "2",
+              "issued": {
+                "date-parts": [
+                  [
+                    1997
+                  ]
+                ]
+              },
+              "page": "443–478",
+              "title": "Golden Eggs and Hyperbolic Discounting",
+              "volume": "112"
+            },
+            "id": "laibson1997",
+            "type": "article-journal"
+          },
+          {
+            "@type": "CSLItem",
+            "csl_fields": {
+              "author": [
+                {
+                  "family": "Tversky",
+                  "given": "Amos"
+                },
+                {
+                  "family": "Kahneman",
+                  "given": "Daniel"
+                }
+              ],
+              "container-title": "Quarterly Journal of Economics",
+              "issue": "4",
+              "issued": {
+                "date-parts": [
+                  [
+                    1991
+                  ]
+                ]
+              },
+              "page": "1039–1061",
+              "title": "Loss Aversion in Riskless Choice: A Reference-Dependent Model",
+              "volume": "106"
+            },
+            "id": "tk1991",
+            "type": "article-journal"
+          }
+        ],
+        "style": "author-year"
+      },
+      {
+        "@type": "Heading",
+        "appendix": true,
+        "inlines": [
+          {
+            "@type": "Text",
+            "value": "Model code"
+          }
+        ],
+        "label": "app:code",
+        "level": 1,
+        "numbered": true,
+        "part": false
+      },
+      {
+        "@type": "CodeBlock",
+        "caption": null,
+        "caption_numbered": true,
+        "label": null,
+        "lang": null,
+        "text": "\"\"\"Toy adoption model for the acceptance fixture.\"\"\"\n\n\ndef adoption(share: float, rate: float = 0.1) -> float:\n    return share + rate * (1 - share)"
+      }
+    ],
+    "book": false,
+    "label_aliases": {},
+    "labels": {
+      "app:code": {
+        "@type": "LabelInfo",
+        "bookmark": "app_code",
+        "counter_name": "Section",
+        "kind": "section",
+        "name": "Model code",
+        "number": null,
+        "sub": null
+      },
+      "eq:gap": {
+        "@type": "LabelInfo",
+        "bookmark": "eq_gap",
+        "counter_name": "Equation",
+        "kind": "equation",
+        "name": null,
+        "number": null,
+        "sub": null
+      },
+      "eq:inflow": {
+        "@type": "LabelInfo",
+        "bookmark": "eq_inflow",
+        "counter_name": "Equation",
+        "kind": "equation",
+        "name": null,
+        "number": null,
+        "sub": null
+      },
+      "eq:share": {
+        "@type": "LabelInfo",
+        "bookmark": "eq_share",
+        "counter_name": "Equation",
+        "kind": "equation",
+        "name": null,
+        "number": null,
+        "sub": null
+      },
+      "fig:bars": {
+        "@type": "LabelInfo",
+        "bookmark": "fig_bars",
+        "counter_name": "Figure",
+        "kind": "figure",
+        "name": "Adoption paths (source: ).",
+        "number": null,
+        "sub": null
+      },
+      "rule:levy": {
+        "@type": "LabelInfo",
+        "bookmark": "rule_levy",
+        "counter_name": "Design rule",
+        "kind": "theorem",
+        "name": "Design rule",
+        "number": null,
+        "sub": null
+      },
+      "sec:calib": {
+        "@type": "LabelInfo",
+        "bookmark": "sec_calib",
+        "counter_name": "Section",
+        "kind": "section",
+        "name": "Calibration",
+        "number": null,
+        "sub": null
+      },
+      "sec:model": {
+        "@type": "LabelInfo",
+        "bookmark": "sec_model",
+        "counter_name": "Section",
+        "kind": "section",
+        "name": "Model",
+        "number": null,
+        "sub": null
+      },
+      "tab:priors": {
+        "@type": "LabelInfo",
+        "bookmark": "tab_priors",
+        "counter_name": "Table",
+        "kind": "table",
+        "name": "Behavioural parameters and priors.",
+        "number": null,
+        "sub": null
+      },
+      "tab:results": {
+        "@type": "LabelInfo",
+        "bookmark": "tab_results",
+        "counter_name": "Table",
+        "kind": "table",
+        "name": "Stress-test results;  is defined in equation .",
+        "number": null,
+        "sub": null
+      },
+      "tab:sources": {
+        "@type": "LabelInfo",
+        "bookmark": "tab_sources",
+        "counter_name": "Table",
+        "kind": "table",
+        "name": "Sources.",
+        "number": null,
+        "sub": null
+      }
+    },
+    "meta": {
+      "@type": "DocumentMeta",
+      "abstract": [
+        {
+          "@type": "Paragraph",
+          "align": null,
+          "inlines": [
+            {
+              "@type": "Text",
+              "value": "A small paper whose references live in table cells and captions."
+            }
+          ]
+        }
+      ],
+      "affiliations": [
+        [
+          {
+            "@type": "Text",
+            "value": "Email: "
+          },
+          {
+            "@type": "Text",
+            "value": "author@example.org"
+          }
+        ]
+      ],
+      "authors": [
+        [
+          {
+            "@type": "Text",
+            "value": "A. Author"
+          }
+        ]
+      ],
+      "cjk_main_font": null,
+      "cjk_mono_font": null,
+      "cjk_sans_font": null,
+      "columns": 1,
+      "date": [
+        {
+          "@type": "Text",
+          "value": "January 2, 2026"
+        }
+      ],
+      "front_notes": [],
+      "keywords": [
+        {
+          "@type": "Text",
+          "value": "acceptance test; amsart; behavioural model"
+        }
+      ],
+      "language": null,
+      "main_font": null,
+      "running_head": "Fixture",
+      "subtitle": null,
+      "title": [
+        {
+          "@type": "Text",
+          "value": "An amsart acceptance fixture: tables, captions and sums"
+        },
+        {
+          "@type": "Footnote",
+          "blocks": [],
+          "inlines": [
+            {
+              "@type": "Text",
+              "value": "The code is listed in Appendix "
+            },
+            {
+              "@type": "Ref",
+              "bookmark": "app_code",
+              "key": "app:code",
+              "ref_kind": "section",
+              "style": "plain"
+            },
+            {
+              "@type": "Text",
+              "value": "."
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "labels": {
+    "app:code": {
+      "bookmark": "app_code",
+      "counter": "Section",
+      "kind": "section"
+    },
+    "eq:gap": {
+      "bookmark": "eq_gap",
+      "counter": "Equation",
+      "kind": "equation"
+    },
+    "eq:inflow": {
+      "bookmark": "eq_inflow",
+      "counter": "Equation",
+      "kind": "equation"
+    },
+    "eq:share": {
+      "bookmark": "eq_share",
+      "counter": "Equation",
+      "kind": "equation"
+    },
+    "fig:bars": {
+      "bookmark": "fig_bars",
+      "counter": "Figure",
+      "kind": "figure"
+    },
+    "rule:levy": {
+      "bookmark": "rule_levy",
+      "counter": "Design rule",
+      "kind": "theorem"
+    },
+    "sec:calib": {
+      "bookmark": "sec_calib",
+      "counter": "Section",
+      "kind": "section"
+    },
+    "sec:model": {
+      "bookmark": "sec_model",
+      "counter": "Section",
+      "kind": "section"
+    },
+    "tab:priors": {
+      "bookmark": "tab_priors",
+      "counter": "Table",
+      "kind": "table"
+    },
+    "tab:results": {
+      "bookmark": "tab_results",
+      "counter": "Table",
+      "kind": "table"
+    },
+    "tab:sources": {
+      "bookmark": "tab_sources",
+      "counter": "Table",
+      "kind": "table"
+    }
+  },
+  "manifest_version": 1,
+  "tool": "tex2word"
+}

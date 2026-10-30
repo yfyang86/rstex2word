@@ -1,0 +1,217 @@
+{
+  "generated": "2026-10-29T12:36:21+00:00",
+  "ir": {
+    "@type": "Document",
+    "blocks": [
+      {
+        "@type": "Heading",
+        "appendix": false,
+        "inlines": [
+          {
+            "@type": "Text",
+            "value": "中文标题"
+          }
+        ],
+        "label": null,
+        "level": 1,
+        "numbered": true,
+        "part": false
+      },
+      {
+        "@type": "Paragraph",
+        "align": null,
+        "inlines": [
+          {
+            "@type": "Text",
+            "value": "段落里有中文与公式 "
+          },
+          {
+            "@type": "Math",
+            "latex": "E=mc^2"
+          },
+          {
+            "@type": "Text",
+            "value": "。"
+          }
+        ]
+      },
+      {
+        "@type": "Table",
+        "booktabs": false,
+        "caption": [
+          {
+            "@type": "Text",
+            "value": "表格"
+          }
+        ],
+        "caption_numbered": true,
+        "colspec": [
+          "left",
+          "left"
+        ],
+        "colwidths": [
+          null,
+          null
+        ],
+        "label": null,
+        "layout": false,
+        "rows": [
+          {
+            "@type": "TableRow",
+            "cells": [
+              {
+                "@type": "TableCell",
+                "align": "left",
+                "blocks": [
+                  {
+                    "@type": "Paragraph",
+                    "align": null,
+                    "inlines": [
+                      {
+                        "@type": "Text",
+                        "value": "姓名"
+                      }
+                    ]
+                  }
+                ],
+                "border_bottom": false,
+                "colspan": 1,
+                "rowspan": 1,
+                "shade": null
+              },
+              {
+                "@type": "TableCell",
+                "align": "left",
+                "blocks": [
+                  {
+                    "@type": "Paragraph",
+                    "align": null,
+                    "inlines": [
+                      {
+                        "@type": "Text",
+                        "value": "年龄"
+                      }
+                    ]
+                  }
+                ],
+                "border_bottom": false,
+                "colspan": 1,
+                "rowspan": 1,
+                "shade": null
+              }
+            ],
+            "is_header": false,
+            "rule_above": false,
+            "rule_below": false
+          },
+          {
+            "@type": "TableRow",
+            "cells": [
+              {
+                "@type": "TableCell",
+                "align": "left",
+                "blocks": [
+                  {
+                    "@type": "Paragraph",
+                    "align": null,
+                    "inlines": [
+                      {
+                        "@type": "Text",
+                        "value": "张三"
+                      }
+                    ]
+                  }
+                ],
+                "border_bottom": false,
+                "colspan": 1,
+                "rowspan": 1,
+                "shade": null
+              },
+              {
+                "@type": "TableCell",
+                "align": "left",
+                "blocks": [
+                  {
+                    "@type": "Paragraph",
+                    "align": null,
+                    "inlines": [
+                      {
+                        "@type": "Text",
+                        "value": "25"
+                      }
+                    ]
+                  }
+                ],
+                "border_bottom": false,
+                "colspan": 1,
+                "rowspan": 1,
+                "shade": null
+              }
+            ],
+            "is_header": false,
+            "rule_above": false,
+            "rule_below": false
+          }
+        ],
+        "spanning": false
+      },
+      {
+        "@type": "ItemList",
+        "description": false,
+        "items": [
+          {
+            "@type": "ListItem",
+            "blocks": [
+              {
+                "@type": "Paragraph",
+                "align": null,
+                "inlines": [
+                  {
+                    "@type": "Text",
+                    "value": "列表项"
+                  }
+                ]
+              }
+            ],
+            "label": null,
+            "term": null
+          }
+        ],
+        "ordered": false,
+        "start": 1
+      },
+      {
+        "@type": "MathBlock",
+        "env": "displaymath",
+        "label": null,
+        "latex": "\\int_0^1 f(x)\\,dx = \\text{积分}",
+        "line_labels": [],
+        "numbered": false
+      }
+    ],
+    "book": false,
+    "label_aliases": {},
+    "labels": {},
+    "meta": {
+      "@type": "DocumentMeta",
+      "abstract": null,
+      "affiliations": [],
+      "authors": [],
+      "cjk_main_font": "WenQuanYi Zen Hei",
+      "cjk_mono_font": null,
+      "cjk_sans_font": "WenQuanYi Zen Hei",
+      "columns": 1,
+      "date": null,
+      "front_notes": [],
+      "keywords": null,
+      "language": null,
+      "main_font": null,
+      "running_head": null,
+      "subtitle": null,
+      "title": null
+    }
+  },
+  "labels": {},
+  "manifest_version": 1,
+  "tool": "tex2word"
+}

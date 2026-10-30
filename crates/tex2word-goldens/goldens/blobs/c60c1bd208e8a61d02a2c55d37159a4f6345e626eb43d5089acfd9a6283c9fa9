@@ -1,0 +1,85 @@
+{
+  "generated": "2026-10-29T12:36:24+00:00",
+  "ir": {
+    "@type": "Document",
+    "blocks": [
+      {
+        "@type": "Figure",
+        "blocks": [],
+        "caption": [
+          {
+            "@type": "Text",
+            "value": "Bars."
+          }
+        ],
+        "caption_numbered": true,
+        "image": null,
+        "label": "fig:bars",
+        "source": "\\begin{figure}\\begin{tikzpicture}\n\\foreach \\label/\\value in {A/1, B/2} { \\node at (0,\\value) {\\label}; }\n\\end{tikzpicture}\\caption{Bars.}\\label{fig:bars}\\end{figure}",
+        "spanning": false,
+        "subfigures": []
+      },
+      {
+        "@type": "Paragraph",
+        "align": null,
+        "inlines": [
+          {
+            "@type": "Text",
+            "value": "See Figure "
+          },
+          {
+            "@type": "Ref",
+            "bookmark": "fig_bars",
+            "key": "fig:bars",
+            "ref_kind": "figure",
+            "style": "plain"
+          },
+          {
+            "@type": "Text",
+            "value": "."
+          }
+        ]
+      }
+    ],
+    "book": false,
+    "label_aliases": {},
+    "labels": {
+      "fig:bars": {
+        "@type": "LabelInfo",
+        "bookmark": "fig_bars",
+        "counter_name": "Figure",
+        "kind": "figure",
+        "name": "Bars.",
+        "number": null,
+        "sub": null
+      }
+    },
+    "meta": {
+      "@type": "DocumentMeta",
+      "abstract": null,
+      "affiliations": [],
+      "authors": [],
+      "cjk_main_font": null,
+      "cjk_mono_font": null,
+      "cjk_sans_font": null,
+      "columns": 1,
+      "date": null,
+      "front_notes": [],
+      "keywords": null,
+      "language": null,
+      "main_font": null,
+      "running_head": null,
+      "subtitle": null,
+      "title": null
+    }
+  },
+  "labels": {
+    "fig:bars": {
+      "bookmark": "fig_bars",
+      "counter": "Figure",
+      "kind": "figure"
+    }
+  },
+  "manifest_version": 1,
+  "tool": "tex2word"
+}

@@ -1,0 +1,95 @@
+{
+  "generated": "2026-10-29T12:36:22+00:00",
+  "ir": {
+    "@type": "Document",
+    "blocks": [
+      {
+        "@type": "Heading",
+        "appendix": false,
+        "inlines": [
+          {
+            "@type": "Text",
+            "value": "S"
+          }
+        ],
+        "label": "s",
+        "level": 1,
+        "numbered": true,
+        "part": false
+      },
+      {
+        "@type": "Paragraph",
+        "align": null,
+        "inlines": [
+          {
+            "@type": "Math",
+            "latex": "x"
+          },
+          {
+            "@type": "Text",
+            "value": " and "
+          },
+          {
+            "@type": "Math",
+            "latex": "y"
+          },
+          {
+            "@type": "Text",
+            "value": " see "
+          },
+          {
+            "@type": "Ref",
+            "bookmark": "s",
+            "key": "s",
+            "ref_kind": "section",
+            "style": "plain"
+          },
+          {
+            "@type": "Text",
+            "value": "."
+          }
+        ]
+      }
+    ],
+    "book": false,
+    "label_aliases": {},
+    "labels": {
+      "s": {
+        "@type": "LabelInfo",
+        "bookmark": "s",
+        "counter_name": "Section",
+        "kind": "section",
+        "name": "S",
+        "number": null,
+        "sub": null
+      }
+    },
+    "meta": {
+      "@type": "DocumentMeta",
+      "abstract": null,
+      "affiliations": [],
+      "authors": [],
+      "cjk_main_font": null,
+      "cjk_mono_font": null,
+      "cjk_sans_font": null,
+      "columns": 1,
+      "date": null,
+      "front_notes": [],
+      "keywords": null,
+      "language": null,
+      "main_font": null,
+      "running_head": null,
+      "subtitle": null,
+      "title": null
+    }
+  },
+  "labels": {
+    "s": {
+      "bookmark": "s",
+      "counter": "Section",
+      "kind": "section"
+    }
+  },
+  "manifest_version": 1,
+  "tool": "tex2word"
+}

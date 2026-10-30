@@ -1,0 +1,13 @@
+{
+"api": "to_latex",
+"args": {
+"docx_bytes": {
+"@blob": "c71920fecca1dfabca774dd049151203e06bcd08f53914669f31f4428ecda80a"
+}
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_hyperref.py::test_hyperref_roundtrips"
+]
+}

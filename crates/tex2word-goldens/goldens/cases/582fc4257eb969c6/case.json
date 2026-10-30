@@ -1,0 +1,11 @@
+{
+"api": "convert_source",
+"args": {
+"source": "\\documentclass{article}\n\n\\begin{document}\n\\MakeUppercase{shout} \\parbox{3cm}{BOXED} \\foreignlanguage{french}{FR}\\selectlanguage{english}\n\\end{document}\n"
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_probe_fixes.py::test_make_uppercase_parbox_foreignlanguage"
+]
+}

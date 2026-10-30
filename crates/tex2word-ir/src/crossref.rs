@@ -9,6 +9,9 @@ use crate::dict::Dict;
 use crate::nodes::{Block, Document, Figure, Inline, LabelInfo, Link};
 use crate::pystr;
 use crate::report::ConversionReport;
+use crate::walk::{
+    for_each_node, inline_lists_mut, meta_for_each_node, meta_inline_lists_mut, NodeRef,
+};
 
 fn counter_for(kind: &str) -> &'static str {
     match kind {
@@ -17,6 +20,7 @@ fn counter_for(kind: &str) -> &'static str {
         "table" => "Table",
         "section" => "Section",
         "algorithm" => "Algorithm",
+        "listing" => "Listing",
         _ => "Item",
     }
 }
@@ -80,6 +84,11 @@ fn label_name(block: &Block) -> Option<String> {
             .as_ref()
             .filter(|c| !c.is_empty())
             .map(|c| inline_text(c)),
+        Block::CodeBlock(c) => c
+            .caption
+            .as_ref()
+            .filter(|c| !c.is_empty())
+            .map(|c| inline_text(c)),
         _ => None,
     }
 }
@@ -92,6 +101,7 @@ fn label_kind(block: &Block) -> &'static str {
         Block::Heading(_) => "section",
         Block::Theorem(_) => "theorem",
         Block::Algorithm(_) => "algorithm",
+        Block::CodeBlock(_) => "listing",
         _ => "generic",
     }
 }
@@ -114,98 +124,116 @@ fn info(kind: &str, counter_name: &str, bookmark: String, name: Option<String>) 
         bookmark,
         number: None,
         name,
+        sub: None,
     }
 }
 
-fn collect(blocks: &[Block], labels: &mut Dict<LabelInfo>) {
-    for block in blocks {
-        if let Some(label) = block.label().filter(|l| !l.is_empty()) {
-            let kind = label_kind(block);
-            let counter_name = match block {
-                Block::Theorem(t) => t
-                    .counter
-                    .clone()
-                    .filter(|c| !c.is_empty())
-                    .unwrap_or_else(|| "Item".into()),
-                _ => counter_for(kind).to_string(),
-            };
+fn register(block: &Block, labels: &mut Dict<LabelInfo>) {
+    if let Some(label) = block.label().filter(|l| !l.is_empty()) {
+        let kind = label_kind(block);
+        let counter_name = match block {
+            Block::Theorem(t) => t
+                .counter
+                .clone()
+                .filter(|c| !c.is_empty())
+                .unwrap_or_else(|| "Item".into()),
+            _ => counter_for(kind).to_string(),
+        };
+        labels.insert(
+            label,
+            info(
+                kind,
+                &counter_name,
+                sanitize_bookmark(label),
+                label_name(block),
+            ),
+        );
+    }
+    // every numbered line of an align/eqnarray that carries a \label is its
+    // own referenceable equation (not just the first line).
+    if let Block::MathBlock(m) = block {
+        for lab in m.line_labels.iter().flatten().filter(|l| !l.is_empty()) {
             labels.insert(
-                label,
-                info(
-                    kind,
-                    &counter_name,
-                    sanitize_bookmark(label),
-                    label_name(block),
-                ),
+                lab.clone(),
+                info("equation", "Equation", sanitize_bookmark(lab), None),
             );
         }
-        // every numbered line of an align/eqnarray that carries a \label is
-        // its own referenceable equation (not just the first line).
-        if let Block::MathBlock(m) = block {
-            for lab in m.line_labels.iter().flatten().filter(|l| !l.is_empty()) {
+    }
+    // sub-figure labels resolve to the parent figure's number.
+    if let Block::Figure(f) = block {
+        if !f.subfigures.is_empty() {
+            if let Some(bookmark) = figure_bookmark(f) {
+                if let Some(label) = f.label.as_deref().filter(|l| !l.is_empty()) {
+                    labels.insert(label, info("figure", "Figure", bookmark.clone(), None));
+                }
+                for (i, sub) in f.subfigures.iter().enumerate() {
+                    if let Some(label) = sub.label.as_deref().filter(|l| !l.is_empty()) {
+                        let mut li = info("figure", "Figure", bookmark.clone(), None);
+                        li.sub = char::from_u32('a' as u32 + i as u32).map(|c| c.to_string());
+                        labels.insert(label, li);
+                    }
+                }
+            }
+        }
+    }
+}
+
+/// Register every labelled target in one node (table cells, captions,
+/// theorem and figure bodies, list items included).
+fn collect_node(node: NodeRef<'_>, labels: &mut Dict<LabelInfo>) {
+    match node {
+        NodeRef::ListItem(item) => {
+            if let Some(label) = item.label.as_deref().filter(|l| !l.is_empty()) {
+                // \item\label{} -> the item's (Word auto-numbered) list number;
+                // the back-end references it with a REF \r field.
                 labels.insert(
-                    lab.clone(),
-                    info("equation", "Equation", sanitize_bookmark(lab), None),
+                    label,
+                    info("listitem", "Item", sanitize_bookmark(label), None),
                 );
             }
         }
-        // sub-figure labels resolve to the parent figure's number.
-        if let Block::Figure(f) = block {
-            if !f.subfigures.is_empty() {
-                if let Some(bookmark) = figure_bookmark(f) {
-                    if let Some(label) = f.label.as_deref().filter(|l| !l.is_empty()) {
-                        labels.insert(label, info("figure", "Figure", bookmark.clone(), None));
-                    }
-                    for sub in &f.subfigures {
-                        if let Some(label) = sub.label.as_deref().filter(|l| !l.is_empty()) {
-                            labels.insert(label, info("figure", "Figure", bookmark.clone(), None));
-                        }
-                    }
-                }
-            }
-        }
-        // recurse into nested block containers
-        match block {
-            Block::Quote(q) => collect(&q.blocks, labels),
-            Block::Theorem(t) => collect(&t.blocks, labels),
-            Block::Figure(f) if !f.blocks.is_empty() => collect(&f.blocks, labels),
-            Block::Table(t) => {
-                for row in &t.rows {
-                    for cell in &row.cells {
-                        collect(&cell.blocks, labels);
-                    }
-                }
-            }
-            Block::ItemList(list) => {
-                for item in &list.items {
-                    if let Some(label) = item.label.as_deref().filter(|l| !l.is_empty()) {
-                        // \item\label{} -> the item's (Word auto-numbered) list
-                        // number; the back-end references it with REF \r.
-                        labels.insert(
-                            label,
-                            info("listitem", "Item", sanitize_bookmark(label), None),
-                        );
-                    }
-                    collect(&item.blocks, labels);
-                }
-            }
-            _ => {}
-        }
+        NodeRef::Block(
+            b @ (Block::Heading(_)
+            | Block::MathBlock(_)
+            | Block::Table(_)
+            | Block::Figure(_)
+            | Block::Theorem(_)
+            | Block::Algorithm(_)
+            | Block::CodeBlock(_)),
+        ) => register(b, labels),
+        _ => {} // a SubFigure is registered with its parent figure
     }
 }
 
-fn rewrite_inlines(
-    inlines: &mut [Inline],
+/// Point every `Ref` (and `\hyperref` link) in one inline list at its bookmark.
+fn rewrite_list(
+    inlines: &mut Vec<Inline>,
     labels: &Dict<LabelInfo>,
     report: &mut ConversionReport,
 ) {
-    for node in inlines.iter_mut() {
-        match node {
+    // (index, letter) to insert after a Ref
+    let mut letters: Vec<(usize, String)> = Vec::new();
+    for (i, node) in inlines.iter_mut().enumerate() {
+        match &mut *node {
             Inline::Ref(r) => {
                 let Some(info) = labels.get(&r.key) else {
                     report.warn("\\ref", format!("unresolved reference to '{}'", r.key));
                     continue;
                 };
+                if r.ref_kind == "subref" {
+                    // \subref -> the sub-figure's own letter, "(a)"
+                    let text = match &info.sub {
+                        Some(s) if !s.is_empty() => format!("({s})"),
+                        _ => String::new(),
+                    };
+                    *node = Inline::text(text);
+                    continue;
+                }
+                if let Some(sub) = info.sub.as_ref().filter(|s| !s.is_empty()) {
+                    if r.ref_kind == "generic" || r.ref_kind == "figure" {
+                        letters.push((i, sub.clone())); // \ref to a panel -> "1a"
+                    }
+                }
                 if r.ref_kind == "name" {
                     // \nameref -> the target's title as an internal hyperlink
                     let text = info
@@ -234,66 +262,30 @@ fn rewrite_inlines(
                         Some(info) => link.anchor = Some(info.bookmark.clone()),
                     }
                 }
-                rewrite_inlines(&mut link.inlines, labels, report);
             }
-            Inline::Emphasis(n) => rewrite_inlines(&mut n.inlines, labels, report),
-            Inline::Footnote(n) => rewrite_inlines(&mut n.inlines, labels, report),
-            Inline::Colored(n) => rewrite_inlines(&mut n.inlines, labels, report),
-            Inline::FontSize(n) => rewrite_inlines(&mut n.inlines, labels, report),
-            Inline::Endnote(n) => rewrite_inlines(&mut n.inlines, labels, report),
             _ => {}
         }
     }
-}
-
-fn rewrite_blocks(blocks: &mut [Block], labels: &Dict<LabelInfo>, report: &mut ConversionReport) {
-    for block in blocks.iter_mut() {
-        match block {
-            Block::Paragraph(p) => rewrite_inlines(&mut p.inlines, labels, report),
-            Block::Heading(h) => rewrite_inlines(&mut h.inlines, labels, report),
-            Block::Quote(q) => rewrite_blocks(&mut q.blocks, labels, report),
-            Block::Theorem(t) => rewrite_blocks(&mut t.blocks, labels, report),
-            Block::ItemList(list) => {
-                for item in &mut list.items {
-                    rewrite_blocks(&mut item.blocks, labels, report);
-                }
-            }
-            Block::Table(t) => {
-                if let Some(cap) = t.caption.as_mut().filter(|c| !c.is_empty()) {
-                    rewrite_inlines(cap, labels, report);
-                }
-                // references inside cells (e.g. a "Basis" column citing
-                // Section~\ref{...}) resolve like body text
-                for row in t.rows.iter_mut() {
-                    for cell in row.cells.iter_mut() {
-                        rewrite_blocks(&mut cell.blocks, labels, report);
-                    }
-                }
-            }
-            Block::Figure(f) => {
-                if let Some(cap) = f.caption.as_mut().filter(|c| !c.is_empty()) {
-                    rewrite_inlines(cap, labels, report);
-                }
-                if !f.blocks.is_empty() {
-                    rewrite_blocks(&mut f.blocks, labels, report);
-                }
-            }
-            _ => {}
-        }
+    for (i, letter) in letters.into_iter().rev() {
+        inlines.insert(i + 1, Inline::text(letter));
     }
 }
 
 /// Populate `doc.labels` and wire `Ref` nodes to bookmarks (in place).
 pub fn resolve_crossrefs(doc: &mut Document, report: &mut ConversionReport) {
     let mut labels = Dict::new();
-    collect(&doc.blocks, &mut labels);
-    if let Some(abs) = doc.meta.abstract_.as_ref().filter(|a| !a.is_empty()) {
-        collect(abs, &mut labels);
+    for_each_node(&doc.blocks, |n| collect_node(n, &mut labels));
+    meta_for_each_node(&doc.meta, |n| collect_node(n, &mut labels));
+    // a target's extra \label{}s share the kept label's bookmark
+    for (alias, kept) in doc.label_aliases.iter() {
+        if !labels.contains_key(alias) {
+            if let Some(info) = labels.get(kept).cloned() {
+                labels.insert(alias.clone(), info);
+            }
+        }
     }
-    rewrite_blocks(&mut doc.blocks, &labels, report);
-    if let Some(abs) = doc.meta.abstract_.as_mut().filter(|a| !a.is_empty()) {
-        rewrite_blocks(abs, &labels, report);
-    }
+    inline_lists_mut(&mut doc.blocks, |l| rewrite_list(l, &labels, report));
+    meta_inline_lists_mut(&mut doc.meta, |l| rewrite_list(l, &labels, report));
     doc.labels = labels;
 }
 

@@ -1,0 +1,13 @@
+{
+"api": "validate_docx",
+"args": {
+"docx_bytes": {
+"@blob": "d9c3c0cd79c724f4c7765b9ad44529005ae14bc634f004170da9ed9f9004416d"
+}
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_validate.py::test_detects_malformed_xml"
+]
+}

@@ -1,0 +1,11 @@
+{
+"api": "convert_source",
+"args": {
+"source": "\\documentclass{beamer}\n\\title{T}\\author{A}\n\\begin{document}\n\\frame{\\titlepage}\\begin{frame}[fragile]{Slide A}\\begin{itemize}\\item<1-> one\\item<2-> two\\end{itemize}\\end{frame}\\begin{frame}\\frametitle{Slide B}\\begin{columns}\\column{0.5\\textwidth} L\\column{.5\\textwidth} R\\end{columns}\\pause\\alert<2>{hot}\\end{frame}\n\\end{document}\n"
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_front_matter_classes.py::test_beamer_frames_and_overlays"
+]
+}

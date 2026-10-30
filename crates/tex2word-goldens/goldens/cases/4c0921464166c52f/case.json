@@ -1,0 +1,11 @@
+{
+"api": "convert_source",
+"args": {
+"source": "\\documentclass{elsarticle}\n\n\\begin{document}\n\\begin{frontmatter}\\begin{keyword}one \\sep two\\end{keyword}\\end{frontmatter}\n\\end{document}\n"
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_probe_fixes.py::test_elsarticle_keyword_separators"
+]
+}

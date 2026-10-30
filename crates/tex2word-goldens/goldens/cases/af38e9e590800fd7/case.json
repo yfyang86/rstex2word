@@ -1,0 +1,13 @@
+{
+"api": "read_docx",
+"args": {
+"docx_bytes": {
+"@blob": "fdec8d7ebbf7f0a796f90d9bb0ef0e28e59e752b2df5343d9bf29750e9eae21d"
+}
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_images.py::test_foreign_reader_keeps_inline_image_inline"
+]
+}

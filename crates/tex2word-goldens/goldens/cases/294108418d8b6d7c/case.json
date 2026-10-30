@@ -1,0 +1,13 @@
+{
+"api": "validate_docx",
+"args": {
+"docx_bytes": {
+"@blob": "6621905683b84dffcbe7c3f32efcb806144773b6b7f539608fc243085da8f802"
+}
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_newtheorem.py::test_custom_theorem_body_and_valid"
+]
+}

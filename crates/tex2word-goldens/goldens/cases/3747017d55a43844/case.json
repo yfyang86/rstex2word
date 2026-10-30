@@ -1,0 +1,13 @@
+{
+"api": "validate_docx",
+"args": {
+"docx_bytes": {
+"@blob": "54bbc36206fbbfc8733eee192b0aebf047973e7ecd38b3a68ed085252037dcc0"
+}
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_endnotes.py::test_output_with_endnotes_is_valid"
+]
+}

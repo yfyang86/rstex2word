@@ -1,0 +1,13 @@
+{
+"api": "validate_docx",
+"args": {
+"docx_bytes": {
+"@blob": "44a036743e26869d59de15fc4a42db1b8bcffc320c2df74dfab2d9ec04be8722"
+}
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_uat_bundle.py::test_uat_bundle_converts_cleanly[bundle:sribe2.tex]"
+]
+}

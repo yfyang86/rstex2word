@@ -8,6 +8,7 @@ use std::sync::LazyLock;
 use tex2word_ir::pystr;
 use tex2word_ir::re::Regex;
 use tex2word_ooxml::xml::{el, preserve_space, qn, sub, Element};
+use tex2word_ooxml::xml_safe;
 
 use crate::latex_math::{self as L, MNode, MathError, Row};
 
@@ -113,7 +114,7 @@ fn run(text: &str, upright: bool, bold: bool, script: Option<&str>) -> Element {
         }
     }
     let t = sub(&mut r, "m:t", &[]);
-    t.text = Some(text.to_string());
+    t.text = Some(xml_safe(text));
     preserve_space(t);
     r
 }
@@ -143,31 +144,45 @@ fn emit_row(r: &Row) -> Vec<Element> {
 /// A slot holding nothing but an operator (`x^{+}`, `x^{*}`) keeps it as
 /// normal text: an operator without operands is not an expression, and
 /// LibreOffice rejects it.
-fn lone_operator(nodes: &[MNode]) -> Option<Element> {
-    match nodes {
-        [MNode::Lit(l)]
-            if !l.text.is_empty() && l.text.chars().all(|c| "+\u{2212}±∓×·⋅∗*/".contains(c)) =>
-        {
-            let mut r = el("m:r", &[]);
-            let rpr = sub(&mut r, "m:rPr", &[]);
-            sub(rpr, "m:nor", &[]);
-            if l.bold {
-                sub(rpr, "m:sty", &[("m:val", "b")]);
-            }
-            let t = sub(&mut r, "m:t", &[]);
-            t.text = Some(l.text.clone());
-            preserve_space(t);
-            Some(r)
-        }
-        _ => None,
+fn lone_operator(mut node: &MNode) -> Option<Element> {
+    // a single-item Group/Row, however deeply nested, is its item
+    while let MNode::Group(row) | MNode::Row(row) = node {
+        let [item] = row.0.as_slice() else {
+            return None;
+        };
+        node = item;
     }
+    let MNode::Lit(l) = node else {
+        return None;
+    };
+    if l.text.is_empty() || !l.text.chars().all(|c| "+\u{2212}±∓×·⋅∗*/".contains(c)) {
+        return None;
+    }
+    let mut r = el("m:r", &[]);
+    let rpr = sub(&mut r, "m:rPr", &[]);
+    sub(rpr, "m:nor", &[]);
+    if l.bold {
+        sub(rpr, "m:sty", &[("m:val", "b")]);
+    }
+    let t = sub(&mut r, "m:t", &[]);
+    t.text = Some(l.text.clone());
+    preserve_space(t);
+    Some(r)
+}
+
+/// [`lone_operator`] for a slot given as a row (Python passes the `Row`).
+fn lone_operator_row(row: &Row) -> Option<Element> {
+    let [item] = row.0.as_slice() else {
+        return None;
+    };
+    lone_operator(item)
 }
 
 /// An OMML container element filled with the rendered node.
 fn fill(tag: &str, node: Option<&MNode>) -> Element {
     let mut c = el(tag, &[]);
     if let Some(n) = node {
-        if let Some(r) = lone_operator(std::slice::from_ref(n)) {
+        if let Some(r) = lone_operator(n) {
             c.append(r);
             return c;
         }
@@ -180,7 +195,7 @@ fn fill(tag: &str, node: Option<&MNode>) -> Element {
 
 fn fill_row(tag: &str, row: &Row) -> Element {
     let mut c = el(tag, &[]);
-    if let Some(r) = lone_operator(&row.0) {
+    if let Some(r) = lone_operator_row(row) {
         c.append(r);
         return c;
     }
@@ -385,6 +400,10 @@ pub fn split_top_level(latex: &str, sep: &str) -> Vec<String> {
         } else if depth == 0 && env == 0 && latex[i..].starts_with(sep) {
             parts.push(std::mem::take(&mut buf));
             i += sep.len();
+            if sep == "\\\\" {
+                // `\\*` / `\\[2pt]` row spacing is layout
+                i = L::skip_row_spacing(latex, i);
+            }
             continue;
         } else {
             buf.push(c);
@@ -504,11 +523,7 @@ pub fn render_block_lines(latex: &str, collapse_align: bool) -> Result<Vec<Eleme
     let cleaned = pystr::strip(&cleaned);
     let lines: Vec<String> = split_top_level(cleaned, "\\\\")
         .iter()
-        .enumerate()
-        .map(|(k, s)| {
-            let s = pystr::strip(s);
-            if k == 0 { s } else { strip_row_spacing(s) }.to_string()
-        })
+        .map(|s| pystr::strip(s).to_string())
         .filter(|l| !l.is_empty())
         .collect();
     if lines.is_empty() {
@@ -524,20 +539,6 @@ pub fn render_block_lines(latex: &str, collapse_align: bool) -> Result<Vec<Eleme
             Ok(omath(&L::parse(pystr::strip(&stripped))?))
         })
         .collect()
-}
-
-/// Drop the `*` / `[<dimen>]` left at the start of a line split on `\\`
-/// (`a \\[4pt] b`): row spacing, not content.
-fn strip_row_spacing(line: &str) -> &str {
-    let mut t = line.strip_prefix('*').unwrap_or(line).trim_start();
-    if let Some(rest) = t.strip_prefix('[') {
-        if let Some(close) = rest.find(']') {
-            if L::is_dimen(&rest[..close]) {
-                t = rest[close + 1..].trim_start();
-            }
-        }
-    }
-    t
 }
 
 /// `latex_to_omml(latex, display)`: an `m:oMathPara` of lines, or an inline
@@ -565,5 +566,132 @@ mod tests {
         );
         assert_eq!(env_token(r"\beginner", 0), (0, 0));
         assert_eq!(env_token(r"\begin", 0), (0, 0));
+    }
+
+    /// Serialized OMML without namespace declarations (like the reference's
+    /// tests: `re.sub(r' xmlns:\w+="[^"]+"', "", etree.tostring(...))`).
+    fn xml(e: &Element) -> String {
+        use tex2word_ooxml::xml::{tostring, ToString};
+        let s = tostring(
+            e,
+            ToString {
+                utf8: true,
+                ..Default::default()
+            },
+        )
+        .unwrap();
+        Regex::new(r#" xmlns:\w+="[^"]+""#).sub("", &s)
+    }
+
+    fn inline(latex: &str) -> String {
+        xml(&render_inline(latex).unwrap())
+    }
+
+    fn block(latex: &str) -> Vec<String> {
+        render_block_lines(latex, false)
+            .unwrap()
+            .iter()
+            .map(xml)
+            .collect()
+    }
+
+    // Expected strings below were produced by the Python reference (1.1.0).
+
+    #[test]
+    fn text_mode_spaces_are_text() {
+        assert_eq!(
+            inline(r"a \text{ if } b"),
+            r#"<m:oMath><m:r><m:t xml:space="preserve">a</m:t></m:r><m:r><m:rPr><m:nor/></m:rPr><m:t xml:space="preserve"> if </m:t></m:r><m:r><m:t xml:space="preserve">b</m:t></m:r></m:oMath>"#
+        );
+        // tab/newline runs are one space; `$...$` inside is math (minus sign
+        // turned back into a hyphen by the text group)
+        assert_eq!(
+            inline("\\text{a\tb\nc}"),
+            r#"<m:oMath><m:r><m:rPr><m:nor/></m:rPr><m:t xml:space="preserve">a b c</m:t></m:r></m:oMath>"#
+        );
+        assert_eq!(
+            inline(r"\text{x $y - z$ w}"),
+            r#"<m:oMath><m:r><m:rPr><m:nor/></m:rPr><m:t xml:space="preserve">x y-z w</m:t></m:r></m:oMath>"#
+        );
+        // TeX eats the space after a control word
+        assert_eq!(
+            inline(r"\text{a \alpha b}"),
+            r#"<m:oMath><m:r><m:rPr><m:nor/></m:rPr><m:t xml:space="preserve">a αb</m:t></m:r></m:oMath>"#
+        );
+        assert_eq!(
+            inline(r"\textbf{a - b}"),
+            r#"<m:oMath><m:r><m:rPr><m:nor/><m:sty m:val="b"/></m:rPr><m:t xml:space="preserve">a - b</m:t></m:r></m:oMath>"#
+        );
+        assert_eq!(
+            inline(r"\text{\$ x}"),
+            r#"<m:oMath><m:r><m:rPr><m:nor/></m:rPr><m:t xml:space="preserve">$ x</m:t></m:r></m:oMath>"#
+        );
+    }
+
+    #[test]
+    fn math_mode_styles_ignore_spaces() {
+        // \mathrm is math mode: TeX ignores its blanks
+        assert_eq!(
+            inline(r"\mathrm{a b}"),
+            r#"<m:oMath><m:r><m:rPr><m:nor/></m:rPr><m:t xml:space="preserve">ab</m:t></m:r></m:oMath>"#
+        );
+        // \textit is text mode and keeps them (the reference drops them)
+        assert_eq!(
+            inline(r"\textit{ c}"),
+            r#"<m:oMath><m:r><m:rPr><m:nor/></m:rPr><m:t xml:space="preserve"> c</m:t></m:r></m:oMath>"#
+        );
+    }
+
+    #[test]
+    fn nested_lone_operator_keeps_nor() {
+        assert_eq!(
+            inline(r"x^{{+}}"),
+            r#"<m:oMath><m:sSup><m:e><m:r><m:t xml:space="preserve">x</m:t></m:r></m:e><m:sup><m:r><m:rPr><m:nor/></m:rPr><m:t xml:space="preserve">+</m:t></m:r></m:sup></m:sSup></m:oMath>"#
+        );
+    }
+
+    #[test]
+    fn quad_ends_the_nary_operand() {
+        assert_eq!(
+            inline(r"\sum_i e_i\quad x"),
+            "<m:oMath><m:nary><m:naryPr><m:chr m:val=\"∑\"/><m:limLoc m:val=\"undOvr\"/><m:supHide m:val=\"1\"/></m:naryPr><m:sub><m:r><m:t xml:space=\"preserve\">i</m:t></m:r></m:sub><m:sup/><m:e><m:sSub><m:e><m:r><m:t xml:space=\"preserve\">e</m:t></m:r></m:e><m:sub><m:r><m:t xml:space=\"preserve\">i</m:t></m:r></m:sub></m:sSub></m:e></m:nary><m:r><m:rPr><m:nor/></m:rPr><m:t xml:space=\"preserve\">\u{2003}</m:t></m:r><m:r><m:t xml:space=\"preserve\">x</m:t></m:r></m:oMath>"
+        );
+    }
+
+    #[test]
+    fn control_characters_are_dropped_from_runs() {
+        assert_eq!(xml_safe("a\u{1}b\tc\u{b}\u{fffe}d\n"), "ab\tcd\n");
+        assert_eq!(
+            inline("x\u{1}y"),
+            r#"<m:oMath><m:r><m:t xml:space="preserve">x</m:t></m:r><m:r><m:rPr><m:nor/></m:rPr><m:t xml:space="preserve"></m:t></m:r><m:r><m:t xml:space="preserve">y</m:t></m:r></m:oMath>"#
+        );
+    }
+
+    #[test]
+    fn row_spacing_after_a_line_break() {
+        // a bracket that is not a length is content
+        assert_eq!(
+            inline(r"\begin{matrix} a \\ [b] \end{matrix}"),
+            r#"<m:oMath><m:m><m:mr><m:e><m:r><m:t xml:space="preserve">a</m:t></m:r></m:e></m:mr><m:mr><m:e><m:r><m:t xml:space="preserve">[</m:t></m:r><m:r><m:t xml:space="preserve">b</m:t></m:r><m:r><m:t xml:space="preserve">]</m:t></m:r></m:e></m:mr></m:m></m:oMath>"#
+        );
+        let a = r#"<m:oMath><m:r><m:t xml:space="preserve">a</m:t></m:r></m:oMath>"#;
+        let b = r#"<m:oMath><m:r><m:t xml:space="preserve">b</m:t></m:r></m:oMath>"#;
+        assert_eq!(block(r"a \\*[1ex] b"), vec![a, b]);
+        // the `*` must follow `\\` directly, and only spaces may precede `[`
+        assert_eq!(
+            block(r"a \\ *b"),
+            vec![
+                a.to_string(),
+                r#"<m:oMath><m:r><m:t xml:space="preserve">*</m:t></m:r><m:r><m:t xml:space="preserve">b</m:t></m:r></m:oMath>"#.to_string()
+            ]
+        );
+        assert_eq!(
+            block("a \\\\\n[2pt] b")[1],
+            r#"<m:oMath><m:r><m:t xml:space="preserve">[</m:t></m:r><m:r><m:t xml:space="preserve">2</m:t></m:r><m:r><m:t xml:space="preserve">p</m:t></m:r><m:r><m:t xml:space="preserve">t</m:t></m:r><m:r><m:t xml:space="preserve">]</m:t></m:r><m:r><m:t xml:space="preserve">b</m:t></m:r></m:oMath>"#
+        );
+        assert_eq!(
+            split_top_level("é\\\\[2pt]x\\\\* y", "\\\\"),
+            vec!["é", "x", " y"]
+        );
     }
 }

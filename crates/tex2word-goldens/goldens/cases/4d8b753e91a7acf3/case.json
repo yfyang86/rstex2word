@@ -1,0 +1,13 @@
+{
+"api": "validate_docx",
+"args": {
+"docx_bytes": {
+"@blob": "94c5b418e59de584400094734e374c5c1c143ff7b382ee3aee7b62f68f8cbc57"
+}
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_validate.py::test_detects_missing_required_part"
+]
+}

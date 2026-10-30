@@ -1,0 +1,13 @@
+{
+"api": "to_latex",
+"args": {
+"docx_bytes": {
+"@blob": "1775388615a642729b9487ab3b087aea2ecf8a2fe15cd2285839e06899db7cec"
+}
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_reconcile.py::test_inline_reconcile_keeps_exact_math_on_a_prose_edit"
+]
+}

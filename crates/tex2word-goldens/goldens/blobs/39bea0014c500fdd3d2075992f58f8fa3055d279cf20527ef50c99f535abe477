@@ -1,0 +1,125 @@
+{
+  "generated": "2026-01-02T00:00:00+00:00",
+  "ir": {
+    "@type": "Document",
+    "blocks": [
+      {
+        "@type": "Heading",
+        "appendix": false,
+        "inlines": [
+          {
+            "@type": "Text",
+            "value": "S"
+          }
+        ],
+        "label": "sec:s",
+        "level": 1,
+        "numbered": true,
+        "part": false
+      },
+      {
+        "@type": "Paragraph",
+        "align": null,
+        "inlines": [
+          {
+            "@type": "Text",
+            "value": "Text with "
+          },
+          {
+            "@type": "Math",
+            "latex": "x^2"
+          },
+          {
+            "@type": "Text",
+            "value": " and "
+          },
+          {
+            "@type": "Ref",
+            "bookmark": "eq_e",
+            "key": "eq:e",
+            "ref_kind": "equation",
+            "style": "plain"
+          },
+          {
+            "@type": "Text",
+            "value": "."
+          }
+        ]
+      },
+      {
+        "@type": "MathBlock",
+        "env": "equation",
+        "label": "eq:e",
+        "latex": "E=mc^2",
+        "line_labels": [
+          "eq:e"
+        ],
+        "numbered": true
+      }
+    ],
+    "book": false,
+    "label_aliases": {},
+    "labels": {
+      "eq:e": {
+        "@type": "LabelInfo",
+        "bookmark": "eq_e",
+        "counter_name": "Equation",
+        "kind": "equation",
+        "name": null,
+        "number": null,
+        "sub": null
+      },
+      "sec:s": {
+        "@type": "LabelInfo",
+        "bookmark": "sec_s",
+        "counter_name": "Section",
+        "kind": "section",
+        "name": "S",
+        "number": null,
+        "sub": null
+      }
+    },
+    "meta": {
+      "@type": "DocumentMeta",
+      "abstract": null,
+      "affiliations": [],
+      "authors": [],
+      "cjk_main_font": null,
+      "cjk_mono_font": null,
+      "cjk_sans_font": null,
+      "columns": 1,
+      "date": [
+        {
+          "@type": "Text",
+          "value": "January 2, 2026"
+        }
+      ],
+      "front_notes": [],
+      "keywords": null,
+      "language": null,
+      "main_font": null,
+      "running_head": null,
+      "subtitle": null,
+      "title": [
+        {
+          "@type": "Text",
+          "value": "RT"
+        }
+      ]
+    }
+  },
+  "labels": {
+    "eq:e": {
+      "bookmark": "eq_e",
+      "counter": "Equation",
+      "kind": "equation"
+    },
+    "sec:s": {
+      "bookmark": "sec_s",
+      "counter": "Section",
+      "kind": "section"
+    }
+  },
+  "manifest_version": 1,
+  "tool": "tex2word"
+}

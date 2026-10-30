@@ -1,0 +1,11 @@
+{
+"api": "convert_source",
+"args": {
+"source": "\\documentclass{amsart}\n\n\\begin{document}\n\\title{T}\\author{A}\\address{Here}\\curraddr{There}\\urladdr{https://x.org}\\dedicatory{To B.}\\maketitle\n\\end{document}\n"
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_front_matter_classes.py::test_ieee_journal_and_amsart_extras"
+]
+}

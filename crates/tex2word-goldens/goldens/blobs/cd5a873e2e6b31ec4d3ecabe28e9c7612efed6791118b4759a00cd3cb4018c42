@@ -1,0 +1,76 @@
+{
+  "generated": "2026-10-29T12:36:24+00:00",
+  "ir": {
+    "@type": "Document",
+    "blocks": [
+      {
+        "@type": "CodeBlock",
+        "caption": null,
+        "caption_numbered": true,
+        "label": null,
+        "lang": null,
+        "text": "KMfun(1)\n(* $x$ *) note"
+      },
+      {
+        "@type": "Paragraph",
+        "align": null,
+        "inlines": [
+          {
+            "@type": "Text",
+            "value": "中间散文 "
+          },
+          {
+            "@type": "Math",
+            "latex": "g(t)=1"
+          },
+          {
+            "@type": "Text",
+            "value": " 定义："
+          }
+        ]
+      },
+      {
+        "@type": "CodeBlock",
+        "caption": null,
+        "caption_numbered": true,
+        "label": null,
+        "lang": null,
+        "text": "SUR <- temp$surv"
+      },
+      {
+        "@type": "Paragraph",
+        "align": null,
+        "inlines": [
+          {
+            "@type": "Text",
+            "value": "结尾散文。"
+          }
+        ]
+      }
+    ],
+    "book": false,
+    "label_aliases": {},
+    "labels": {},
+    "meta": {
+      "@type": "DocumentMeta",
+      "abstract": null,
+      "affiliations": [],
+      "authors": [],
+      "cjk_main_font": null,
+      "cjk_mono_font": null,
+      "cjk_sans_font": null,
+      "columns": 1,
+      "date": null,
+      "front_notes": [],
+      "keywords": null,
+      "language": null,
+      "main_font": null,
+      "running_head": null,
+      "subtitle": null,
+      "title": null
+    }
+  },
+  "labels": {},
+  "manifest_version": 1,
+  "tool": "tex2word"
+}

@@ -1,0 +1,75 @@
+{
+  "generated": "2026-10-29T12:36:23+00:00",
+  "ir": {
+    "@type": "Document",
+    "blocks": [
+      {
+        "@type": "Figure",
+        "blocks": [
+          {
+            "@type": "Paragraph",
+            "align": null,
+            "inlines": [
+              {
+                "@type": "Text",
+                "value": "Inside the figure"
+              }
+            ]
+          }
+        ],
+        "caption": [
+          {
+            "@type": "Text",
+            "value": "Cap"
+          }
+        ],
+        "caption_numbered": true,
+        "image": null,
+        "label": "fig:x",
+        "source": "\\begin{figure}\\centering\\fbox{Inside the figure}\\caption{Cap}\\label{fig:x}\\end{figure}",
+        "spanning": false,
+        "subfigures": []
+      }
+    ],
+    "book": false,
+    "label_aliases": {},
+    "labels": {
+      "fig:x": {
+        "@type": "LabelInfo",
+        "bookmark": "fig_x",
+        "counter_name": "Figure",
+        "kind": "figure",
+        "name": "Cap",
+        "number": null,
+        "sub": null
+      }
+    },
+    "meta": {
+      "@type": "DocumentMeta",
+      "abstract": null,
+      "affiliations": [],
+      "authors": [],
+      "cjk_main_font": null,
+      "cjk_mono_font": null,
+      "cjk_sans_font": null,
+      "columns": 1,
+      "date": null,
+      "front_notes": [],
+      "keywords": null,
+      "language": null,
+      "main_font": null,
+      "running_head": null,
+      "subtitle": null,
+      "title": null
+    }
+  },
+  "labels": {
+    "fig:x": {
+      "bookmark": "fig_x",
+      "counter": "Figure",
+      "kind": "figure"
+    }
+  },
+  "manifest_version": 1,
+  "tool": "tex2word"
+}

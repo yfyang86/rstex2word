@@ -1,0 +1,452 @@
+{
+  "generated": "2026-10-29T12:36:21+00:00",
+  "ir": {
+    "@type": "Document",
+    "blocks": [
+      {
+        "@type": "Heading",
+        "appendix": false,
+        "inlines": [
+          {
+            "@type": "Text",
+            "value": "Tables and lists"
+          }
+        ],
+        "label": null,
+        "level": 1,
+        "numbered": true,
+        "part": false
+      },
+      {
+        "@type": "ItemList",
+        "description": false,
+        "items": [
+          {
+            "@type": "ListItem",
+            "blocks": [
+              {
+                "@type": "Paragraph",
+                "align": null,
+                "inlines": [
+                  {
+                    "@type": "Text",
+                    "value": "First point with math "
+                  },
+                  {
+                    "@type": "Math",
+                    "latex": "a^2 + b^2 = c^2"
+                  },
+                  {
+                    "@type": "Text",
+                    "value": "."
+                  }
+                ]
+              }
+            ],
+            "label": null,
+            "term": null
+          },
+          {
+            "@type": "ListItem",
+            "blocks": [
+              {
+                "@type": "Paragraph",
+                "align": null,
+                "inlines": [
+                  {
+                    "@type": "Text",
+                    "value": "Second point."
+                  }
+                ]
+              },
+              {
+                "@type": "ItemList",
+                "description": false,
+                "items": [
+                  {
+                    "@type": "ListItem",
+                    "blocks": [
+                      {
+                        "@type": "Paragraph",
+                        "align": null,
+                        "inlines": [
+                          {
+                            "@type": "Text",
+                            "value": "nested bullet"
+                          }
+                        ]
+                      }
+                    ],
+                    "label": null,
+                    "term": null
+                  },
+                  {
+                    "@type": "ListItem",
+                    "blocks": [
+                      {
+                        "@type": "Paragraph",
+                        "align": null,
+                        "inlines": [
+                          {
+                            "@type": "Text",
+                            "value": "another"
+                          }
+                        ]
+                      }
+                    ],
+                    "label": null,
+                    "term": null
+                  }
+                ],
+                "ordered": false,
+                "start": 1
+              }
+            ],
+            "label": null,
+            "term": null
+          }
+        ],
+        "ordered": true,
+        "start": 1
+      },
+      {
+        "@type": "Table",
+        "booktabs": true,
+        "caption": [
+          {
+            "@type": "Text",
+            "value": "Comparison."
+          }
+        ],
+        "caption_numbered": true,
+        "colspec": [
+          "left",
+          "center",
+          "center"
+        ],
+        "colwidths": [
+          null,
+          null,
+          null
+        ],
+        "label": "tab:cmp",
+        "layout": false,
+        "rows": [
+          {
+            "@type": "TableRow",
+            "cells": [
+              {
+                "@type": "TableCell",
+                "align": "left",
+                "blocks": [
+                  {
+                    "@type": "Paragraph",
+                    "align": null,
+                    "inlines": [
+                      {
+                        "@type": "Text",
+                        "value": "Method"
+                      }
+                    ]
+                  }
+                ],
+                "border_bottom": false,
+                "colspan": 1,
+                "rowspan": 1,
+                "shade": null
+              },
+              {
+                "@type": "TableCell",
+                "align": "center",
+                "blocks": [
+                  {
+                    "@type": "Paragraph",
+                    "align": null,
+                    "inlines": [
+                      {
+                        "@type": "Text",
+                        "value": "Speed"
+                      }
+                    ]
+                  }
+                ],
+                "border_bottom": false,
+                "colspan": 1,
+                "rowspan": 1,
+                "shade": null
+              },
+              {
+                "@type": "TableCell",
+                "align": "center",
+                "blocks": [
+                  {
+                    "@type": "Paragraph",
+                    "align": null,
+                    "inlines": [
+                      {
+                        "@type": "Text",
+                        "value": "Quality"
+                      }
+                    ]
+                  }
+                ],
+                "border_bottom": false,
+                "colspan": 1,
+                "rowspan": 1,
+                "shade": null
+              }
+            ],
+            "is_header": true,
+            "rule_above": false,
+            "rule_below": false
+          },
+          {
+            "@type": "TableRow",
+            "cells": [
+              {
+                "@type": "TableCell",
+                "align": "center",
+                "blocks": [
+                  {
+                    "@type": "Paragraph",
+                    "align": null,
+                    "inlines": [
+                      {
+                        "@type": "Text",
+                        "value": "Baselines"
+                      }
+                    ]
+                  }
+                ],
+                "border_bottom": false,
+                "colspan": 3,
+                "rowspan": 1,
+                "shade": null
+              }
+            ],
+            "is_header": false,
+            "rule_above": false,
+            "rule_below": false
+          },
+          {
+            "@type": "TableRow",
+            "cells": [
+              {
+                "@type": "TableCell",
+                "align": "left",
+                "blocks": [
+                  {
+                    "@type": "Paragraph",
+                    "align": null,
+                    "inlines": [
+                      {
+                        "@type": "Text",
+                        "value": "Pandoc"
+                      }
+                    ]
+                  }
+                ],
+                "border_bottom": false,
+                "colspan": 1,
+                "rowspan": 1,
+                "shade": null
+              },
+              {
+                "@type": "TableCell",
+                "align": "center",
+                "blocks": [
+                  {
+                    "@type": "Paragraph",
+                    "align": null,
+                    "inlines": [
+                      {
+                        "@type": "Text",
+                        "value": "Fast"
+                      }
+                    ]
+                  }
+                ],
+                "border_bottom": false,
+                "colspan": 1,
+                "rowspan": 1,
+                "shade": null
+              },
+              {
+                "@type": "TableCell",
+                "align": "center",
+                "blocks": [
+                  {
+                    "@type": "Paragraph",
+                    "align": null,
+                    "inlines": [
+                      {
+                        "@type": "Text",
+                        "value": "Medium"
+                      }
+                    ]
+                  }
+                ],
+                "border_bottom": false,
+                "colspan": 1,
+                "rowspan": 1,
+                "shade": null
+              }
+            ],
+            "is_header": false,
+            "rule_above": false,
+            "rule_below": false
+          },
+          {
+            "@type": "TableRow",
+            "cells": [
+              {
+                "@type": "TableCell",
+                "align": "left",
+                "blocks": [
+                  {
+                    "@type": "Paragraph",
+                    "align": null,
+                    "inlines": [
+                      {
+                        "@type": "Text",
+                        "value": "GrindEQ"
+                      }
+                    ]
+                  }
+                ],
+                "border_bottom": false,
+                "colspan": 1,
+                "rowspan": 1,
+                "shade": null
+              },
+              {
+                "@type": "TableCell",
+                "align": "center",
+                "blocks": [
+                  {
+                    "@type": "Paragraph",
+                    "align": null,
+                    "inlines": [
+                      {
+                        "@type": "Text",
+                        "value": "Slow"
+                      }
+                    ]
+                  }
+                ],
+                "border_bottom": false,
+                "colspan": 1,
+                "rowspan": 1,
+                "shade": null
+              },
+              {
+                "@type": "TableCell",
+                "align": "center",
+                "blocks": [
+                  {
+                    "@type": "Paragraph",
+                    "align": null,
+                    "inlines": [
+                      {
+                        "@type": "Text",
+                        "value": "High"
+                      }
+                    ]
+                  }
+                ],
+                "border_bottom": false,
+                "colspan": 1,
+                "rowspan": 1,
+                "shade": null
+              }
+            ],
+            "is_header": false,
+            "rule_above": false,
+            "rule_below": false
+          }
+        ],
+        "spanning": false
+      },
+      {
+        "@type": "Paragraph",
+        "align": null,
+        "inlines": [
+          {
+            "@type": "Text",
+            "value": "As Table "
+          },
+          {
+            "@type": "Ref",
+            "bookmark": "tab_cmp",
+            "key": "tab:cmp",
+            "ref_kind": "table",
+            "style": "plain"
+          },
+          {
+            "@type": "Text",
+            "value": " shows, results vary."
+          }
+        ]
+      },
+      {
+        "@type": "Quote",
+        "blocks": [
+          {
+            "@type": "Paragraph",
+            "align": null,
+            "inlines": [
+              {
+                "@type": "Text",
+                "value": "A quoted remark about conversion fidelity."
+              }
+            ]
+          }
+        ],
+        "border": null,
+        "shade": null,
+        "title": null,
+        "title_shade": null
+      }
+    ],
+    "book": false,
+    "label_aliases": {},
+    "labels": {
+      "tab:cmp": {
+        "@type": "LabelInfo",
+        "bookmark": "tab_cmp",
+        "counter_name": "Table",
+        "kind": "table",
+        "name": "Comparison.",
+        "number": null,
+        "sub": null
+      }
+    },
+    "meta": {
+      "@type": "DocumentMeta",
+      "abstract": null,
+      "affiliations": [],
+      "authors": [],
+      "cjk_main_font": null,
+      "cjk_mono_font": null,
+      "cjk_sans_font": null,
+      "columns": 1,
+      "date": null,
+      "front_notes": [],
+      "keywords": null,
+      "language": null,
+      "main_font": null,
+      "running_head": null,
+      "subtitle": null,
+      "title": null
+    }
+  },
+  "labels": {
+    "tab:cmp": {
+      "bookmark": "tab_cmp",
+      "counter": "Table",
+      "kind": "table"
+    }
+  },
+  "manifest_version": 1,
+  "tool": "tex2word"
+}

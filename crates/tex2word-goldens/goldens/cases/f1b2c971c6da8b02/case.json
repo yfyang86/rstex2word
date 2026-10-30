@@ -1,0 +1,23 @@
+{
+"api": "convert_source",
+"args": {
+"source": "\\pdfoutput=1\n% Synthetic acceptance fixture (MIT, part of rstex2word). It mirrors the\n% constructs of AI-assisted arXiv papers such as arXiv:2610.32813: TikZ\n% figures kept in \\input files, stacked pictures in one figure*, captions\n% built with \\protect\\input, nested \\input paths relative to the main file,\n% headings with several \\label keys, url-package \\path, and the end-matter\n% commands of a two-column layout.\n\\documentclass[10pt,twocolumn,letterpaper]{article}\n\\usepackage[margin=0.75in]{geometry}\n\\usepackage{times}\n\\usepackage[dvipsnames]{xcolor}\n\\usepackage[numbers,sort&compress]{natbib}\n\\usepackage[hyphens]{url}\n\\usepackage{booktabs,amsmath,amssymb,graphicx}\n\\usepackage{tikz}\n\\usepackage{balance}\n\\usetikzlibrary{positioning,arrows.meta,fit,calc,plotmarks}\n\\usepackage[colorlinks,allcolors=blue]{hyperref}\n\\newcommand{\\ours}{\\textup{Fixture}}\n\\title{Rendering TikZ in Word: an acceptance fixture}\n\\author{A. Author}\n\\date{}\n\n\\begin{document}\n\\maketitle\n\n\\begin{abstract}\n\\ours{} checks that every TikZ picture of a figure reaches the document.\n\\end{abstract}\n\n\\section{Introduction}\n\\label{sec:intro}\nFigure~\\ref{fig:pipeline} shows the pipeline; Table~\\ref{tab:results}\nlists the results and Appendix~\\ref{sec:alias} the protocol. Raw data are\nin \\path{generated/results_raw.json}. We follow prior work~\\citep{knuth1984}.\n\n\\begin{figure*}[t]\n\\centering\n\\input{figures/pipeline}\n\\caption{Pipeline overview. \\protect\\input{generated/pipeline_caption}}\n\\label{fig:pipeline}\n\\end{figure*}\n\n\\section{Results}\n\\input{generated/results_provenance}\n\n\\begin{figure*}[t]\n\\centering\n\\input{generated/bars_quality}\n\\par\\vspace{2mm}\n\\input{generated/bars_cost}\n\\caption{\\protect\\input{generated/bars_caption}}\n\\label{fig:bars}\n\\end{figure*}\n\nFigure~\\ref{fig:bars} stacks two pictures; the cost model is $c = n\\,t$\n\\citep{lamport1994}.\n\n\\clearpage\n\\nobalance\n\\typeout{MAIN_BODY_NEXT_PAGE=\\thepage}\n{\\small\n\\bibliographystyle{plainnat}\n\\bibliography{refs}\n}\n\n\\clearpage\n\\onecolumn\n\\appendix\n\\input{appendix_protocol}\n\\end{document}\n"
+},
+"base_dir": "base",
+"files": {
+"base/appendix_protocol.tex": "e6c46a7be7229e3377f4c33986b00f128bdfb1c95aa14ab22d77fcb8685fbc32",
+"base/figures/pipeline.tex": "0028397426998c05728c4d7ddabfdd51ca7f3f03dbfbb38d0d1081c856118e0b",
+"base/generated/bars_caption.tex": "c1778e43ff097027e45f352828ec83f8b0b505888382be853e4259fc29ec6b86",
+"base/generated/bars_cost.tex": "a9b6a8598786d55e7aaf185d638a7274852419038dc5377d78f6816768175cd7",
+"base/generated/bars_quality.tex": "91dc34e738d30f8c81ae34e67d3f114d35afb2a264449be228ef860f2379258e",
+"base/generated/pipeline_caption.tex": "407c9d0ea49afc1730d5c14f7ebec4c32d16ab59cf85782c126af34f6c35542c",
+"base/generated/results_provenance.tex": "3da3a5a122354495c4f2d8ef7c375b9a8fe768ab401a011ffcef2efd0870261c",
+"base/generated/results_table.tex": "422a3539291b9a3cd68797c09455c03afa2446b33fc17585df7b37d88827cd0e",
+"base/main.tex": "37b1bfe2e459d48a761efc129ab129bf9d3d264ed0c24c4b567b58b83d5bed13",
+"base/refs.bib": "bc6b476efe601bb13b4f3508515505f8df8af51e5a6d079d5ee9d57c8fca3d22"
+},
+"tests": [
+"tests/test_acceptance_papers.py::test_tikz_paper[installed]",
+"tests/test_acceptance_papers.py::test_tikz_paper[none]"
+]
+}

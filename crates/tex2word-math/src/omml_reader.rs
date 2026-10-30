@@ -248,6 +248,25 @@ fn lit_latex(lit: &Lit) -> String {
     if let Some(cmd) = lit.script.as_deref().and_then(script_cmd) {
         return format!("\\{cmd}{{{text}}}");
     }
+    // upright prose (spaces, hyphens: \text{ if }, \text{well-known}) -> \text
+    if lit.upright
+        && pystr::char_len(text) > 1
+        && text.chars().any(pystr::is_alpha)
+        && !(pystr::is_all_alpha(text) || text.chars().all(pystr::is_alnum))
+    {
+        let mut body = String::with_capacity(text.len());
+        for c in text.chars() {
+            if matches!(c, '{' | '}' | '%' | '&' | '#' | '_' | '$') {
+                body.push('\\');
+            }
+            body.push(c);
+        }
+        return if lit.bold {
+            format!("\\textbf{{{body}}}")
+        } else {
+            format!("\\text{{{body}}}")
+        };
+    }
     // genuine multi-letter upright text -> a function name or \mathrm{...}
     if lit.upright && pystr::char_len(text) > 1 && pystr::is_all_alpha(text) {
         if symbols::is_function(text) {
@@ -312,6 +331,13 @@ pub fn ast_to_latex(node: &MNode) -> String {
                 delim(cl)
             )
         }
+        // several atoms under one limit (`\underset{x}{\arg\min}`): `\arg\min_{x}`
+        // would hang the limit on `\min` alone and read back differently
+        MNode::LimLow(base, lim) if matches!(**base, MNode::Group(_)) => format!(
+            "\\underset{{{}}}{{{}}}",
+            ast_to_latex(lim),
+            ast_to_latex(base)
+        ),
         MNode::LimLow(base, lim) => format!("{}_{}", ast_to_latex(base), arg(lim)),
         MNode::LimUpp(base, over) => {
             format!(
@@ -362,4 +388,53 @@ fn delim(ch: &str) -> String {
 pub fn omath_to_latex(element: &Element) -> Result<String, String> {
     let row = children_to_row(Some(element))?;
     Ok(pystr::strip(&row_latex(&row)).to_string())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::omml::render_inline;
+
+    fn lit(text: &str, upright: bool, bold: bool) -> Lit {
+        Lit {
+            text: text.into(),
+            upright,
+            bold,
+            script: None,
+        }
+    }
+
+    // Expected values below were produced by the Python reference (1.1.0).
+
+    #[test]
+    fn upright_prose_reads_back_as_text() {
+        assert_eq!(lit_latex(&lit("a b", true, false)), r"\text{a b}");
+        assert_eq!(lit_latex(&lit("x y", true, true)), r"\textbf{x y}");
+        assert_eq!(
+            lit_latex(&lit("a_b {c} 50% & #$", true, false)),
+            r"\text{a\_b \{c\} 50\% \& \#\$}"
+        );
+        assert_eq!(lit_latex(&lit("é-ü", true, false)), r"\text{é-ü}");
+        // words, alphanumerics and italic runs keep their old forms
+        assert_eq!(lit_latex(&lit("ab", true, false)), r"\mathrm{ab}");
+        assert_eq!(lit_latex(&lit("x2", true, false)), "x2");
+        assert_eq!(lit_latex(&lit("a²", true, false)), "a²");
+        assert_eq!(lit_latex(&lit("١٢a", true, false)), "١٢a");
+        assert_eq!(lit_latex(&lit("a b", false, false)), "a b");
+    }
+
+    #[test]
+    fn round_trips_text_and_minus() {
+        let rt = |latex: &str| omath_to_latex(&render_inline(latex).unwrap()).unwrap();
+        assert_eq!(rt(r"a \text{ if } b"), r"a\text{ if }b");
+        assert_eq!(rt(r"\text{well-known}"), r"\text{well-known}");
+        assert_eq!(rt(r"\textbf{x y}"), r"\textbf{x y}");
+        assert_eq!(rt(r"\text{a_b {c} 50%}"), "{a}_{b} c 50%");
+        assert_eq!(rt(r"\mathrm{Beta}"), r"\mathrm{Beta}");
+        assert_eq!(rt(r"\text{x2}"), "x2");
+        assert_eq!(rt(r"\text{a1 b}"), r"\text{a1 b}");
+        assert_eq!(rt(r"\text{ab}"), r"\mathrm{ab}");
+        assert_eq!(rt(r"a - b"), "a-b");
+        assert_eq!(rt(r"\text{-}"), "-");
+    }
 }

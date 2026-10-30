@@ -1,0 +1,13 @@
+{
+"api": "recover_ir",
+"args": {
+"docx_bytes": {
+"@blob": "e9eb6646cdb025958ee623fe442b3f28c3d3c5bdcfa5838585e06a4cb2524494"
+}
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_corpus_harness.py::test_corpus_file_converts_cleanly[macros.tex]"
+]
+}

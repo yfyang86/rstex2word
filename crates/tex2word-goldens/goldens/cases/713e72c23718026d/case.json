@@ -1,0 +1,11 @@
+{
+"api": "convert_source",
+"args": {
+"source": "\\documentclass{article}\n\\usepackage{subcaption}\n\\begin{document}\n\\begin{figure}\\begin{subfigure}{.4\\textwidth}\\caption{A}\\label{f:a}\\end{subfigure}\\begin{subfigure}{.4\\textwidth}\\caption{B}\\label{f:b}\\end{subfigure}\\caption{Both}\\label{f}\\end{figure}See \\ref{f:a}, \\subref{f:b}, \\ref{f}.\n\\end{document}\n"
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_listings_subrefs.py::test_subref_and_panel_refs"
+]
+}

@@ -1,0 +1,11 @@
+{
+"api": "convert_source",
+"args": {
+"source": "\\documentclass{article}\n\\newtheorem{theorem}{Theorem}[section]\\newtheorem{lemma}[theorem]{Lemma}\n\\begin{document}\n\\section{S}\\begin{theorem}A\\end{theorem}\n\\end{document}\n"
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_probe_fixes.py::test_theorem_numbered_within_section"
+]
+}

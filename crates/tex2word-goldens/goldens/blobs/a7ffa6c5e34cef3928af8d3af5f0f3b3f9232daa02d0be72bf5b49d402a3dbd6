@@ -1,0 +1,93 @@
+{
+  "generated": "2026-10-29T12:36:25+00:00",
+  "ir": {
+    "@type": "Document",
+    "blocks": [
+      {
+        "@type": "Theorem",
+        "blocks": [
+          {
+            "@type": "Paragraph",
+            "align": null,
+            "inlines": [
+              {
+                "@type": "Text",
+                "value": "Body."
+              }
+            ]
+          }
+        ],
+        "counter": "Theorem",
+        "kind": "Theorem",
+        "label": "t",
+        "title": null,
+        "within": null
+      },
+      {
+        "@type": "Paragraph",
+        "align": null,
+        "inlines": [
+          {
+            "@type": "Text",
+            "value": "As in "
+          },
+          {
+            "@type": "Link",
+            "anchor": "t",
+            "inlines": [
+              {
+                "@type": "Text",
+                "value": "Theorem"
+              }
+            ],
+            "url": ""
+          },
+          {
+            "@type": "Text",
+            "value": "."
+          }
+        ]
+      }
+    ],
+    "book": false,
+    "label_aliases": {},
+    "labels": {
+      "t": {
+        "@type": "LabelInfo",
+        "bookmark": "t",
+        "counter_name": "Theorem",
+        "kind": "theorem",
+        "name": "Theorem",
+        "number": null,
+        "sub": null
+      }
+    },
+    "meta": {
+      "@type": "DocumentMeta",
+      "abstract": null,
+      "affiliations": [],
+      "authors": [],
+      "cjk_main_font": null,
+      "cjk_mono_font": null,
+      "cjk_sans_font": null,
+      "columns": 1,
+      "date": null,
+      "front_notes": [],
+      "keywords": null,
+      "language": null,
+      "main_font": null,
+      "running_head": null,
+      "subtitle": null,
+      "title": null
+    }
+  },
+  "labels": {
+    "t": {
+      "bookmark": "t",
+      "counter": "Theorem",
+      "kind": "theorem"
+    }
+  },
+  "manifest_version": 1,
+  "tool": "tex2word"
+}

@@ -1,0 +1,13 @@
+{
+"api": "to_latex",
+"args": {
+"docx_bytes": {
+"@blob": "5d49ad720de240ea5c462da59a46c8169f9493fbf176a50c632f8f4bd0e5989b"
+}
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_language.py::test_language_round_trips_as_babel"
+]
+}

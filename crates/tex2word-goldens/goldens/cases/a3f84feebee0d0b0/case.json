@@ -1,0 +1,11 @@
+{
+"api": "convert_source",
+"args": {
+"source": "\\documentclass{elsarticle}\n\n\\begin{document}\n\\begin{frontmatter}\\author[a]{Ann\\corref{c1}}\\ead{a@b.org}\\cortext[c1]{Corresponding.}\\affiliation[a]{organization={Uni},city={Town}}\\end{frontmatter}\n\\end{document}\n"
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_front_matter_classes.py::test_elsarticle_markers_keyvalue_affiliation_and_notes"
+]
+}

@@ -1,0 +1,659 @@
+{
+  "generated": "2026-10-29T12:36:35+00:00",
+  "ir": {
+    "@type": "Document",
+    "blocks": [
+      {
+        "@type": "Paragraph",
+        "align": "center",
+        "inlines": [
+          {
+            "@type": "Emphasis",
+            "inlines": [
+              {
+                "@type": "FontSize",
+                "half_points": 24,
+                "inlines": [
+                  {
+                    "@type": "Text",
+                    "value": "University of Genius"
+                  }
+                ]
+              }
+            ],
+            "kind_": "smallcaps"
+          }
+        ]
+      },
+      {
+        "@type": "Paragraph",
+        "align": "center",
+        "inlines": [
+          {
+            "@type": "FontSize",
+            "half_points": 29,
+            "inlines": [
+              {
+                "@type": "Emphasis",
+                "inlines": [
+                  {
+                    "@type": "Text",
+                    "value": "ORF 363/COS 323"
+                  },
+                  {
+                    "@type": "LineBreak"
+                  },
+                  {
+                    "@type": "Text",
+                    "value": "Final Exam, Fall 2020 "
+                  }
+                ],
+                "kind_": "bold"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "@type": "Paragraph",
+        "align": "center",
+        "inlines": [
+          {
+            "@type": "Emphasis",
+            "inlines": [
+              {
+                "@type": "FontSize",
+                "half_points": 24,
+                "inlines": [
+                  {
+                    "@type": "Text",
+                    "value": "December 9, 2020, 10AM EST - December 11, 2020, 10AM EST"
+                  }
+                ]
+              }
+            ],
+            "kind_": "smallcaps"
+          },
+          {
+            "@type": "LineBreak"
+          }
+        ]
+      },
+      {
+        "@type": "Paragraph",
+        "align": "center",
+        "inlines": [
+          {
+            "@type": "Text",
+            "value": "(The exam may be due later if you have an extension. See below.)"
+          }
+        ]
+      },
+      {
+        "@type": "Paragraph",
+        "align": "left",
+        "inlines": [
+          {
+            "@type": "Emphasis",
+            "inlines": [
+              {
+                "@type": "Text",
+                "value": "Instructor:"
+              }
+            ],
+            "kind_": "italic"
+          },
+          {
+            "@type": "LineBreak"
+          },
+          {
+            "@type": "Text",
+            "value": " John Smith "
+          },
+          {
+            "@type": "LineBreak"
+          },
+          {
+            "@type": "Text",
+            "value": " "
+          },
+          {
+            "@type": "Emphasis",
+            "inlines": [
+              {
+                "@type": "Text",
+                "value": "Co-Instructor:"
+              }
+            ],
+            "kind_": "italic"
+          },
+          {
+            "@type": "LineBreak"
+          },
+          {
+            "@type": "Text",
+            "value": " Joan Smith"
+          }
+        ]
+      },
+      {
+        "@type": "Paragraph",
+        "align": "right",
+        "inlines": [
+          {
+            "@type": "Emphasis",
+            "inlines": [
+              {
+                "@type": "Text",
+                "value": "TAs:"
+              }
+            ],
+            "kind_": "italic"
+          },
+          {
+            "@type": "Text",
+            "value": " "
+          },
+          {
+            "@type": "LineBreak"
+          },
+          {
+            "@type": "Text",
+            "value": " Alice, Bob, Charlie, Diana"
+          }
+        ]
+      },
+      {
+        "@type": "Paragraph",
+        "align": "center",
+        "inlines": [
+          {
+            "@type": "RawInline",
+            "latex": "\\ovalbox",
+            "reason": "unsupported macro \\ovalbox"
+          }
+        ]
+      },
+      {
+        "@type": "Paragraph",
+        "align": "center",
+        "inlines": [
+          {
+            "@type": "Text",
+            "value": "Please read the exam rules below before you start."
+          }
+        ]
+      },
+      {
+        "@type": "ItemList",
+        "description": false,
+        "items": [
+          {
+            "@type": "ListItem",
+            "blocks": [
+              {
+                "@type": "Paragraph",
+                "align": null,
+                "inlines": [
+                  {
+                    "@type": "Text",
+                    "value": "The exam is to be submitted as a single PDF file. You are free to write your solutions on paper or on a tablet, or to type them up. Only the latest version submitted before your deadline will be graded."
+                  }
+                ]
+              }
+            ],
+            "label": null,
+            "term": null
+          },
+          {
+            "@type": "ListItem",
+            "blocks": [
+              {
+                "@type": "Paragraph",
+                "align": null,
+                "inlines": [
+                  {
+                    "@type": "Text",
+                    "value": "Please remember to write your name on the first page of your solutions. Right next to it, please write out and sign the following pledge: "
+                  },
+                  {
+                    "@type": "Emphasis",
+                    "inlines": [
+                      {
+                        "@type": "Text",
+                        "value": "\"I pledge my honor that I have not violated the honor code during this examination.\""
+                      }
+                    ],
+                    "kind_": "italic"
+                  }
+                ]
+              }
+            ],
+            "label": null,
+            "term": null
+          },
+          {
+            "@type": "ListItem",
+            "blocks": [
+              {
+                "@type": "Paragraph",
+                "align": null,
+                "inlines": [
+                  {
+                    "@type": "Text",
+                    "value": "No collaboration allowed."
+                  }
+                ]
+              }
+            ],
+            "label": null,
+            "term": null
+          },
+          {
+            "@type": "ListItem",
+            "blocks": [
+              {
+                "@type": "Paragraph",
+                "align": null,
+                "inlines": [
+                  {
+                    "@type": "Text",
+                    "value": "You can only ask clarification questions."
+                  }
+                ]
+              }
+            ],
+            "label": null,
+            "term": null
+          },
+          {
+            "@type": "ListItem",
+            "blocks": [
+              {
+                "@type": "Paragraph",
+                "align": null,
+                "inlines": [
+                  {
+                    "@type": "Text",
+                    "value": "You can only use Google for problems with MATLAB/software."
+                  }
+                ]
+              }
+            ],
+            "label": null,
+            "term": null
+          },
+          {
+            "@type": "ListItem",
+            "blocks": [
+              {
+                "@type": "Paragraph",
+                "align": null,
+                "inlines": [
+                  {
+                    "@type": "Text",
+                    "value": "You can use all lecture/review videos, instructor's notes, precept notes, live-notes, psets/previous exam solutions, and reference books of the course."
+                  }
+                ]
+              }
+            ],
+            "label": null,
+            "term": null
+          },
+          {
+            "@type": "ListItem",
+            "blocks": [
+              {
+                "@type": "Paragraph",
+                "align": null,
+                "inlines": [
+                  {
+                    "@type": "Text",
+                    "value": "If you have another exam during this time please see Lecture 15 Slide 37 for instructions on getting additional time."
+                  }
+                ]
+              }
+            ],
+            "label": null,
+            "term": null
+          }
+        ],
+        "ordered": true,
+        "start": 1
+      },
+      {
+        "@type": "Paragraph",
+        "align": null,
+        "inlines": [
+          {
+            "@type": "Emphasis",
+            "inlines": [
+              {
+                "@type": "Text",
+                "value": "Problem 1:"
+              }
+            ],
+            "kind_": "bold"
+          },
+          {
+            "@type": "Text",
+            "value": " Consider the optimization problem"
+          }
+        ]
+      },
+      {
+        "@type": "MathBlock",
+        "env": "equation",
+        "label": "p3",
+        "latex": "\\begin{aligned}\n\t\t\\min \\quad & f(x)\\\\\n\t\t\\textrm{s.t.} \\quad & x \\in \\Omega,\n\t\\end{aligned}",
+        "line_labels": [
+          "p3"
+        ],
+        "numbered": true
+      },
+      {
+        "@type": "Paragraph",
+        "align": null,
+        "inlines": [
+          {
+            "@type": "Text",
+            "value": "where "
+          },
+          {
+            "@type": "Math",
+            "latex": "f: \\mathbb{R}^n \\rightarrow \\mathbb{R}"
+          },
+          {
+            "@type": "Text",
+            "value": " and "
+          },
+          {
+            "@type": "Math",
+            "latex": "\\Omega \\subseteq \\mathbb{R}^n"
+          },
+          {
+            "@type": "Text",
+            "value": ". Classify the following statement as \"true\" or \"false\" by giving a proof or a counterexample: If "
+          },
+          {
+            "@type": "Math",
+            "latex": "f"
+          },
+          {
+            "@type": "Text",
+            "value": " is quasiconvex and "
+          },
+          {
+            "@type": "Math",
+            "latex": "\\Omega"
+          },
+          {
+            "@type": "Text",
+            "value": " is a convex set, then every "
+          },
+          {
+            "@type": "Emphasis",
+            "inlines": [
+              {
+                "@type": "Text",
+                "value": "strict"
+              }
+            ],
+            "kind_": "bold"
+          },
+          {
+            "@type": "Text",
+            "value": " local minimum of ("
+          },
+          {
+            "@type": "Ref",
+            "bookmark": "p3",
+            "key": "p3",
+            "ref_kind": "equation",
+            "style": "plain"
+          },
+          {
+            "@type": "Text",
+            "value": ") is a "
+          },
+          {
+            "@type": "Emphasis",
+            "inlines": [
+              {
+                "@type": "Text",
+                "value": "strict"
+              }
+            ],
+            "kind_": "bold"
+          },
+          {
+            "@type": "Text",
+            "value": " global minimum of ("
+          },
+          {
+            "@type": "Ref",
+            "bookmark": "p3",
+            "key": "p3",
+            "ref_kind": "equation",
+            "style": "plain"
+          },
+          {
+            "@type": "Text",
+            "value": ")."
+          }
+        ]
+      },
+      {
+        "@type": "Paragraph",
+        "align": null,
+        "inlines": [
+          {
+            "@type": "Emphasis",
+            "inlines": [
+              {
+                "@type": "Text",
+                "value": "Problem 2:"
+              }
+            ],
+            "kind_": "bold"
+          },
+          {
+            "@type": "Text",
+            "value": " You are programming software for the Mars rover. The rover will need to minimize and maximize functions to locate the tops of hills and bottoms of valleys. There is only room for one optimization algorithm in the rover's memory and you must decide between gradient descent and Newton's method. Consider the following function (of a single variable "
+          },
+          {
+            "@type": "Math",
+            "latex": "x \\in \\mathbb{R}"
+          },
+          {
+            "@type": "Text",
+            "value": ") which may resemble a martian valley:"
+          }
+        ]
+      },
+      {
+        "@type": "MathBlock",
+        "env": "displaymath",
+        "label": null,
+        "latex": "f(x) = \\sqrt{x^2 + 1}.",
+        "line_labels": [],
+        "numbered": false
+      },
+      {
+        "@type": "ItemList",
+        "description": false,
+        "items": [
+          {
+            "@type": "ListItem",
+            "blocks": [
+              {
+                "@type": "Paragraph",
+                "align": null,
+                "inlines": [
+                  {
+                    "@type": "Text",
+                    "value": "Prove that "
+                  },
+                  {
+                    "@type": "Math",
+                    "latex": "f"
+                  },
+                  {
+                    "@type": "Text",
+                    "value": " is strictly convex and has a strict global minimum."
+                  }
+                ]
+              }
+            ],
+            "label": null,
+            "term": null
+          },
+          {
+            "@type": "ListItem",
+            "blocks": [
+              {
+                "@type": "Paragraph",
+                "align": null,
+                "inlines": [
+                  {
+                    "@type": "Text",
+                    "value": "Consider gradient descent with step size "
+                  },
+                  {
+                    "@type": "Math",
+                    "latex": "1"
+                  },
+                  {
+                    "@type": "Text",
+                    "value": ", i.e."
+                  }
+                ]
+              },
+              {
+                "@type": "MathBlock",
+                "env": "displaymath",
+                "label": null,
+                "latex": "N(x) = x - f'(x).",
+                "line_labels": [],
+                "numbered": false
+              },
+              {
+                "@type": "Paragraph",
+                "align": null,
+                "inlines": [
+                  {
+                    "@type": "Text",
+                    "value": "For which initializations "
+                  },
+                  {
+                    "@type": "Math",
+                    "latex": "x_0"
+                  },
+                  {
+                    "@type": "Text",
+                    "value": " does this method converge, oscillate and diverge? (Hint: Use a Lyapunov function.)"
+                  }
+                ]
+              }
+            ],
+            "label": null,
+            "term": null
+          },
+          {
+            "@type": "ListItem",
+            "blocks": [
+              {
+                "@type": "Paragraph",
+                "align": null,
+                "inlines": [
+                  {
+                    "@type": "Text",
+                    "value": "Consider Newton's method with step size "
+                  },
+                  {
+                    "@type": "Math",
+                    "latex": "1"
+                  },
+                  {
+                    "@type": "Text",
+                    "value": ", i.e."
+                  }
+                ]
+              },
+              {
+                "@type": "MathBlock",
+                "env": "displaymath",
+                "label": null,
+                "latex": "N(x) = x - \\frac{f'(x)}{f''(x)}.",
+                "line_labels": [],
+                "numbered": false
+              },
+              {
+                "@type": "Paragraph",
+                "align": null,
+                "inlines": [
+                  {
+                    "@type": "Text",
+                    "value": "For which initializations "
+                  },
+                  {
+                    "@type": "Math",
+                    "latex": "x_0"
+                  },
+                  {
+                    "@type": "Text",
+                    "value": " does this method converge, oscillate and diverge? (Hint: You can run a numerical experiment to get a clue.)"
+                  }
+                ]
+              }
+            ],
+            "label": null,
+            "term": null
+          }
+        ],
+        "ordered": true,
+        "start": 1
+      }
+    ],
+    "book": false,
+    "label_aliases": {},
+    "labels": {
+      "p3": {
+        "@type": "LabelInfo",
+        "bookmark": "p3",
+        "counter_name": "Equation",
+        "kind": "equation",
+        "name": null,
+        "number": null,
+        "sub": null
+      }
+    },
+    "meta": {
+      "@type": "DocumentMeta",
+      "abstract": null,
+      "affiliations": [],
+      "authors": [],
+      "cjk_main_font": null,
+      "cjk_mono_font": null,
+      "cjk_sans_font": null,
+      "columns": 1,
+      "date": null,
+      "front_notes": [],
+      "keywords": null,
+      "language": null,
+      "main_font": null,
+      "running_head": null,
+      "subtitle": null,
+      "title": null
+    }
+  },
+  "labels": {
+    "p3": {
+      "bookmark": "p3",
+      "counter": "Equation",
+      "kind": "equation"
+    }
+  },
+  "manifest_version": 1,
+  "tool": "tex2word"
+}

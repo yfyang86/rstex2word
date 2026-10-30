@@ -1,0 +1,16 @@
+{
+"api": "read_docx",
+"args": {
+"docx_bytes": {
+"@blob": "8ce793d759a2dba63bf38086a3019f244b59823a674bb72100b49111df39e22e"
+},
+"label_map": {
+"myweird_lbl": "myweird:lbl"
+}
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_labels.py::test_manifest_map_restores_arbitrary_label"
+]
+}

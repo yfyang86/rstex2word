@@ -1,0 +1,13 @@
+{
+"api": "validate_docx",
+"args": {
+"docx_bytes": {
+"@blob": "c78449d0ff68ff7ad313d3e2ee923c163a9982f713a051d327349567ce611605"
+}
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_tables.py::test_nested_table_renders_and_is_valid"
+]
+}

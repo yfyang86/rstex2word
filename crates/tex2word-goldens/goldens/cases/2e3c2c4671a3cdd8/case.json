@@ -1,0 +1,13 @@
+{
+"api": "to_latex",
+"args": {
+"docx_bytes": {
+"@blob": "c4cd1b5958c1244e5a3ea0fb0123950cb157e7b4019a97c192db9ec692a59cae"
+}
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_latex_writer.py::test_roundtrip_block_structure"
+]
+}

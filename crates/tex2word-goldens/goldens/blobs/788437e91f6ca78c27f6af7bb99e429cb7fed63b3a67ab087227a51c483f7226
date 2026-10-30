@@ -1,0 +1,74 @@
+{
+  "generated": "2026-01-02T00:00:00+00:00",
+  "ir": {
+    "@type": "Document",
+    "blocks": [
+      {
+        "@type": "CodeBlock",
+        "caption": [
+          {
+            "@type": "Text",
+            "value": "Example"
+          }
+        ],
+        "caption_numbered": true,
+        "label": "lst:e",
+        "lang": null,
+        "text": "x = 1"
+      },
+      {
+        "@type": "Paragraph",
+        "align": null,
+        "inlines": [
+          {
+            "@type": "Ref",
+            "bookmark": "lst_e",
+            "key": "lst:e",
+            "ref_kind": "listing",
+            "style": "plain"
+          }
+        ]
+      }
+    ],
+    "book": false,
+    "label_aliases": {},
+    "labels": {
+      "lst:e": {
+        "@type": "LabelInfo",
+        "bookmark": "lst_e",
+        "counter_name": "Listing",
+        "kind": "listing",
+        "name": "Example",
+        "number": null,
+        "sub": null
+      }
+    },
+    "meta": {
+      "@type": "DocumentMeta",
+      "abstract": null,
+      "affiliations": [],
+      "authors": [],
+      "cjk_main_font": null,
+      "cjk_mono_font": null,
+      "cjk_sans_font": null,
+      "columns": 1,
+      "date": null,
+      "front_notes": [],
+      "keywords": null,
+      "language": null,
+      "main_font": null,
+      "running_head": null,
+      "subtitle": null,
+      "title": null
+    }
+  },
+  "labels": {
+    "lst:e": {
+      "bookmark": "lst_e",
+      "counter": "Listing",
+      "kind": "listing"
+    }
+  },
+  "manifest_version": 1,
+  "tool": "tex2word"
+}

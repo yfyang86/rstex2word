@@ -1,0 +1,13 @@
+{
+"api": "validate_docx",
+"args": {
+"docx_bytes": {
+"@blob": "e202b4f57c6f8e96d1060aa235dbc5c3e3b322c42904d7fb12fb96f2fcf201b8"
+}
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_transparent_envs.py::test_subequations_no_warning_keeps_math"
+]
+}

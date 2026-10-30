@@ -1,0 +1,13 @@
+{
+"api": "recover_ir",
+"args": {
+"docx_bytes": {
+"@blob": "c5da6dce96621bb8b2a7e55f50260a99e28665efa52a5672afcbe8a2af918027"
+}
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_reconcile.py::test_unedited_docs_reconcile_to_identity[corpus/article.tex]"
+]
+}

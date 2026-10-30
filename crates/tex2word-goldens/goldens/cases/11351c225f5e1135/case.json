@@ -1,0 +1,14 @@
+{
+"api": "validate_docx",
+"args": {
+"docx_bytes": {
+"@blob": "a5f1586ff3d1057a54cbe0bef1b94bbe6c659f5ee555b846dd92596ca11095e9"
+}
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_reference_doc.py::test_output_with_headers_is_valid",
+"tests/test_reference_doc.py::test_output_with_reference_is_valid"
+]
+}

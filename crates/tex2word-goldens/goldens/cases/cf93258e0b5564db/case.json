@@ -1,0 +1,13 @@
+{
+"api": "validate_docx",
+"args": {
+"docx_bytes": {
+"@blob": "fa86b555c9ac080b1e85d9777c9d72c5c14f80a4989623d7a8dbc990c290668e"
+}
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_uat3_arxiv.py::test_uat3_converts_clean_and_valid"
+]
+}

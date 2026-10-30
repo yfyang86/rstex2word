@@ -1,0 +1,13 @@
+{
+"api": "validate_docx",
+"args": {
+"docx_bytes": {
+"@blob": "ae6e6ae5a8527158ca8243ec20165df1c700d33f668958c78d7a9de1724fefc4"
+}
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_lstinputlisting.py::test_missing_listing_file_is_dropped"
+]
+}

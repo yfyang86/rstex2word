@@ -19,7 +19,7 @@ use tex2word_math::cascade::{ImageMathRenderer, MathCascade, MathResult};
 use tex2word_ooxml::xml::{el, preserve_space, qn, serialize, sub, text_el, Element, XmlError};
 
 use crate::package::{
-    BULLET_NUM_ID, DECIMAL_NUM_ID, HEADING_APPENDIX_NUM_ID, HEADING_NUM_ID, PART_NUM_ID,
+    BULLET_NUM_ID, FIRST_LIST_NUM_ID, HEADING_APPENDIX_NUM_ID, HEADING_NUM_ID, PART_NUM_ID,
 };
 use crate::{fields, images, raster, tikz, zotero};
 
@@ -108,6 +108,7 @@ fn ref_prefix(kind: &str, style: &str) -> Option<&'static str> {
         "section" => ("sec. ", "Section "),
         "theorem" => ("thm. ", "Theorem "),
         "algorithm" => ("alg. ", "Algorithm "),
+        "listing" => ("lst. ", "Listing "),
         "equation" => ("eq. ", "Equation "),
         _ => return None,
     };
@@ -183,6 +184,12 @@ pub struct DocumentWriter<'r> {
     comments: Vec<Element>,
     comment_counter: usize,
     math: MathCascade,
+    /// (numId, ilvl, start) of every ordered list's own numbering instance
+    pub list_restarts: Vec<(i64, i64, i64)>,
+    /// number of Heading 1 paragraphs so far, and per SEQ counter the value
+    /// it had at that counter's last section-relative number
+    section_epoch: i64,
+    seq_epoch: HashMap<String, i64>,
 }
 
 enum Region {
@@ -229,6 +236,9 @@ impl<'r> DocumentWriter<'r> {
             comments: Vec::new(),
             comment_counter: 0,
             math: MathCascade::new(opts.image_math_renderer),
+            list_restarts: Vec::new(),
+            section_epoch: 0,
+            seq_epoch: HashMap::new(),
         };
         let (tw, th) = w.text_box_emu();
         w.text_width_emu = tw;
@@ -260,6 +270,13 @@ impl<'r> DocumentWriter<'r> {
         }
         let mut body = el("w:body", &[]);
         self.emit_body(doc, &mut body);
+        // real cached numbers for SEQ/STYLEREF/REF (viewers that don't update
+        // fields would otherwise show "Figure 1" everywhere and "see 0")
+        crate::field_results::fill_field_results(
+            &mut body,
+            &crate::package::numbering_xml(&self.list_restarts),
+            self.footnotes.iter_mut().chain(self.endnotes.iter_mut()),
+        )?;
         let mut document = el("w:document", &[]);
         document.append(body);
         serialize(&document)
@@ -275,7 +292,9 @@ impl<'r> DocumentWriter<'r> {
             || !m.affiliations.is_empty()
             || m.date.as_ref().is_some_and(|d| !d.is_empty())
             || m.abstract_.as_ref().is_some_and(|a| !a.is_empty())
-            || m.keywords.as_ref().is_some_and(|k| !k.is_empty());
+            || m.keywords.as_ref().is_some_and(|k| !k.is_empty())
+            || m.subtitle.as_ref().is_some_and(|s| !s.is_empty())
+            || !m.front_notes.is_empty();
         let mut regions: Vec<(i64, Region)> = Vec::new();
         if has_title {
             regions.push((if n > 1 { 1 } else { n }, Region::Title));
@@ -322,6 +341,15 @@ impl<'r> DocumentWriter<'r> {
             self.inlines(title, &mut p);
             body.append(p);
         }
+        if let Some(subtitle) = meta.subtitle.as_ref().filter(|s| !s.is_empty()) {
+            let mut p = styled_paragraph("Subtitle");
+            let em = Inline::Emphasis(Emphasis {
+                inlines: subtitle.clone(),
+                kind: "bold".into(),
+            });
+            self.inlines(std::slice::from_ref(&em), &mut p);
+            body.append(p);
+        }
         for author in &meta.authors {
             let mut p = styled_paragraph("Subtitle");
             self.inlines(author, &mut p);
@@ -334,6 +362,11 @@ impl<'r> DocumentWriter<'r> {
                 kind: "italic".into(),
             });
             self.inlines(std::slice::from_ref(&em), &mut p);
+            body.append(p);
+        }
+        for note in &meta.front_notes {
+            let mut p = styled_paragraph("Subtitle");
+            self.inlines(note, &mut p);
             body.append(p);
         }
         if let Some(date) = meta.date.as_ref().filter(|d| !d.is_empty()) {
@@ -374,10 +407,10 @@ impl<'r> DocumentWriter<'r> {
                 body.append(p);
             }
             Block::MathBlock(m) => self.math_block(m, body),
-            Block::ItemList(l) => self.list(l, body, 0),
+            Block::ItemList(l) => self.list(l, body, 0, None),
             Block::Table(t) => self.table(t, body),
             Block::Figure(f) => self.figure(f, body),
-            Block::CodeBlock(c) => code_block(c, body),
+            Block::CodeBlock(c) => self.code_block(c, body),
             Block::Quote(q) => {
                 if q.shade.as_deref().is_some_and(|s| !s.is_empty())
                     || q.border.as_deref().is_some_and(|s| !s.is_empty())
@@ -410,7 +443,11 @@ impl<'r> DocumentWriter<'r> {
     }
 
     fn heading(&mut self, block: &Heading, body: &mut Element) {
-        let mut p = styled_paragraph(heading_style(block.level));
+        let style = heading_style(block.level);
+        if style == "Heading1" {
+            self.section_epoch += 1;
+        }
+        let mut p = styled_paragraph(style);
         if block.part && block.numbered {
             let numpr = sub(get_ppr(&mut p), "w:numPr", &[]);
             sub(numpr, "w:ilvl", &[("w:val", "0")]);
@@ -507,7 +544,7 @@ impl<'r> DocumentWriter<'r> {
         if let Some(s) = &start {
             p.append(s.clone());
         }
-        for r in fields::number_field("Equation", self.number_by_section) {
+        for r in self.number_runs("Equation", self.number_by_section) {
             p.append(r);
         }
         if let Some(s) = &start {
@@ -517,17 +554,24 @@ impl<'r> DocumentWriter<'r> {
         p
     }
 
-    fn list(&mut self, block: &ItemList, body: &mut Element, level: i64) {
+    fn list(&mut self, block: &ItemList, body: &mut Element, level: i64, parent_num: Option<i64>) {
         if block.description {
             for item in &block.items {
                 self.description_item(item, body, level);
             }
             return;
         }
-        let num_id = if block.ordered {
-            DECIMAL_NUM_ID
-        } else {
+        let num_id = if !block.ordered {
             BULLET_NUM_ID
+        } else if let Some(parent) = parent_num.filter(|_| block.start == 1) {
+            // nested in an ordered list: the parent's instance, whose deeper
+            // level restarts at each parent item -- (a), (b) under every item
+            parent
+        } else {
+            // its own instance, so the list restarts at 1 (or at its start=)
+            let id = FIRST_LIST_NUM_ID + self.list_restarts.len() as i64;
+            self.list_restarts.push((id, level, block.start));
+            id
         };
         for item in &block.items {
             self.list_item(item, body, level, num_id);
@@ -561,10 +605,11 @@ impl<'r> DocumentWriter<'r> {
             body.append(p);
             marked = true;
         }
+        let ordered_parent = num_id != BULLET_NUM_ID;
         for inner in &item.blocks {
             match inner {
                 Block::ItemList(l) => {
-                    self.list(l, body, level + 1);
+                    self.list(l, body, level + 1, ordered_parent.then_some(num_id));
                     continue;
                 }
                 Block::Paragraph(para) => {
@@ -623,7 +668,7 @@ impl<'r> DocumentWriter<'r> {
                 continue;
             }
             match inner {
-                Block::ItemList(l) => self.list(l, body, level + 1),
+                Block::ItemList(l) => self.list(l, body, level + 1, None),
                 other => self.block(other, body, "Normal"),
             }
         }
@@ -818,45 +863,42 @@ impl<'r> DocumentWriter<'r> {
 
     /// Compile a figure's TikZ/PGF pictures to embedded PNGs, one centred
     /// paragraph per picture (stacked in source order); empty if none render.
+    /// Compile each of a figure's TikZ/PGF pictures to an embedded PNG.
+    ///
+    /// A figure may stack several pictures (two `\input` TikZ files in one
+    /// `figure*`): each becomes its own centred image paragraph, in order.
     fn render_tikz(&mut self, block: &Figure) -> Vec<Element> {
         if block.source.is_empty() {
             return Vec::new();
         }
         let pictures = tikz::extract_pictures(&block.source);
-        let reason = if pictures.is_empty() {
-            Some("no recognised TikZ/PGF picture in the figure")
-        } else if tikz::available_engines().is_empty() {
-            Some("no TeX engine on PATH (install e.g. xelatex/pdflatex)")
-        } else if !raster::has_pdf_support() {
-            Some("install poppler (pdftoppm) to rasterise the compiled figure")
-        } else {
-            None
-        };
-        if let Some(reason) = reason {
+        let results: Vec<Option<(Vec<u8>, i64, i64)>> = pictures
+            .iter()
+            .map(|pic| tikz::render_picture(pic, &block.source, &self.preamble, &self.base_dir))
+            .collect();
+        if pictures.is_empty()
+            && !tikz::DRAWING_ENVS
+                .iter()
+                .any(|env| block.source.contains(&format!("\\begin{{{env}}}")))
+        {
+            return Vec::new(); // no drawing at all: the parser already reported the figure
+        }
+        if pictures.is_empty() || results.iter().any(Option::is_none) {
+            // Be specific about why so the user can fix their setup.
+            let reason = if pictures.is_empty() {
+                "no recognised TikZ/PGF picture in the figure"
+            } else if tikz::available_engines().is_empty() {
+                "no TeX engine on PATH (install e.g. xelatex/pdflatex)"
+            } else if !raster::has_pdf_support() {
+                "install poppler (pdftoppm) to rasterise the compiled figure"
+            } else {
+                "the TikZ compile failed (set TEX2WORD_TIKZ_DEBUG=1 to see the log)"
+            };
             self.report
                 .warn("figure", format!("TikZ figure not rendered: {reason}"));
-            return Vec::new();
         }
         let mut out: Vec<Element> = Vec::new();
-        let total = pictures.len();
-        for (k, picture) in pictures.iter().enumerate() {
-            let Some((data, w, h)) =
-                tikz::render_picture(picture, &block.source, &self.preamble, &self.base_dir)
-            else {
-                let which = if total > 1 {
-                    format!(" (picture {} of {total})", k + 1)
-                } else {
-                    String::new()
-                };
-                self.report.warn(
-                    "figure",
-                    format!(
-                        "TikZ figure not rendered{which}: the TikZ compile failed \
-                         (set TEX2WORD_TIKZ_DEBUG=1 to see the log)"
-                    ),
-                );
-                continue;
-            };
+        for (data, w, h) in results.into_iter().flatten() {
             self.report
                 .info("figure", "rendered TikZ figure to an image");
             let mut p = styled_paragraph("Normal");
@@ -874,18 +916,6 @@ impl<'r> DocumentWriter<'r> {
             r.append(self.register_and_draw(&data, &info, "tikz.png", Some(limit), None));
             p.append(r);
             out.push(p);
-        }
-        if !out.is_empty() {
-            // the parser flagged this figure as having no convertible graphic
-            // before knowing a TeX engine would render it: retract that note
-            let stale = self.report.entries.iter().position(|e| {
-                e.severity == "warning"
-                    && e.construct == "figure"
-                    && e.message == "figure without convertible graphics (e.g. TikZ)"
-            });
-            if let Some(i) = stale {
-                self.report.entries.remove(i);
-            }
         }
         out
     }
@@ -1174,6 +1204,38 @@ impl<'r> DocumentWriter<'r> {
         (cx as i64, cy as i64)
     }
 
+    /// `fields::number_field` plus an explicit restart on the first
+    /// section-relative number of each counter after a new Heading 1.
+    fn number_runs(&mut self, counter: &str, by_section: bool) -> Vec<Element> {
+        let restart = by_section && self.seq_epoch.get(counter) != Some(&self.section_epoch);
+        if by_section {
+            self.seq_epoch
+                .insert(counter.to_string(), self.section_epoch);
+        }
+        fields::number_field(counter, by_section, restart)
+    }
+
+    fn code_block(&mut self, block: &CodeBlock, body: &mut Element) {
+        if block.caption.as_ref().is_some_and(|c| !c.is_empty())
+            || block.label.as_ref().is_some_and(|l| !l.is_empty())
+        {
+            // lstlisting caption=/label=: "Listing N: ..." above the code
+            let cap = self.caption(
+                "Listing",
+                block.caption.as_deref().unwrap_or(&[]),
+                block.label.as_deref(),
+                None,
+                block.caption_numbered,
+            );
+            body.append(cap);
+        }
+        for line in block.text.split('\n') {
+            let mut p = styled_paragraph("SourceCode");
+            p.append(run(line, &RunStyle::default()));
+            body.append(p);
+        }
+    }
+
     fn caption(
         &mut self,
         counter: &str,
@@ -1199,7 +1261,7 @@ impl<'r> DocumentWriter<'r> {
         if let Some(s) = &start {
             p.append(s.clone());
         }
-        for r in fields::number_field(counter, self.number_by_section) {
+        for r in self.number_runs(counter, self.number_by_section) {
             p.append(r);
         }
         if let Some(s) = &start {
@@ -1370,7 +1432,7 @@ impl<'r> DocumentWriter<'r> {
             if let Some(s) = &start {
                 cap.append(s.clone());
             }
-            for r in fields::number_field("Algorithm", self.number_by_section) {
+            for r in self.number_runs("Algorithm", self.number_by_section) {
                 cap.append(r);
             }
             if let Some(s) = &start {
@@ -1446,7 +1508,11 @@ impl<'r> DocumentWriter<'r> {
             if let Some(s) = &start {
                 p.append(s.clone());
             }
-            for r in fields::number_field(counter, self.number_by_section) {
+            // \newtheorem{thm}{Theorem}[section] numbers "section.n" even
+            // when the document's figures/equations are numbered flat
+            let by_section = self.number_by_section
+                || matches!(block.within.as_deref(), Some("section" | "chapter"));
+            for r in self.number_runs(counter, by_section) {
                 p.append(r);
             }
             if let Some(s) = &start {
@@ -1640,12 +1706,34 @@ impl<'r> DocumentWriter<'r> {
         sub(rpr, "w:rStyle", &[("w:val", "FootnoteReference")]);
         sub(&mut r, "w:footnoteReference", &[("w:id", &note_id)]);
         p.append(r);
-        // the footnote content paragraph (lives in footnotes.xml)
-        let mut fp = styled_paragraph("FootnoteText");
+        // the footnote content (lives in footnotes.xml)
         let mut mark = el("w:r", &[]);
         let mrpr = sub(&mut mark, "w:rPr", &[]);
         sub(mrpr, "w:rStyle", &[("w:val", "FootnoteReference")]);
         sub(&mut mark, "w:footnoteRef", &[]);
+        if !node.blocks.is_empty() {
+            let mut footnote = el("w:footnote", &[("w:id", &note_id)]);
+            for block in &node.blocks {
+                self.block(block, &mut footnote, "FootnoteText");
+            }
+            let wp = qn("w:p");
+            let first = footnote.children.iter().position(|c| c.is(&wp));
+            if first != Some(0) {
+                footnote.insert(0, styled_paragraph("FootnoteText"));
+            }
+            let first = &mut footnote.children[0];
+            let wppr = qn("w:pPr");
+            let at = first
+                .children
+                .iter()
+                .position(|c| c.is(&wppr))
+                .map_or(0, |i| i + 1);
+            first.insert(at, mark);
+            first.insert(at + 1, run(" ", &RunStyle::default()));
+            self.footnotes.push(footnote);
+            return;
+        }
+        let mut fp = styled_paragraph("FootnoteText");
         fp.append(mark);
         fp.append(run(" ", &RunStyle::default()));
         self.inlines(&node.inlines, &mut fp);
@@ -1889,14 +1977,6 @@ fn merge_continue_cell(tr: &mut Element, colspan: i64) {
     sub(tcpr, "w:vMerge", &[]); // continue the merge
     tc.append(styled_paragraph("Normal"));
     tr.append(tc);
-}
-
-fn code_block(block: &CodeBlock, body: &mut Element) {
-    for line in block.text.split('\n') {
-        let mut p = styled_paragraph("SourceCode");
-        p.append(run(line, &RunStyle::default()));
-        body.append(p);
-    }
 }
 
 fn toc(block: &TableOfContents, body: &mut Element) {

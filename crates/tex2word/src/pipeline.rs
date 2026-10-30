@@ -157,7 +157,7 @@ pub fn convert_source(
         doc.meta.columns.max(1)
     };
 
-    let (document_xml, rels, media, footnotes, endnotes, comments) = {
+    let (document_xml, rels, media, footnotes, endnotes, comments, list_restarts) = {
         let mut writer = DocumentWriter::new(
             &mut report,
             WriterOptions {
@@ -183,6 +183,7 @@ pub fn convert_source(
             footnotes,
             endnotes,
             comments,
+            writer.list_restarts.clone(),
         )
     };
     if let Some(lang) = &opts.language {
@@ -232,7 +233,7 @@ pub fn convert_source(
     let package = DocxPackage {
         document_xml,
         styles_xml,
-        numbering_xml: numbering_xml(),
+        numbering_xml: numbering_xml(&list_restarts),
         document_rels,
         media,
         footnotes,

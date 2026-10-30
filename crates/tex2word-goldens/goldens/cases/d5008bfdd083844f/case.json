@@ -1,0 +1,13 @@
+{
+"api": "validate_docx",
+"args": {
+"docx_bytes": {
+"@blob": "12074274339e996273616133f6f6473bd482d1d4ab2dd0a1a19bb24dd4781086"
+}
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_custom_item_label.py::test_math_custom_label_valid"
+]
+}

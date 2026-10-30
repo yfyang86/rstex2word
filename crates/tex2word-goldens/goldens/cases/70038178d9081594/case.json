@@ -1,0 +1,13 @@
+{
+"api": "validate_docx",
+"args": {
+"docx_bytes": {
+"@blob": "0022bf00fcb62e67a867415d27dce42071bdb2a3c7dca879dc12fd0b5859d618"
+}
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_ensuremath_texor.py::test_all_valid"
+]
+}

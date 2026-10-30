@@ -1,0 +1,13 @@
+{
+"api": "validate_docx",
+"args": {
+"docx_bytes": {
+"@blob": "e89c5e5917113a91c8707ed5040aeddbdd2906d8388aa98f01b1cd38caf35949"
+}
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_nameref.py::test_nameref_unresolved_is_valid_and_warns"
+]
+}

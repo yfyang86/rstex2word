@@ -1,0 +1,11 @@
+{
+"api": "convert_source",
+"args": {
+"source": "\\documentclass{article}\n\n\\begin{document}\nGro\\ss e \\o \\aa \\l \\AE \\oe{} na\\\"{\\i}ve \\glqq Q\\grqq\n\\end{document}\n"
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_probe_fixes.py::test_text_letters_and_accented_dotless_i"
+]
+}

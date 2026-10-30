@@ -1,0 +1,13 @@
+{
+"api": "validate_docx",
+"args": {
+"docx_bytes": {
+"@blob": "5f842f93209327202738d39589e884a0efd11d5fe33905dd653fc23bf5f93c49"
+}
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_uat_bundle.py::test_uat_bundle_converts_cleanly[resume:resume.tex]"
+]
+}

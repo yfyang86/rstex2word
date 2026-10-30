@@ -1,0 +1,13 @@
+{
+"api": "validate_docx",
+"args": {
+"docx_bytes": {
+"@blob": "1a19f7a549479831e70c4cd8fcc0c5f32b67513ebbdd0627a00c1d6166b74dcd"
+}
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_epigraph.py::test_valid"
+]
+}

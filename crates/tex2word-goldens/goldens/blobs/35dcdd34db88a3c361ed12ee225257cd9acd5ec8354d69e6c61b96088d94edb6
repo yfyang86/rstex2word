@@ -1,0 +1,102 @@
+{
+  "generated": "2026-01-02T00:00:00+00:00",
+  "ir": {
+    "@type": "Document",
+    "blocks": [
+      {
+        "@type": "Paragraph",
+        "align": null,
+        "inlines": [
+          {
+            "@type": "Text",
+            "value": "Text"
+          },
+          {
+            "@type": "Footnote",
+            "blocks": [
+              {
+                "@type": "Paragraph",
+                "align": null,
+                "inlines": [
+                  {
+                    "@type": "Text",
+                    "value": "Intro."
+                  }
+                ]
+              },
+              {
+                "@type": "ItemList",
+                "description": false,
+                "items": [
+                  {
+                    "@type": "ListItem",
+                    "blocks": [
+                      {
+                        "@type": "Paragraph",
+                        "align": null,
+                        "inlines": [
+                          {
+                            "@type": "Text",
+                            "value": "NOTEA"
+                          }
+                        ]
+                      }
+                    ],
+                    "label": null,
+                    "term": null
+                  }
+                ],
+                "ordered": false,
+                "start": 1
+              },
+              {
+                "@type": "Quote",
+                "blocks": [
+                  {
+                    "@type": "Paragraph",
+                    "align": null,
+                    "inlines": [
+                      {
+                        "@type": "Text",
+                        "value": "NOTEB"
+                      }
+                    ]
+                  }
+                ],
+                "border": null,
+                "shade": null,
+                "title": null,
+                "title_shade": null
+              }
+            ],
+            "inlines": []
+          }
+        ]
+      }
+    ],
+    "book": false,
+    "label_aliases": {},
+    "labels": {},
+    "meta": {
+      "@type": "DocumentMeta",
+      "abstract": null,
+      "affiliations": [],
+      "authors": [],
+      "cjk_main_font": null,
+      "cjk_mono_font": null,
+      "cjk_sans_font": null,
+      "columns": 1,
+      "date": null,
+      "front_notes": [],
+      "keywords": null,
+      "language": null,
+      "main_font": null,
+      "running_head": null,
+      "subtitle": null,
+      "title": null
+    }
+  },
+  "labels": {},
+  "manifest_version": 1,
+  "tool": "tex2word"
+}

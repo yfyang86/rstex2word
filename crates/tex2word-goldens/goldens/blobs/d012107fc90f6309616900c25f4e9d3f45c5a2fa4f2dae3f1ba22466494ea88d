@@ -1,0 +1,138 @@
+{
+  "generated": "2026-10-29T12:36:35+00:00",
+  "ir": {
+    "@type": "Document",
+    "blocks": [
+      {
+        "@type": "Paragraph",
+        "align": null,
+        "inlines": [
+          {
+            "@type": "RawInline",
+            "latex": "\\vbox ",
+            "reason": "unsupported macro \\vbox"
+          },
+          {
+            "@type": "Text",
+            "value": "to 0.25in "
+          },
+          {
+            "@type": "Emphasis",
+            "inlines": [
+              {
+                "@type": "Text",
+                "value": "DRAFT VERSION"
+              }
+            ],
+            "kind_": "italic"
+          }
+        ]
+      },
+      {
+        "@type": "Paragraph",
+        "align": "center",
+        "inlines": [
+          {
+            "@type": "Emphasis",
+            "inlines": [
+              {
+                "@type": "Text",
+                "value": "MATH 101: Introduction to Calculus "
+              }
+            ],
+            "kind_": "bold"
+          }
+        ]
+      },
+      {
+        "@type": "Paragraph",
+        "align": null,
+        "inlines": [
+          {
+            "@type": "Text",
+            "value": "Lecturer: John Smith Lecture 1 "
+          },
+          {
+            "@type": "LineBreak"
+          },
+          {
+            "@type": "Text",
+            "value": " Scribe: James Smith January 1, 2021"
+          }
+        ]
+      },
+      {
+        "@type": "Heading",
+        "appendix": false,
+        "inlines": [
+          {
+            "@type": "Text",
+            "value": "Choose a section header"
+          }
+        ],
+        "label": null,
+        "level": 1,
+        "numbered": true,
+        "part": false
+      },
+      {
+        "@type": "Paragraph",
+        "align": null,
+        "inlines": [
+          {
+            "@type": "Text",
+            "value": "Write here."
+          }
+        ]
+      },
+      {
+        "@type": "Heading",
+        "appendix": false,
+        "inlines": [
+          {
+            "@type": "Text",
+            "value": "Another section header"
+          }
+        ],
+        "label": null,
+        "level": 1,
+        "numbered": true,
+        "part": false
+      },
+      {
+        "@type": "Paragraph",
+        "align": null,
+        "inlines": [
+          {
+            "@type": "Text",
+            "value": "Write more here."
+          }
+        ]
+      }
+    ],
+    "book": false,
+    "label_aliases": {},
+    "labels": {},
+    "meta": {
+      "@type": "DocumentMeta",
+      "abstract": null,
+      "affiliations": [],
+      "authors": [],
+      "cjk_main_font": null,
+      "cjk_mono_font": null,
+      "cjk_sans_font": null,
+      "columns": 1,
+      "date": null,
+      "front_notes": [],
+      "keywords": null,
+      "language": null,
+      "main_font": null,
+      "running_head": null,
+      "subtitle": null,
+      "title": null
+    }
+  },
+  "labels": {},
+  "manifest_version": 1,
+  "tool": "tex2word"
+}

@@ -1,0 +1,13 @@
+{
+"api": "validate_docx",
+"args": {
+"docx_bytes": {
+"@blob": "cea3b302d8ec583b776db116a71bf80a7045084be1b69b8dbd936713323e9cbc"
+}
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_box_environments.py::test_newmdenv_callout_renders_as_shaded_box"
+]
+}

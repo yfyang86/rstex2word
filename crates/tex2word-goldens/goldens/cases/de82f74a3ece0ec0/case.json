@@ -1,0 +1,13 @@
+{
+"api": "validate_docx",
+"args": {
+"docx_bytes": {
+"@blob": "ccabc4d15e71197a00ca53b41c55be9eaff05565847274cd0821d3c1ff5737b9"
+}
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_section_numbering.py::test_output_valid_in_both_modes"
+]
+}

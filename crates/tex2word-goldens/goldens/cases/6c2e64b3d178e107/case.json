@@ -1,0 +1,13 @@
+{
+"api": "validate_docx",
+"args": {
+"docx_bytes": {
+"@blob": "ec054e0b07e191703b3b14c8594973b68d9613f433e9d57758f046ae5fbbf50a"
+}
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_uat_bundle.py::test_uat_bundle_converts_cleanly[ProblemSet:main.tex]"
+]
+}

@@ -1,0 +1,11 @@
+{
+"api": "convert_source",
+"args": {
+"source": "\\documentclass{amsart}\n\\makeatletter\n\\@namedef{subjclassname@JEL}{JEL codes}\n\\makeatother\n\\begin{document}\n\\subjclass[JEL]{D91, E21}\n\\subjclass[2010]{91B16}\n\\subjclass{00A00}\n\\end{document}\n"
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_issue44_macros.py::test_subjclass_uses_namedef_label"
+]
+}

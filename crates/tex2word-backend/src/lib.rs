@@ -3,6 +3,7 @@
 
 pub mod data;
 pub mod document;
+pub mod field_results;
 pub mod fields;
 pub mod images;
 pub mod package;

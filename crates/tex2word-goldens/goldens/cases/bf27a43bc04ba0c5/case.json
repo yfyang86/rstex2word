@@ -1,0 +1,11 @@
+{
+"api": "convert_source",
+"args": {
+"source": "\\documentclass{moderncv}\n\\moderncvstyle{classic}\\name{Ann}{Lee}\\title{Engineer}\\email{a@b.org}\n\\begin{document}\n\\makecvtitle\\section{Edu}\\cventry{2020}{MSc}{Uni}{Town}{}{Thesis.}\\cvitem{Lang}{English}\n\\end{document}\n"
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_front_matter_classes.py::test_moderncv"
+]
+}

@@ -1,0 +1,11 @@
+{
+"api": "convert_source",
+"args": {
+"source": "\\documentclass{IEEEtran}\n\n\\begin{document}\n\\begin{abstract}A\\end{abstract}\\begin{IEEEkeywords}kw1, kw2\\end{IEEEkeywords}\\begin{acks}THANKS\\end{acks}\\begin{comment}HIDDEN\\end{comment}\\begin{IEEEbiography}{Jane Roe}Bio.\\end{IEEEbiography}\\begin{multicols}{2}COLS\\end{multicols}\n\\end{document}\n"
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_probe_fixes.py::test_class_environments"
+]
+}

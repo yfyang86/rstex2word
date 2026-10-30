@@ -1,0 +1,13 @@
+{
+"api": "validate_docx",
+"args": {
+"docx_bytes": {
+"@blob": "f9f7b43a68541258d41705589dede4fd589c9f771789029db816ff1e94d4eb0a"
+}
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_book.py::test_book_output_is_valid"
+]
+}

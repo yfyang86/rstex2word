@@ -389,10 +389,26 @@ pub fn set_attrs(e: &mut Element, attrs: &[(&str, &str)]) {
     }
 }
 
+/// `ooxml._XML_ILLEGAL`: the characters XML 1.0 forbids (C0 controls except
+/// tab/newline/CR, and U+FFFE/U+FFFF).
+fn xml_illegal(c: char) -> bool {
+    matches!(c, '\u{0}'..='\u{8}' | '\u{b}' | '\u{c}' | '\u{e}'..='\u{1f}' | '\u{fffe}' | '\u{ffff}')
+}
+
+/// `ooxml.xml_safe(text)`: `text` without the control characters XML cannot
+/// carry.
+pub fn xml_safe(text: &str) -> String {
+    if text.contains(xml_illegal) {
+        text.replace(xml_illegal, "")
+    } else {
+        text.to_string()
+    }
+}
+
 /// `ooxml.text_el(tag, text, **attrs)`.
 pub fn text_el(tag: &str, text: &str, attrs: &[(&str, &str)]) -> Element {
     let mut e = el(tag, attrs);
-    e.text = Some(text.to_string());
+    e.text = Some(xml_safe(text));
     e
 }
 
@@ -706,6 +722,11 @@ mod tests {
             .ends_with("></w:a>"));
         e.text = Some("\u{c}".into());
         assert!(serialize(&e).is_err());
+        assert_eq!(
+            xml_safe("a\u{0}b\u{8}\t\n\r\u{b}\u{c}\u{e}\u{1f} \u{fffe}\u{ffff}\u{fffd}c"),
+            "ab\t\n\r \u{fffd}c"
+        );
+        assert_eq!(text_el("w:t", "x\u{1}y", &[]).text.as_deref(), Some("xy"));
         let mut x = Element::new("a");
         x.text = Some("é\r".into());
         assert_eq!(

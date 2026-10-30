@@ -1,0 +1,11 @@
+{
+"api": "convert_source",
+"args": {
+"source": "\\documentclass{article}\n\n\\begin{document}\n\\begin{verbatim}\nx = 1 % not a comment\n\\end{verbatim}\n\\verb|50% off| % gone\n\\end{document}\n"
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_probe_fixes.py::test_percent_inside_verbatim_and_verb_is_text"
+]
+}

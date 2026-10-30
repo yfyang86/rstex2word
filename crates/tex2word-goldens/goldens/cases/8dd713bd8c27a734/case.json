@@ -1,0 +1,13 @@
+{
+"api": "validate_docx",
+"args": {
+"docx_bytes": {
+"@blob": "98c5384a7d1519e44d5781264b186f7d10a99b8362620a7ced20b07b48bb584f"
+}
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_declaremathoperator.py::test_custom_operators_render_as_native_omml"
+]
+}

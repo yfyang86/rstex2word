@@ -1,0 +1,13 @@
+{
+"api": "validate_docx",
+"args": {
+"docx_bytes": {
+"@blob": "66351fedaa8c6709f2217c6eaa0c3ecc360b292b75ccfb103f90cd9f3f4cc667"
+}
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_box_environments.py::test_titled_callout_renders_title_bar"
+]
+}

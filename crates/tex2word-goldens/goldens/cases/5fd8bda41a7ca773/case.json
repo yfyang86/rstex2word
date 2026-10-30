@@ -1,0 +1,13 @@
+{
+"api": "validate_docx",
+"args": {
+"docx_bytes": {
+"@blob": "bf25b8be46dc9344241216d92a67d58da6aad5c0b9bd9321dd7308ea6a966056"
+}
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_zotero.py::test_zotero_output_valid"
+]
+}

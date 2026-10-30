@@ -7,6 +7,7 @@
 //! never an abort.
 
 mod builder;
+mod frontmatter;
 mod helpers;
 
 use std::io;
@@ -23,8 +24,361 @@ use builder::Builder;
 use helpers::*;
 pub use helpers::{split_document, today_text};
 
-use crate::macros::{collect_macros, expand, expand_macros, local_package_sources};
+use crate::macros::{collect_macros, expand, expand_macros_known, local_package_sources};
 use crate::preprocess::{normalize_spacing_and_icons, preprocess, replace_inline_tikz};
+
+/// The `tex2word` category's macro specs, in Python's order (generated from
+/// `_build_context`, after its duplicates collapse).
+const CONTEXT_MACROS: &[(&str, &str)] = &[
+    ("section", "*[{"),
+    ("subsection", "*[{"),
+    ("subsubsection", "*[{"),
+    ("paragraph", "*[{"),
+    ("subparagraph", "*[{"),
+    ("chapter", "*[{"),
+    ("part", "*[{"),
+    ("caption", "*[{"),
+    ("captionof", "*{[{"),
+    ("AddToShipoutPicture", "*{"),
+    ("newcounter", "{["),
+    ("addtocounter", "{{"),
+    ("refstepcounter", "{"),
+    ("stepcounter", "{"),
+    ("textsuperscript", "{"),
+    ("textsubscript", "{"),
+    ("sout", "{"),
+    ("uline", "{"),
+    ("uuline", "{"),
+    ("xout", "{"),
+    ("st", "{"),
+    ("hl", "{"),
+    ("href", "{{"),
+    ("url", "{"),
+    ("hyperref", "[{"),
+    ("multicolumn", "{{{"),
+    ("multirow", "{{{"),
+    ("citep", "[[{"),
+    ("citet", "[[{"),
+    ("Citep", "[[{"),
+    ("Citet", "[[{"),
+    ("citealp", "[[{"),
+    ("citealt", "[[{"),
+    ("citeauthor", "[[{"),
+    ("Citeauthor", "[[{"),
+    ("citeyear", "[[{"),
+    ("citeyearpar", "[[{"),
+    ("citenum", "[[{"),
+    ("smartcite", "[[{"),
+    ("parencite", "[[{"),
+    ("textcite", "[[{"),
+    ("autocite", "[[{"),
+    ("Autocite", "[[{"),
+    ("Parencite", "[[{"),
+    ("Textcite", "[[{"),
+    ("Cite", "[[{"),
+    ("IEEEPARstart", "{{"),
+    ("autoref", "{"),
+    ("cref", "{"),
+    ("Cref", "{"),
+    ("crefrange", "{{"),
+    ("Crefrange", "{{"),
+    ("eqref", "{"),
+    ("pageref", "*{"),
+    ("vref", "*{"),
+    ("vpageref", "*{"),
+    ("cpageref", "{"),
+    ("Cpageref", "{"),
+    ("labelcref", "{"),
+    ("hypersetup", "{"),
+    ("graphicspath", "{"),
+    ("definecolor", "{{{"),
+    ("colorlet", "{{"),
+    ("textcolor", "[{{"),
+    ("colorbox", "[{{"),
+    ("fcolorbox", "[{{{"),
+    ("color", "[{"),
+    ("cellcolor", "[{"),
+    ("rowcolor", "[{"),
+    ("pagenumbering", "{"),
+    ("keywords", "{"),
+    ("IEEEkeywords", "{"),
+    ("endnote", "{"),
+    ("index", "{"),
+    ("enquote", "*{"),
+    ("textquote", "*[[{"),
+    ("foreignquote", "*{{"),
+    ("hyphenquote", "*{{"),
+    ("blockquote", "*[[{"),
+    ("blockcquote", "*[[{{"),
+    ("foreignblockquote", "*{[[{"),
+    ("epigraph", "{{"),
+    ("thanks", "{"),
+    ("marginpar", "[{"),
+    ("sidenote", "[{"),
+    ("footnotemark", "["),
+    ("footnotetext", "[{"),
+    ("nicefrac", "{{"),
+    ("sfrac", "{{"),
+    ("numrange", "[{{"),
+    ("SIrange", "[{{{"),
+    ("qtyrange", "[{{{"),
+    ("numlist", "[{"),
+    ("SIlist", "[{{"),
+    ("qtylist", "[{{"),
+    ("inst", "{"),
+    ("tnote", "{"),
+    ("subref", "*{"),
+    ("twlistingcaption", "{{{"),
+    ("IEEEauthorrefmark", "{"),
+    ("IEEEauthorblockN", "{"),
+    ("IEEEauthorblockA", "{"),
+    ("todo", "[{"),
+    ("comment", "[{"),
+    ("note", "[{"),
+    ("bibitem", "[{"),
+    ("bibliography", "{"),
+    ("bibliographystyle", "{"),
+    ("addbibresource", "[{"),
+    ("printbibliography", "["),
+    ("setitemize", "{"),
+    ("setenumerate", "{"),
+    ("hyphenation", "{"),
+    ("cmidrule", "{"),
+    ("cline", "{"),
+    ("resizebox", "{{{"),
+    ("scalebox", "{[{"),
+    ("rotatebox", "[{{"),
+    ("parbox", "[[[{{"),
+    ("foreignlanguage", "[{{"),
+    ("selectlanguage", "{"),
+    ("MakeUppercase", "{"),
+    ("MakeLowercase", "{"),
+    ("MakeTextUppercase", "{"),
+    ("MakeTextLowercase", "{"),
+    ("makecell", "[{"),
+    ("thead", "[{"),
+    ("path", "{"),
+    ("nolinkurl", "{"),
+    ("typeout", "{"),
+    ("twocolumn", "["),
+    ("subjclass", "[{"),
+    ("setlength", "{{"),
+    ("addtolength", "{{"),
+    ("settowidth", "{{"),
+    ("settoheight", "{{"),
+    ("settodepth", "{{"),
+    ("deflength", "{{"),
+    ("phantom", "{"),
+    ("hphantom", "{"),
+    ("vphantom", "{"),
+    ("rule", "[{{"),
+    ("mbox", "{"),
+    ("fbox", "{"),
+    ("framebox", "[[{"),
+    ("makebox", "[[{"),
+    ("raisebox", "{[[{"),
+    ("fontsize", "{{"),
+    ("fontfamily", "{"),
+    ("si", "[{"),
+    ("unit", "[{"),
+    ("num", "[{"),
+    ("ang", "[{"),
+    ("SI", "[{{"),
+    ("qty", "[{{"),
+    ("newacronym", "[{{{"),
+    ("newglossaryentry", "{{"),
+    ("nocite", "{"),
+    ("lstinline", "[{"),
+    ("mintinline", "[{{"),
+    ("ensuremath", "{"),
+    ("ding", "{"),
+    ("shortstack", "[{"),
+    ("authornote", "{"),
+    ("texorpdfstring", "{{"),
+    ("nameref", "{"),
+    ("Nameref", "{"),
+    ("title", "[{"),
+    ("author", "*[{"),
+    ("affil", "*[{"),
+    ("affiliation", "*[{"),
+    ("institute", "{"),
+    ("address", "[{"),
+    ("email", "[{"),
+    ("ead", "[{"),
+    ("orcid", "{"),
+    ("orcidID", "{"),
+    ("curraddr", "{"),
+    ("urladdr", "[{"),
+    ("dedicatory", "{"),
+    ("dedication", "{"),
+    ("subtitle", "[{"),
+    ("subject", "{"),
+    ("titlehead", "{"),
+    ("publishers", "{"),
+    ("uppertitleback", "{"),
+    ("lowertitleback", "{"),
+    ("extratitle", "{"),
+    ("cortext", "[{"),
+    ("fntext", "[{"),
+    ("corref", "{"),
+    ("fnref", "{"),
+    ("abstract", "{"),
+    ("icmltitle", "{"),
+    ("icmlauthor", "{{"),
+    ("icmlaffiliation", "{{"),
+    ("icmlcorrespondingauthor", "{{"),
+    ("icmlkeywords", "{"),
+    ("icmlsetsymbol", "{{"),
+    ("icmltitlerunning", "{"),
+    ("printAffiliationsAndNotice", "{"),
+    ("authorrunning", "{"),
+    ("titlerunning", "{"),
+    ("IEEEmembership", "{"),
+    ("bmhead", "{"),
+    ("addsec", "*[{"),
+    ("addchap", "*[{"),
+    ("addpart", "*[{"),
+    ("minisec", "{"),
+    ("frametitle", "[{"),
+    ("framesubtitle", "{"),
+    ("frame", "[{"),
+    ("opening", "{"),
+    ("closing", "{"),
+    ("ps", "{"),
+    ("cc", "{"),
+    ("encl", "{"),
+    ("signature", "{"),
+    ("name", "{{"),
+    ("moderncvstyle", "{"),
+    ("moderncvcolor", "{"),
+    ("phone", "[{"),
+    ("mobile", "{"),
+    ("homepage", "{"),
+    ("social", "[{"),
+    ("extrainfo", "{"),
+    ("photo", "[[{"),
+    ("cventry", "{{{{{{"),
+    ("cvitem", "{{"),
+    ("cvitemwithcomment", "{{{"),
+    ("cvlistitem", "{"),
+    ("cvdoubleitem", "{{{{"),
+    ("cvlistdoubleitem", "{{"),
+    ("cvline", "{{"),
+    ("acmConference", "[{{{"),
+    ("acmYear", "{"),
+    ("acmDOI", "{"),
+    ("acmISBN", "{"),
+    ("acmBooktitle", "{"),
+    ("acmPrice", "{"),
+    ("copyrightyear", "{"),
+    ("setcopyright", "{"),
+    ("ccsdesc", "[{"),
+    ("settopmatter", "{"),
+    ("received", "[{"),
+    ("marginnote", "[{["),
+    ("newthought", "{"),
+    ("alert", "{"),
+    ("column", "[{"),
+    ("fnm", "{"),
+    ("sur", "{"),
+    ("pfx", "{"),
+    ("sfx", "{"),
+    ("spfx", "{"),
+    ("dgr", "{"),
+    ("orgdiv", "{"),
+    ("orgname", "{"),
+    ("orgaddress", "{"),
+    ("street", "{"),
+    ("postcode", "{"),
+    ("city", "{"),
+    ("state", "{"),
+    ("country", "{"),
+    ("institution", "{"),
+    ("department", "[{"),
+    ("streetaddress", "{"),
+    ("position", "{"),
+    ("markboth", "{{"),
+    ("markright", "{"),
+    ("runninghead", "[{"),
+    ("shorttitle", "{"),
+    ("gls", "[{"),
+    ("Gls", "[{"),
+    ("glspl", "[{"),
+    ("Glspl", "[{"),
+    ("acrshort", "[{"),
+    ("Acrshort", "[{"),
+    ("acrshortpl", "[{"),
+    ("Acrshortpl", "[{"),
+    ("acrlong", "[{"),
+    ("Acrlong", "[{"),
+    ("acrlongpl", "[{"),
+    ("Acrlongpl", "[{"),
+    ("acrfull", "[{"),
+    ("Acrfull", "[{"),
+    ("acrfullpl", "[{"),
+    ("Acrfullpl", "[{"),
+    ("glsentryshort", "[{"),
+    ("glsentrylong", "[{"),
+    ("ac", "{"),
+    ("Ac", "{"),
+    ("acp", "{"),
+    ("Acp", "{"),
+    ("acs", "{"),
+    ("Acs", "{"),
+    ("acsp", "{"),
+    ("Acsp", "{"),
+    ("acl", "{"),
+    ("Acl", "{"),
+    ("aclp", "{"),
+    ("Aclp", "{"),
+    ("acf", "{"),
+    ("Acf", "{"),
+    ("acfp", "{"),
+    ("Acfp", "{"),
+    ("acro", "{[{"),
+    ("acrodef", "{[{"),
+    ("printacronyms", "["),
+    ("printnoidxglossary", "["),
+    ("printnoidxglossaries", "["),
+    ("printglossaries", "["),
+    ("printglossary", "["),
+    ("printabbreviations", "["),
+    ("pagestyle", "{"),
+    ("thispagestyle", "{"),
+    ("vspace", "*{"),
+    ("hspace", "*{"),
+    ("subfloat", "[{"),
+    ("subfigure", "[{"),
+];
+
+/// The environment specs after the theorem-like ones (generated likewise).
+const CONTEXT_ENVS: &[(&str, &str)] = &[
+    ("subfigure", "[{"),
+    ("subtable", "[{"),
+    ("minipage", "[{"),
+    ("algorithmic", "["),
+    ("algorithmicx", "["),
+    ("algpseudocode", "["),
+    ("algpseudocodex", "["),
+    ("tabularx", "{{"),
+    ("tabulary", "{{"),
+    ("supertabular", "{"),
+    ("xtabular", "{"),
+    ("mpsupertabular", "{"),
+    ("longtable", "[{"),
+    ("wrapfigure", "[{{"),
+    ("wraptable", "[{{"),
+    ("mdframed", "["),
+    ("tcolorbox", "["),
+    ("leftbar", "["),
+    ("adjustbox", "{"),
+    ("multicols", "{["),
+    ("multicols*", "{["),
+    ("otherlanguage", "{"),
+    ("otherlanguage*", "{"),
+    ("IEEEbiography", "[{"),
+    ("IEEEbiographynophoto", "{"),
+];
 
 /// Augment the default walker context with the argument signatures it lacks
 /// (`_build_context`).
@@ -33,228 +387,10 @@ pub fn build_context(
     extra_env_specs: &[(String, String)],
 ) -> ContextDb {
     let mut ctx = ContextDb::default_db();
-    let m = |name: &str, spec: &'static str| MacroSpec::new(name.to_string(), spec);
-    let mut macros = vec![
-        // sectioning: \cmd*[short]{title}
-        m("section", "*[{"),
-        m("subsection", "*[{"),
-        m("subsubsection", "*[{"),
-        m("paragraph", "*[{"),
-        m("subparagraph", "*[{"),
-        m("chapter", "*[{"),
-        m("part", "*[{"),
-        m("caption", "*[{"),
-        // \captionof*{type}[short]{long}
-        m("captionof", "*{[{"),
-        // layout / front-matter commands: consume their args
-        m("AddToShipoutPicture", "*{"),
-        m("newcounter", "{["),
-        m("addtocounter", "{{"),
-        m("refstepcounter", "{"),
-        m("stepcounter", "{"),
-        m("textsuperscript", "{"),
-        m("textsubscript", "{"),
-        m("sout", "{"),
-        m("uline", "{"),
-        m("uuline", "{"),
-        m("xout", "{"),
-        m("st", "{"),
-        m("hl", "{"),
-        m("href", "{{"),
-        m("url", "{"),
-        // url package: verbatim paths without a link
-        m("path", "{"),
-        m("nolinkurl", "{"),
-        // console/layout commands whose argument must not leak into the text
-        m("typeout", "{"),
-        m("twocolumn", "["),
-        m("hyperref", "[{"),
-        m("multicolumn", "{{{"),
-        m("multirow", "{{{"),
-        m("citep", "[[{"),
-        m("citet", "[[{"),
-        m("Citep", "[[{"),
-        m("Citet", "[[{"),
-        m("citealp", "[[{"),
-        m("citealt", "[[{"),
-        m("citeauthor", "[[{"),
-        m("Citeauthor", "[[{"),
-        m("citeyear", "[[{"),
-        m("citeyearpar", "[[{"),
-        m("citenum", "[[{"),
-        m("smartcite", "[[{"),
-        m("parencite", "[[{"),
-        m("textcite", "[[{"),
-        m("autocite", "[[{"),
-        m("Autocite", "[[{"),
-        m("Parencite", "[[{"),
-        m("Textcite", "[[{"),
-        m("Cite", "[[{"),
-        m("IEEEPARstart", "{{"),
-        m("autoref", "{"),
-        m("cref", "{"),
-        m("Cref", "{"),
-        m("crefrange", "{{"),
-        m("Crefrange", "{{"),
-        m("eqref", "{"),
-        m("hypersetup", "{"),
-        m("graphicspath", "{"),
-        m("definecolor", "{{{"),
-        m("colorlet", "{{"),
-        m("textcolor", "[{{"),
-        m("colorbox", "[{{"),
-        m("fcolorbox", "[{{{"),
-        m("color", "[{"),
-        m("cellcolor", "[{"),
-        m("rowcolor", "[{"),
-        m("pagenumbering", "{"),
-        m("keywords", "{"),
-        m("subjclass", "[{"),
-        m("IEEEkeywords", "{"),
-        m("endnote", "{"),
-        m("index", "{"),
-        m("enquote", "*{"),
-        m("textquote", "*[[{"),
-        m("foreignquote", "*{{"),
-        m("hyphenquote", "*{{"),
-        m("blockquote", "*[[{"),
-        m("blockcquote", "*[[{{"),
-        m("foreignblockquote", "*{[[{"),
-        m("epigraph", "{{"),
-        m("thanks", "{"),
-        m("marginpar", "[{"),
-        m("sidenote", "[{"),
-        m("footnotemark", "["),
-        m("footnotetext", "[{"),
-        m("nicefrac", "{{"),
-        m("sfrac", "{{"),
-        m("numrange", "[{{"),
-        m("SIrange", "[{{{"),
-        m("qtyrange", "[{{{"),
-        m("numlist", "[{"),
-        m("SIlist", "[{{"),
-        m("qtylist", "[{{"),
-        m("institute", "{"),
-        m("affiliation", "[{"),
-        m("affil", "[{"),
-        m("address", "{"),
-        m("email", "{"),
-        m("orcid", "{"),
-        m("inst", "{"),
-        m("IEEEauthorrefmark", "{"),
-        m("IEEEauthorblockN", "{"),
-        m("IEEEauthorblockA", "{"),
-        // review annotations -> Word comments (todonotes / changes)
-        m("todo", "[{"),
-        m("comment", "[{"),
-        m("note", "[{"),
-        m("bibitem", "[{"),
-        m("bibliography", "{"),
-        m("bibliographystyle", "{"),
-        m("addbibresource", "[{"),
-        m("printbibliography", "["),
-        m("setitemize", "{"),
-        m("setenumerate", "{"),
-        m("hyphenation", "{"),
-        m("cmidrule", "{"),
-        m("cline", "{"),
-        m("resizebox", "{{{"),
-        m("scalebox", "{{"),
-        m("rotatebox", "[{{"),
-        // makecell: multi-line cells, `\\` breaks the line
-        m("makecell", "[{"),
-        m("thead", "[{"),
-        m("makegapedcells", ""),
-        m("setlength", "{{"),
-        m("phantom", "{"),
-        m("hphantom", "{"),
-        m("vphantom", "{"),
-        m("rule", "[{{"),
-        m("mbox", "{"),
-        m("fbox", "{"),
-        m("framebox", "[[{"),
-        m("makebox", "[[{"),
-        m("raisebox", "{[[{"),
-        m("fontsize", "{{"),
-        m("fontfamily", "{"),
-        m("si", "[{"),
-        m("unit", "[{"),
-        m("num", "[{"),
-        m("ang", "[{"),
-        m("SI", "[{{"),
-        m("qty", "[{{"),
-        m("newacronym", "[{{{"),
-        m("newglossaryentry", "{{"),
-        m("nocite", "{"),
-        m("lstinline", "[{"),
-        m("mintinline", "[{{"),
-        m("ensuremath", "{"),
-        m("ding", "{"),
-        m("shortstack", "[{"),
-        // ACM affiliation sub-fields: consume the {…} so it isn't body text
-        m("institution", "{"),
-        m("department", "{"),
-        m("city", "{"),
-        m("state", "{"),
-        m("country", "{"),
-        m("postcode", "{"),
-        m("streetaddress", "{"),
-        m("position", "{"),
-        m("authornote", "{"),
-        m("texorpdfstring", "{{"),
-        m("labelcref", "{"),
-        m("nameref", "{"),
-        m("Nameref", "{"),
-        m("title", "[{"), // \title[running head]{full title}
-        m("markboth", "{{"),
-        m("markright", "{"),
-        m("runninghead", "[{"),
-        m("shorttitle", "{"),
-    ];
-    for name in [
-        "gls",
-        "Gls",
-        "glspl",
-        "Glspl",
-        "acrshort",
-        "Acrshort",
-        "acrshortpl",
-        "Acrshortpl",
-        "acrlong",
-        "Acrlong",
-        "acrlongpl",
-        "Acrlongpl",
-        "acrfull",
-        "Acrfull",
-        "acrfullpl",
-        "Acrfullpl",
-        "glsentryshort",
-        "glsentrylong",
-    ] {
-        macros.push(m(name, "[{"));
-    }
-    for name in [
-        // acronym package references
-        "ac", "Ac", "acp", "Acp", "acs", "Acs", "acsp", "Acsp", "acl", "Acl", "aclp", "Aclp", "acf",
-        "Acf", "acfp", "Acfp",
-    ] {
-        macros.push(m(name, "{"));
-    }
-    macros.push(m("acro", "{[{"));
-    macros.push(m("acrodef", "{[{"));
-    for name in PRINTGLOSSARY_MACROS {
-        macros.push(m(name, "["));
-    }
-    macros.extend([
-        m("pagestyle", "{"),
-        m("thispagestyle", "{"),
-        m("settopmatter", "{"),
-        m("vspace", "*{"),
-        m("hspace", "*{"),
-        m("subfloat", "[{"),
-        m("subfigure", "[{"),
-    ]);
-
+    let macros: Vec<MacroSpec> = CONTEXT_MACROS
+        .iter()
+        .map(|&(name, spec)| MacroSpec::new(name.to_string(), spec))
+        .collect();
     let e = |name: &str, spec: &str| EnvironmentSpec::new(name.to_string(), spec.to_string());
     let mut envs: Vec<EnvironmentSpec> = Vec::new();
     for (name, _) in THEOREM_ENVS {
@@ -264,33 +400,7 @@ pub fn build_context(
     for name in extra_theorem_envs {
         envs.push(e(name, "["));
     }
-    envs.push(e("subfigure", "[{"));
-    envs.push(e("minipage", "[{"));
-    for name in [
-        "algorithmic",
-        "algorithmicx",
-        "algpseudocode",
-        "algpseudocodex",
-    ] {
-        envs.push(e(name, "["));
-    }
-    envs.extend([
-        // tabularx/tabulary carry a leading {width}
-        e("tabularx", "{{"),
-        e("tabulary", "{{"),
-        e("supertabular", "{"),
-        e("xtabular", "{"),
-        e("mpsupertabular", "{"),
-        // longtable: \begin{longtable}[pos]{colspec}
-        e("longtable", "[{"),
-        // wrapfig: \begin{wrapfigure}[lines]{placement}{width}
-        e("wrapfigure", "[{{"),
-        e("wraptable", "[{{"),
-        // boxed environments with an optional [options] argument
-        e("mdframed", "["),
-        e("tcolorbox", "["),
-        e("leftbar", "["),
-    ]);
+    envs.extend(CONTEXT_ENVS.iter().map(|&(n, s)| e(n, s)));
     // user \newtcolorbox envs that take arguments (\begin{box}{title})
     for (name, spec) in extra_env_specs {
         if !spec.is_empty() {
@@ -336,74 +446,66 @@ fn preamble_teaser_blocks(
     out
 }
 
-/// Run `f` on a fresh builder sharing `report` (Python's `_Builder(report)`),
-/// resolving its slots in the inlines it returns.
-fn with_fresh_builder(
-    report: &mut ConversionReport,
-    f: impl FnOnce(&mut Builder) -> Vec<Inline>,
-) -> Vec<Inline> {
-    let mut b = Builder::new(std::mem::take(report));
-    let mut out = f(&mut b);
-    b.resolve_inlines(&mut out);
-    *report = std::mem::take(&mut b.report);
-    out
+/// Recover the title-page commands given in the preamble (best effort).
+///
+/// Every call counts (authblk lists several `\author`/`\affil` lines); a
+/// kind of metadata the body already set is not overridden.
+fn fill_meta_from_preamble(preamble: &str, ctx: &Arc<ContextDb>, builder: &mut Builder) {
+    if builder.meta.running_head.is_none() {
+        builder.meta.running_head = running_head_from_preamble(preamble);
+    }
+    if matches!(builder.doc_class.as_str(), "letter" | "moderncv") {
+        return; // read before the body (see parse_document)
+    }
+    let meta = &builder.meta;
+    let mut skip: Vec<&str> = Vec::new();
+    if meta.title.is_some() {
+        skip.push("title");
+    }
+    if !meta.authors.is_empty() {
+        skip.push("author");
+    }
+    if meta.date.is_some() {
+        skip.push("date");
+    }
+    if meta.keywords.is_some() {
+        skip.push("keywords");
+    }
+    if !meta.affiliations.is_empty() {
+        skip.extend([
+            "institute",
+            "affiliation",
+            "affil",
+            "address",
+            "email",
+            "orcid",
+        ]);
+    }
+    if meta.subtitle.is_some() {
+        skip.push("subtitle");
+    }
+    fill_meta_from_preamble_calls(preamble, ctx, builder, &skip, None);
 }
 
-/// Recover `\title`/`\author`/`\date`/`\keywords` defined in the preamble.
-fn fill_meta_from_preamble(
-    doc: &mut Document,
+fn fill_meta_from_preamble_calls(
     preamble: &str,
     ctx: &Arc<ContextDb>,
-    report: &mut ConversionReport,
+    builder: &mut Builder,
+    skip: &[&str],
+    only: Option<&[&str]>,
 ) {
-    if doc.meta.running_head.is_none() {
-        doc.meta.running_head = running_head_from_preamble(preamble);
-    }
-    for macro_ in [
-        "title",
-        "author",
-        "date",
-        "keywords",
-        "institute",
-        "affiliation",
-    ] {
-        let skip = match macro_ {
-            "title" => doc.meta.title.is_some(),
-            "author" => !doc.meta.authors.is_empty(),
-            "date" => doc.meta.date.is_some(),
-            "keywords" => doc.meta.keywords.is_some(),
-            _ => !doc.meta.affiliations.is_empty(),
-        };
-        if skip {
+    for (name, call) in frontmatter::preamble_calls(preamble) {
+        if skip.contains(&name.as_str()) || only.is_some_and(|o| !o.contains(&name.as_str())) {
             continue;
         }
-        let Some(content) = braced_content(preamble, macro_) else {
+        let Some(nodes) = walk(&call, ctx) else {
+            continue; // never let a preamble oddity abort the conversion
+        };
+        let Some(node) = nodes.iter().find(|n| n.is_macro()) else {
             continue;
         };
-        let inlines = match walk(&content, ctx) {
-            Some(sub_nodes) => {
-                if matches!(macro_, "author" | "institute" | "affiliation") {
-                    for seg in split_on_and(&sub_nodes) {
-                        let inl = with_fresh_builder(report, |b| b.inlines(&seg));
-                        if !inl.is_empty() {
-                            if macro_ == "author" {
-                                doc.meta.authors.push(inl);
-                            } else {
-                                doc.meta.affiliations.push(inl);
-                            }
-                        }
-                    }
-                    continue;
-                }
-                with_fresh_builder(report, |b| b.inlines(&sub_nodes))
-            }
-            None => vec![Inline::text(content.clone())],
-        };
-        match macro_ {
-            "title" => doc.meta.title = Some(inlines),
-            "date" => doc.meta.date = Some(inlines),
-            "keywords" => doc.meta.keywords = Some(inlines),
-            _ => {}
+        if builder.front_matter(node).is_none() {
+            builder.meta_macro(node);
         }
     }
 }
@@ -433,6 +535,10 @@ helpers::lazy_re!(BIBLATEX_RE, r"\\usepackage\[([^\]]*)\]\{biblatex\}");
 helpers::lazy_re!(BIBLATEX_STYLE_RE, r"\bstyle\s*=\s*([A-Za-z0-9\-]+)");
 helpers::lazy_re!(NATBIB_RE, r"\\usepackage\[([^\]]*)\]\{natbib\}");
 helpers::lazy_re!(NUMBERS_RE, r"\bnumbers\b");
+helpers::lazy_re!(
+    DOCCLASS_RE,
+    r"\\documentclass\s*(?:\[[^\]]*\])?\s*\{([^}]*)\}"
+);
 helpers::lazy_re!(
     SUBJCLASSNAME_RE,
     r"\\@namedef\s*\{subjclassname@([^}]*)\}\s*\{([^{}]*)\}"
@@ -608,6 +714,383 @@ fn resolve_bibliography(
     Ok(())
 }
 
+/// Commands the converter itself handles (`\providecommand` keeps them):
+/// `_known_commands()`, generated from the Python tables.
+const KNOWN_COMMANDS: &[&str] = &[
+    " ",
+    "!",
+    "#",
+    "$",
+    "%",
+    "&",
+    ",",
+    "/",
+    ":",
+    ";",
+    "@",
+    "AA",
+    "AE",
+    "AddToShipoutPicture",
+    "Autocite",
+    "Checkmark",
+    "CheckmarkBold",
+    "Cite",
+    "Citeauthor",
+    "Citep",
+    "Citet",
+    "ClearShipoutPicture",
+    "Cpageref",
+    "Cref",
+    "Crefrange",
+    "Cross",
+    "CrossBold",
+    "DH",
+    "DJ",
+    "Envelope",
+    "FloatBarrier",
+    "HandLeft",
+    "HandRight",
+    "Huge",
+    "L",
+    "LARGE",
+    "LaTeX",
+    "LaTeXe",
+    "Large",
+    "Leftarrow",
+    "NG",
+    "Nameref",
+    "O",
+    "OE",
+    "P",
+    "Parencite",
+    "PencilRight",
+    "Phone",
+    "RequirePackage",
+    "Rightarrow",
+    "S",
+    "SS",
+    "TH",
+    "TeX",
+    "Textcite",
+    "XSolid",
+    "XSolidBold",
+    "XSolidBrush",
+    "_",
+    "aa",
+    "acmnote",
+    "addtocounter",
+    "addtolength",
+    "ae",
+    "alpha",
+    "approx",
+    "ast",
+    "author",
+    "authornote",
+    "authornotemark",
+    "autocite",
+    "autoref",
+    "backmatter",
+    "balance",
+    "begingroup",
+    "beta",
+    "bf",
+    "bfseries",
+    "bgroup",
+    "bigskip",
+    "boldmath",
+    "caption",
+    "cdot",
+    "cdots",
+    "celsius",
+    "centering",
+    "chapter",
+    "checkmark",
+    "cite",
+    "citealp",
+    "citealt",
+    "citeauthor",
+    "citenum",
+    "citenumber",
+    "citep",
+    "citet",
+    "citeyear",
+    "citeyearpar",
+    "clearpage",
+    "copyright",
+    "cpageref",
+    "cref",
+    "crefrange",
+    "dag",
+    "date",
+    "ddag",
+    "definecolor",
+    "deflength",
+    "degree",
+    "depth",
+    "dh",
+    "displaystyle",
+    "dj",
+    "documentclass",
+    "dots",
+    "egroup",
+    "em",
+    "emph",
+    "emptyset",
+    "endgroup",
+    "eqref",
+    "equiv",
+    "euro",
+    "exists",
+    "fbox",
+    "floatbarrier",
+    "flq",
+    "flqq",
+    "flushbottom",
+    "fontfamily",
+    "fontsize",
+    "footcite",
+    "footnote",
+    "footnotesize",
+    "forall",
+    "foreignlanguage",
+    "frac",
+    "framebox",
+    "frenchspacing",
+    "frontmatter",
+    "frq",
+    "frqq",
+    "fussy",
+    "gamma",
+    "ge",
+    "geq",
+    "gets",
+    "glq",
+    "glqq",
+    "graphicspath",
+    "grq",
+    "grqq",
+    "guillemotleft",
+    "guillemotright",
+    "height",
+    "hfill",
+    "hl",
+    "href",
+    "hspace",
+    "huge",
+    "hypersetup",
+    "hyphenation",
+    "i",
+    "ignorespaces",
+    "in",
+    "includegraphics",
+    "indent",
+    "infty",
+    "it",
+    "item",
+    "itshape",
+    "j",
+    "l",
+    "label",
+    "labelcref",
+    "land",
+    "large",
+    "ldots",
+    "le",
+    "leavevmode",
+    "leftarrow",
+    "leftrightarrow",
+    "leq",
+    "lnot",
+    "lor",
+    "mainmatter",
+    "makeatletter",
+    "makeatother",
+    "makebox",
+    "makecell",
+    "maketitle",
+    "mathbb",
+    "mathbf",
+    "mathcal",
+    "mathrm",
+    "mbox",
+    "md",
+    "mdseries",
+    "medskip",
+    "micro",
+    "nameref",
+    "ne",
+    "neg",
+    "neq",
+    "newcommand",
+    "newcounter",
+    "newline",
+    "newpage",
+    "ng",
+    "nobalance",
+    "nobreakspace",
+    "nohyphens",
+    "noindent",
+    "normalfont",
+    "normalsize",
+    "o",
+    "oe",
+    "ohm",
+    "onecolumn",
+    "otherlanguage",
+    "pagebreak",
+    "pagenumbering",
+    "pageref",
+    "pagestyle",
+    "par",
+    "paragraph",
+    "parbox",
+    "parencite",
+    "part",
+    "perthousand",
+    "pounds",
+    "protect",
+    "providecommand",
+    "qquad",
+    "quad",
+    "quotedblbase",
+    "quotesinglbase",
+    "raggedleft",
+    "raggedright",
+    "raisebox",
+    "ref",
+    "refstepcounter",
+    "renewcommand",
+    "resizebox",
+    "rightarrow",
+    "rm",
+    "rmfamily",
+    "rotatebox",
+    "samepage",
+    "sc",
+    "scalebox",
+    "scriptsize",
+    "scshape",
+    "section",
+    "selectfont",
+    "selectlanguage",
+    "setcounter",
+    "setenumerate",
+    "setitemize",
+    "setlength",
+    "settodepth",
+    "settoheight",
+    "settopmatter",
+    "settowidth",
+    "sf",
+    "sffamily",
+    "sl",
+    "slash",
+    "sloppy",
+    "slshape",
+    "small",
+    "smallskip",
+    "smartcite",
+    "sout",
+    "sqrt",
+    "ss",
+    "st",
+    "star",
+    "stepcounter",
+    "subparagraph",
+    "subref",
+    "subsection",
+    "subsubsection",
+    "text",
+    "textasciicircum",
+    "textasciitilde",
+    "textbackslash",
+    "textbar",
+    "textbf",
+    "textbullet",
+    "textcelsius",
+    "textcent",
+    "textcite",
+    "textdagger",
+    "textdaggerdbl",
+    "textdegree",
+    "textdiv",
+    "textdollar",
+    "textellipsis",
+    "textemdash",
+    "textendash",
+    "texteuro",
+    "textgreater",
+    "textit",
+    "textless",
+    "textmho",
+    "textminus",
+    "textmu",
+    "textnumero",
+    "textohm",
+    "textonehalf",
+    "textonequarter",
+    "textonesuperior",
+    "textparagraph",
+    "textperiodcentered",
+    "textperthousand",
+    "textpm",
+    "textquotedblleft",
+    "textquotedblright",
+    "textquoteleft",
+    "textquoteright",
+    "textregistered",
+    "textrm",
+    "textsc",
+    "textsection",
+    "textsf",
+    "textsl",
+    "textsterling",
+    "textsubscript",
+    "textsuperscript",
+    "textthreequarters",
+    "textthreesuperior",
+    "texttimes",
+    "texttrademark",
+    "texttt",
+    "texttwosuperior",
+    "textyen",
+    "th",
+    "thead",
+    "thispagestyle",
+    "times",
+    "tiny",
+    "title",
+    "to",
+    "today",
+    "totalheight",
+    "tt",
+    "ttfamily",
+    "twocolumn",
+    "typeout",
+    "uline",
+    "unboldmath",
+    "underline",
+    "unskip",
+    "up",
+    "upshape",
+    "url",
+    "usepackage",
+    "uuline",
+    "vfill",
+    "vpageref",
+    "vref",
+    "vspace",
+    "width",
+    "xout",
+    "xspace",
+    "{",
+    "}",
+];
+
+fn known_commands() -> std::collections::HashSet<String> {
+    KNOWN_COMMANDS.iter().map(|s| s.to_string()).collect()
+}
+
 /// Parse LaTeX `source` into an IR [`Document`] plus its conversion report.
 ///
 /// `csl_path` is an optional `.csl` style for the citation pass. Errors are
@@ -618,7 +1101,13 @@ pub fn parse_document(
     csl_path: Option<&str>,
 ) -> io::Result<(Document, ConversionReport)> {
     let report = ConversionReport::new();
-    let expanded = replace_inline_tikz(&expand_macros(&preprocess(source, base_dir)?, base_dir));
+    let expanded = replace_inline_tikz(&expand_macros_known(
+        &preprocess(source, base_dir)?,
+        base_dir,
+        &known_commands(),
+    ));
+    // \newcounter values: \arabic{c}, \thec, ...
+    let expanded = crate::counters::resolve_counters(&expanded);
     // after expansion, so macro-generated \vskip/\faX are cleaned up too
     let expanded = normalize_spacing_and_icons(&expanded);
     let (body, preamble) = split_document(&expanded);
@@ -644,6 +1133,7 @@ pub fn parse_document(
     }
     builder.unnumbered_theorems = unnumbered_theorems;
     builder.theorem_counters = resolve_theorem_counters(&custom_theorems, &shared_counters);
+    builder.theorem_within = collect_theorem_within(&theorem_src);
     builder.box_envs = collect_tcolorbox_envs(&theorem_src); // \newtcolorbox callouts
     builder.tcb_envs = tcb_envs;
     builder.tcb_styles = tcb_styles;
@@ -651,29 +1141,57 @@ pub fn parse_document(
     let styled: Vec<String> = builder.box_styles.keys().cloned().collect();
     builder.box_envs.extend(styled);
     builder.book_mode = is_book_class(&expanded);
-    collect_subjclass_names(source, &mut builder.subjclass_names); // amsart
+    builder.doc_class = DOCCLASS_RE.search(&expanded).map_or_else(
+        || "article".to_string(),
+        |m| pystr::strip(m.group_str(1)).to_string(),
+    );
+    if matches!(builder.doc_class.as_str(), "letter" | "moderncv") {
+        // sender address / signature / CV contact lines live in the preamble
+        fill_meta_from_preamble_calls(
+            &preamble,
+            &ctx,
+            &mut builder,
+            &[],
+            Some(&[
+                "address",
+                "signature",
+                "name",
+                "title",
+                "phone",
+                "mobile",
+                "homepage",
+                "social",
+                "extrainfo",
+                "email",
+            ]),
+        );
+    }
+    collect_subjclass_names(source, &mut builder.subjclass_names); // before \@namedef is expanded
     collect_color_defs(&expanded, &mut builder.colors); // \definecolor/\colorlet
     collect_acronyms(&expanded, &mut builder.acronyms); // \newacronym
     collect_glossary_entries(&expanded, &mut builder.glossary); // \newglossaryentry
                                                                 // A class-level teaser figure declared in the preamble leads the body
     let mut blocks = preamble_teaser_blocks(&preamble, &ctx, &mut builder);
     blocks.extend(builder.blocks(&nodes));
+
+    // (Python fills `doc.meta`, which is `builder.meta`: fill it in place)
+    fill_meta_from_preamble(&preamble, &ctx, &mut builder);
+    // \maketitle defaults an omitted \date to \today when a title is present
+    if builder.meta.date.is_none()
+        && builder.meta.title.as_ref().is_some_and(|t| !t.is_empty())
+        && builder.doc_class != "moderncv"
+    {
+        builder.meta.date = Some(default_date(source, &mut builder));
+    }
     let mut doc = Document {
         blocks,
         meta: std::mem::take(&mut builder.meta),
         book: builder.book_mode,
         ..Document::default()
     };
-
-    let mut report = std::mem::take(&mut builder.report);
-    fill_meta_from_preamble(&mut doc, &preamble, &ctx, &mut report);
-    builder.report = report;
-    // \maketitle defaults an omitted \date to \today when a title is present
-    if doc.meta.date.is_none() && doc.meta.title.as_ref().is_some_and(|t| !t.is_empty()) {
-        doc.meta.date = Some(default_date(source, &mut builder));
-    }
     // labels and \footnotemark contents set after their nodes were built
     builder.resolve_slots(&mut doc.blocks, &mut doc.meta);
+    doc.label_aliases = builder.label_aliases.clone();
     collect_bib_resources(&preamble, &mut builder); // biblatex \addbibresource
     detect_bib_style(&preamble, &mut builder); // biblatex/natbib author-year option
     if doc.meta.language.is_none() {

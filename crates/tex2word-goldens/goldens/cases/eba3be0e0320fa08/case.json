@@ -1,0 +1,13 @@
+{
+"api": "recover_ir",
+"args": {
+"docx_bytes": {
+"@blob": "9efa1ac3835e218ce9ef1bf8cb7c3cef066364e28c9be1a55fbb1c8a7933b967"
+}
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_reconcile.py::test_unedited_docs_reconcile_to_identity[corpus/macros.tex]"
+]
+}

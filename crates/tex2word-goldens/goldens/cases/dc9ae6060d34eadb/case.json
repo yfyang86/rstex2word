@@ -1,0 +1,13 @@
+{
+"api": "validate_docx",
+"args": {
+"docx_bytes": {
+"@blob": "716c119c0c190da58d58b7acb8813bc6358b521d826df827d0a3e370f177bb0a"
+}
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_substack.py::test_three_row_substack"
+]
+}

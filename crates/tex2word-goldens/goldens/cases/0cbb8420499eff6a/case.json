@@ -1,0 +1,11 @@
+{
+"api": "convert_source",
+"args": {
+"source": "\\documentclass{article}\\usepackage{threeparttable,subcaption,rotating}\\begin{document}\n\\begin{table}\\begin{threeparttable}\\caption{Results}\\label{tab:r}\\begin{tabular}{l} a\\tnote{a}\\\\\\end{tabular}\\begin{tablenotes}\\item[a] A note.\\end{tablenotes}\\end{threeparttable}\\end{table}See \\ref{tab:r}.\n\\end{document}"
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_table_floats.py::test_threeparttable_caption_label_and_notes"
+]
+}

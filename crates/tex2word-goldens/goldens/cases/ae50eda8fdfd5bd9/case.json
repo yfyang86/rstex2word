@@ -1,0 +1,11 @@
+{
+"api": "convert_source",
+"args": {
+"source": "\\documentclass{article}\\usepackage{tikz}\\begin{document}\n\\begin{figure}\\begin{tikzpicture}\n\\foreach \\label/\\value in {A/1, B/2} { \\node at (0,\\value) {\\label}; }\n\\end{tikzpicture}\\caption{Bars.}\\label{fig:bars}\\end{figure}\nSee Figure~\\ref{fig:bars}.\\end{document}\n"
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_issue44_tikz_bib.py::test_foreach_label_does_not_replace_the_figure_label"
+]
+}

@@ -1,0 +1,13 @@
+{
+"api": "to_latex",
+"args": {
+"docx_bytes": {
+"@blob": "b507b314de096712c7f3e3070c68201d8d78f03f051c3313464775cd847252b6"
+}
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_authors_keywords.py::test_keywords_render_and_round_trip"
+]
+}

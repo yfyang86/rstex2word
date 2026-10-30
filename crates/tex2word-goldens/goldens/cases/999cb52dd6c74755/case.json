@@ -1,0 +1,11 @@
+{
+"api": "convert_source",
+"args": {
+"source": "\\documentclass{article}\\usepackage{threeparttable,subcaption,rotating}\\begin{document}\n\\begin{table}\\caption{Main}\\label{m}\\begin{subtable}{.4\\textwidth}\\caption{One}\\label{s}\\begin{tabular}{l}x\\\\\\end{tabular}\\end{subtable}\\begin{subtable}{.4\\textwidth}\\caption{Two}\\begin{tabular}{l}y\\\\\\end{tabular}\\end{subtable}\\end{table}\\ref{s}\n\\end{document}"
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_table_floats.py::test_subtables_with_a_main_caption"
+]
+}

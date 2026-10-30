@@ -1,0 +1,13 @@
+{
+"api": "validate_docx",
+"args": {
+"docx_bytes": {
+"@blob": "2a009a5f6df8bef1f013af653acf12a904e75d022f431743f759f8353e9e2cd4"
+}
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_cjk_context.py::test_rich_cjk_document_is_valid"
+]
+}

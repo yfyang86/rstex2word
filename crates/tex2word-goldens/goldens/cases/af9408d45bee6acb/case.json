@@ -1,0 +1,11 @@
+{
+"api": "convert_source",
+"args": {
+"source": "\\documentclass{article}\n\\usepackage{graphicx}\n\\begin{document}\n\\begin{figure}\\caption{See \\begin{tabular}{ll}CELLA & CELLB\\end{tabular}}\\end{figure}\\fbox{\\begin{tabular}{l}CELLC\\end{tabular}}\n\\end{document}\n"
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_probe_fixes.py::test_tabular_inside_a_caption_or_box_keeps_its_text"
+]
+}

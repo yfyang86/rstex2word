@@ -1,0 +1,11 @@
+{
+"api": "convert_source",
+"args": {
+"source": "\\documentclass{article}\n\n\\begin{document}\n\\title{T}\\author{A \\And B \\AND C}\\maketitle\n\\end{document}\n"
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_front_matter_classes.py::test_neurips_and_icml_authors"
+]
+}

@@ -1,0 +1,11 @@
+{
+"api": "convert_source",
+"args": {
+"source": "\\documentclass{article}\n\n\\begin{document}\nText\\footnote{Intro. \\begin{itemize}\\item NOTEA\\end{itemize}\\begin{quote}NOTEB\\end{quote}}\n\\end{document}\n"
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_probe_fixes.py::test_block_content_in_a_footnote_is_kept"
+]
+}

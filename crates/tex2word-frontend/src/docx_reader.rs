@@ -412,6 +412,7 @@ impl Reader {
                     blocks.push(Block::CodeBlock(CodeBlock {
                         text: lines.join("\n"),
                         lang: None,
+                        ..Default::default()
                     }));
                     code_run.clear();
                 }
@@ -432,6 +433,7 @@ impl Reader {
                         ordered: false,
                         items,
                         description: true,
+                        ..Default::default()
                     }));
                 }
             };
@@ -858,6 +860,7 @@ impl Reader {
                 ordered: numid == "2",
                 items: vec![item],
                 description: false,
+                ..Default::default()
             };
             let path = match stack.last() {
                 Some((_, parent)) => {

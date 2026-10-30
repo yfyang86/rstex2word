@@ -1,0 +1,13 @@
+{
+"api": "to_latex",
+"args": {
+"docx_bytes": {
+"@blob": "b631edb0b986b4eaa6696cc67e0eeac4f60e9c1c7f0041cdb7440626561c531b"
+}
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_latex_writer.py::test_roundtrip_table_and_theorem"
+]
+}

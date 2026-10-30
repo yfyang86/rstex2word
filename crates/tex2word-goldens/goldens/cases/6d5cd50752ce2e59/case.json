@@ -1,0 +1,13 @@
+{
+"api": "to_latex",
+"args": {
+"docx_bytes": {
+"@blob": "dbf185a5881a6ba358ed41766786e60dfd979f6f376e687d441445bf7b794201"
+}
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_tables.py::test_table_colour_roundtrips"
+]
+}

@@ -1,6 +1,6 @@
 //! Golden-case loader for the parity tests.
 //!
-//! `goldens/` holds cases recorded from the Python tex2word 1.0.9 reference by
+//! `goldens/` holds cases recorded from the Python tex2word 1.1.0 reference by
 //! `tools/golden/capture_plugin.py`: every call the Python test suite made to a
 //! public API, with Python's output. Each case lives in
 //! `goldens/cases/<id>/` (`case.json` = inputs, `out.json` = Python's result);

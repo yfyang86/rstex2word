@@ -1,0 +1,13 @@
+{
+"api": "validate_docx",
+"args": {
+"docx_bytes": {
+"@blob": "d2ecba50ffcf998f5e5c7154840e5adf8e9b4096a2c22e7b9352f25d19057914"
+}
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_caching.py::test_identical_images_share_one_media_part"
+]
+}

@@ -1,0 +1,11 @@
+{
+"api": "convert_source",
+"args": {
+"source": "\\documentclass{article}\n\\begin{document}\nData in \\path{generated/results_raw.json} and \\nolinkurl{a/b}.\n\\end{document}\n"
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_issue44_macros.py::test_path_and_nolinkurl_render_as_monospace"
+]
+}

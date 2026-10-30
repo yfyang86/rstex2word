@@ -1,0 +1,11 @@
+{
+"api": "convert_source",
+"args": {
+"source": "\\documentclass{sn-jnl}\n\n\\begin{document}\n\\title{T}\\author*[1]{\\fnm{Ann} \\sur{Lee}}\\affil*[1]{\\orgdiv{Dept}, \\orgname{Uni}, \\orgaddress{\\city{Town}, \\country{Land}}}\\abstract{Abs.}\\maketitle\\bmhead{Thanks} Text.\n\\end{document}\n"
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_front_matter_classes.py::test_springer_nature_authors_and_affiliations"
+]
+}

@@ -1,0 +1,11 @@
+{
+"api": "convert_source",
+"args": {
+"source": "\\documentclass{IEEEtran}\n\n\\begin{document}\n\\title{T}\\author{A,~\\IEEEmembership{Member,~IEEE}}\\maketitle\\IEEEpeerreviewmaketitle\\section{S}x\\appendices\\section{P}y\n\\end{document}\n"
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_front_matter_classes.py::test_ieee_journal_and_amsart_extras"
+]
+}

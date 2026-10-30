@@ -256,6 +256,7 @@ impl Mapper<'_> {
             "verbatim" | "listing" => out.push(Block::CodeBlock(CodeBlock {
                 text: e.itertext(),
                 lang: None,
+                ..Default::default()
             })),
             "note" => {} // footnotes handled inline
             _ => {
@@ -310,6 +311,7 @@ impl Mapper<'_> {
             ordered: tag == "enumerate",
             items,
             description: tag == "description",
+            ..Default::default()
         })
     }
 
@@ -471,7 +473,10 @@ impl Mapper<'_> {
             }
             "note" => {
                 let inner = self.inlines(Some(e));
-                out.push(Inline::Footnote(Footnote { inlines: inner }));
+                out.push(Inline::Footnote(Footnote {
+                    inlines: inner,
+                    ..Default::default()
+                }));
             }
             "break" => out.push(Inline::LineBreak(LineBreak {})),
             _ => {

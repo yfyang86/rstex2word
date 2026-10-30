@@ -1,0 +1,13 @@
+{
+"api": "to_latex",
+"args": {
+"docx_bytes": {
+"@blob": "f32ad19c3f090a32fb2f32ec6a1d9c52b09bea861c03b5f6028f5ff9b70c31b2"
+}
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_docx_reader.py::test_to_latex_foreign_roundtrips_structure"
+]
+}

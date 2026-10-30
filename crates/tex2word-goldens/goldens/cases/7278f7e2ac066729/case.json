@@ -1,0 +1,13 @@
+{
+"api": "validate_docx",
+"args": {
+"docx_bytes": {
+"@blob": "863da3a4ea37ce6416efd7cf7c7644527bb190d8adb6e03c8db06619c3cab2a7"
+}
+},
+"base_dir": ".",
+"files": {},
+"tests": [
+"tests/test_math_arrows_mod.py::test_native_omml_no_raw_fallback"
+]
+}
